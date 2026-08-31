@@ -60,6 +60,94 @@
         </div>
     </div>
 
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="flex items-center justify-center min-h-screen bg-blue-50">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+            <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">ເຂົ້າສູ່ລະບົບ</h2>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ຊື່ຜູ້ໃຊ້ (Username)</label>
+                    <input type="text" id="usernameInput" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ປ້ອນ Username">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ລະຫັດຜ່ານ (Password)</label>
+                    <input type="password" id="passwordInput" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ປ້ອນ Password">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-lg font-semibold hover:bg-blue-700 transition">ເຂົ້າສູ່ລະບົບ</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="appScreen" class="hidden">
+        <!-- Navigation Menu -->
+        <nav class="bg-white shadow-md">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex space-x-8 font-semibold text-gray-700">
+                    <button onclick="switchTab('projects')" class="hover:text-blue-600 focus:text-blue-600">ໂຄງການທັງໝົດ</button>
+                    <button onclick="switchTab('investors')" class="hover:text-blue-600 focus:text-blue-600">ນັກລົງທຶນ</button>
+                    <button onclick="switchTab('investments')" class="hover:text-blue-600 focus:text-blue-600">ຈ/ນ ເງິນລົງທຶນ</button>
+                    <button onclick="switchTab('expenses')" class="hover:text-blue-600 focus:text-blue-600">ລາຍຈ່າຍ</button>
+                    <button onclick="switchTab('reports')" class="hover:text-blue-600 focus:text-blue-600">ລາຍງານ</button>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userInfo" class="text-sm font-medium text-gray-600"></span>
+                    <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">ອອກຈາກລະບົບ</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Content Area -->
+        <div class="max-w-7xl mx-auto p-6">
+            
+            <!-- TAB 1: ໂຄງການທັງໝົດ -->
+            <div id="tab-projects" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">ລາຍຊື່ໂຄງການທັງໝົດ</h2>
+                    <button id="addProjectBtn" onclick="openProjectModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມໂຄງການ</button>
+                </div>
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <ul id="projectList" class="divide-y divide-gray-200">
+                        <!-- ໂຄງການຈະຖືກໂຫຼດຜ່ານ JS -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 2: ນັກລົງທຶນ -->
+            <div id="tab-investors" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">ຂໍ້ມູນນັກລົງທຶນ (ນິຕິບຸກຄົນ)</h2>
+                        <p id="currentActiveProjectInv" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button id="deleteInvestorBtn" onclick="deleteSelectedInvestors()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
+                        <button id="addInvestorBtn" onclick="openInvestorModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມນັກລົງທຶນ</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700 text-sm">
+                                <th class="p-3 border text-center">ລ/ດ</th>
+                                <th class="p-3 border">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
+                                <th class="p-3 border">ບ້ານ</th>
+                                <th class="p-3 border">ເມືອງ</th>
+                                <th class="p-3 border">ແຂວງ</th>
+                                <th class="p-3 border">ເບີໂທລະສັບ</th>
+                                <th class="p-3 border">ໝາຍເຫດ</th>
+                                <th class="p-3 border text-center">
+                                    <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="investorTableBody" class="text-sm text-gray-700">
+                            <!-- ຂໍ້ມູນຈະຖືກໂຫຼດດ້ວຍ Script -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- TAB 3: ຈ/ນ ເງິນລົງທຶນ -->
             <div id="tab-investments" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-6">
@@ -1195,94 +1283,6 @@
 </head>
 <body class="bg-gray-100">
 
-    <!-- LOGIN SCREEN -->
-    <div id="loginScreen" class="flex items-center justify-center min-h-screen bg-blue-50">
-        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-            <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">ເຂົ້າສູ່ລະບົບ</h2>
-            <form id="loginForm" class="space-y-4">
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">ຊື່ຜູ້ໃຊ້ (Username)</label>
-                    <input type="text" id="usernameInput" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ປ້ອນ Username">
-                </div>
-                <div>
-                    <label class="block text-gray-700 font-medium mb-1">ລະຫັດຜ່ານ (Password)</label>
-                    <input type="password" id="passwordInput" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ປ້ອນ Password">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-lg font-semibold hover:bg-blue-700 transition">ເຂົ້າສູ່ລະບົບ</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MAIN APP -->
-    <div id="appScreen" class="hidden">
-        <!-- Navigation Menu -->
-        <nav class="bg-white shadow-md">
-            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                <div class="flex space-x-8 font-semibold text-gray-700">
-                    <button onclick="switchTab('projects')" class="hover:text-blue-600 focus:text-blue-600">ໂຄງການທັງໝົດ</button>
-                    <button onclick="switchTab('investors')" class="hover:text-blue-600 focus:text-blue-600">ນັກລົງທຶນ</button>
-                    <button onclick="switchTab('investments')" class="hover:text-blue-600 focus:text-blue-600">ຈ/ນ ເງິນລົງທຶນ</button>
-                    <button onclick="switchTab('expenses')" class="hover:text-blue-600 focus:text-blue-600">ລາຍຈ່າຍ</button>
-                    <button onclick="switchTab('reports')" class="hover:text-blue-600 focus:text-blue-600">ລາຍງານ</button>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <span id="userInfo" class="text-sm font-medium text-gray-600"></span>
-                    <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">ອອກຈາກລະບົບ</button>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Content Area -->
-        <div class="max-w-7xl mx-auto p-6">
-            
-            <!-- TAB 1: ໂຄງການທັງໝົດ -->
-            <div id="tab-projects" class="tab-content">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">ລາຍຊື່ໂຄງການທັງໝົດ</h2>
-                    <button id="addProjectBtn" onclick="openProjectModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມໂຄງການ</button>
-                </div>
-                <div class="bg-white rounded-lg shadow overflow-hidden">
-                    <ul id="projectList" class="divide-y divide-gray-200">
-                        <!-- ໂຄງການຈະຖືກໂຫຼດຜ່ານ JS -->
-                    </ul>
-                </div>
-            </div>
-
-            <!-- TAB 2: ນັກລົງທຶນ -->
-            <div id="tab-investors" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ຂໍ້ມູນນັກລົງທຶນ (ນິຕິບຸກຄົນ)</h2>
-                        <p id="currentActiveProjectInv" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button id="deleteInvestorBtn" onclick="deleteSelectedInvestors()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
-                        <button id="addInvestorBtn" onclick="openInvestorModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມນັກລົງທຶນ</button>
-                    </div>
-                </div>
-                <div class="bg-white rounded-lg shadow overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-200 text-gray-700 text-sm">
-                                <th class="p-3 border text-center">ລ/ດ</th>
-                                <th class="p-3 border">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
-                                <th class="p-3 border">ບ້ານ</th>
-                                <th class="p-3 border">ເມືອງ</th>
-                                <th class="p-3 border">ແຂວງ</th>
-                                <th class="p-3 border">ເບີໂທລະສັບ</th>
-                                <th class="p-3 border">ໝາຍເຫດ</th>
-                                <th class="p-3 border text-center">
-                                    <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody id="investorTableBody" class="text-sm text-gray-700">
-                            <!-- ຂໍ້ມູນຈະຖືກໂຫຼດດ້ວຍ Script -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
             <!-- TAB 3: ຈ/ນ ເງິນລົງທຶນ -->
             <div id="tab-investments" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-6">
@@ -2401,6 +2401,33 @@
                     return null;
                 }
             }
+
+    </script>
+</body>
+
+lass="p-3 border text-right font-semibold text-red-600">${formatNumber(totalExpAmount)}</td>
+                </tr>
+                <tr class="bg-gray-100 font-bold">
+                    <td colspan="2" class="p-3 border text-right">ລວມທັງໝົດ</td>
+                    <td class="p-3 border text-right text-green-600">${formatNumber(totalInvAmount)}</td>
+                    <td class="p-3 border text-right text-red-600">${formatNumber(totalExpAmount)}</td>
+                </tr>
+                <tr class="bg-blue-50 font-bold text-blue-800">
+                    <td colspan="3" class="p-3 border text-right">ຍອດເຫຼືອ (ລາຍຮັບ - ລາຍຈ່າຍ)</td>
+                    <td class="p-3 border text-right text-xl">${formatNumber(balance)} ₭</td>
+                </tr>
+            `;
+        }
+
+        const firebaseConfig = {
+        apiKey: "AIzaSyCcaB-1T-nwn07ViLUNcjTBh_KYYGapH2Q",
+        authDomain: "welfare-fund-system.firebaseapp.com",
+        projectId: "welfare-fund-system",
+        storageBucket: "welfare-fund-system.firebasestorage.app",
+        messagingSenderId: "1021514415892",
+        appId: "1:1021514415892:web:99074c852f522d2e544c01",
+        measurementId: "G-7BQ17KFV49"
+        };
 
     </script>
 </body>
