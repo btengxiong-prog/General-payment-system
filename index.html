@@ -473,11 +473,12 @@
                 if (data.secure_url) {
                     return data.secure_url;
                 } else {
-                    throw new Error("Cloudinary error");
+                    console.error("Cloudinary response error:", data);
+                    throw new Error(data.error?.message || "Cloudinary error");
                 }
             } catch (error) {
                 console.error("Upload Error:", error);
-                showCustomAlert("ອັບໂຫຼດຮູບພາບບໍ່ສຳເລັດ!", "ຜິດພາດ");
+                showCustomAlert("ອັບໂຫຼດຮູບພາບບໍ່ສຳເລັດ! (ກວດສອບການເຊື່ອມຕໍ່ ຫຼື ຂະໜາດໄຟລ໌)", "ຜິດພາດ");
                 return null;
             }
         }
@@ -756,8 +757,13 @@
             if (fileInput.files && fileInput.files[0]) {
                 showCustomAlert("ກຳລັງອັບໂຫຼດຫຼັກຖານຂຶ້ນ Cloud, ກະລຸນາລໍຖ້າ...", "ກຳລັງດຳເນີນການ");
                 receiptUrl = await uploadToCloudinary(fileInput.files[0]);
-                closeCustomModal();
-                if (!receiptUrl) return; 
+                closeCustomModal(); // ปิด modal แจ้งเตือนกำลังอัปโหลด
+                
+                // ຖ້າອັບໂຫຼດບໍ່ຜ່ານ (ໄດ້ค่า null) ໃຫ້ຢຸດການทำงาน ແຕ່ໃຫ້ແຈ້ງເຕືອນແລ້ວອອກຈາກ function
+                if (!receiptUrl) {
+                    showCustomAlert("ອັບໂຫຼດຮູບພາບບໍ່ສຳເລັດ, ບໍ່สามารถບັນທຶກຂໍ້ມູນໄດ້", "ຜິດພາດ");
+                    return; 
+                }
             }
 
             const newInvest = {
