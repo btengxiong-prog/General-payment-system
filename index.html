@@ -407,20 +407,6 @@
             { id: 'p3', name: 'Qz-ໂພນແກ້ວ' }
         ];
 
-        let selectedProjectId = null;
-
-        let investorsData = [];
-
-        let investmentsData = [];
-
-        let expensesData = [];
-
-        const districtsData = {
-            "ແຂວງໄຊຍະບູລີ": ["ເມືອງໄຊຍະບູລີ", "ເມືອງຄອບ", "ເມືອງຊຽງຮ່ອນ", "ເມືອງພຽງ", "ເມືອງປາກລາຍ", "ເມືອງແກ່ນທ້າວ", "ເມືອງໍ່ເຕັນ", "ເມືອງທົ່ງມີໄຊ", "ເມືອງຊາທອງ", "ເມືອງຮົງສາ", "ເມືອງເງິນ"],
-            "ແຂວງຫຼວງພະບາງ": ["ເມືອງຫຼວງພະບາງ", "ເມືອງຊຽງເງິນ", "ເມືອງນານ", "ເມືອງປາກອູ", "ເມືອງຊື່ນ", "ເມືອງງอย", "ເມືອງປາກແຊງ", "ເມືອງໂຮນ"],
-            "ນະຄອນຫຼວງວຽງຈັນ": ["ເມືອງຈັນທະບູລີ", "ເມືອງສີໂຄດຕະບອງ", "ເມືອງໄຊເສດຖາ", "ເມືອງສີສັດຕະນາກ", "ເມືອງນາຊາຍທອງ", "ເມືອງໄຊທານີ", "ເມືອງຫາດຊາຍຜອງ"]
-        };
-
         function formatDateToDDMMYYYY(dateString) {
             if (!dateString) return '';
             const parts = dateString.split('-');
@@ -1535,20 +1521,9 @@
         ];
 
         let selectedProjectId = null;
-
-        let investorsData = [
-            { id: 1, projectId: 'p1', name: "Paaj nruag", village: "ບ້ານສີໄຄ", district: "ເມືອງໄຊຍະບູລີ", province: "ແຂວງໄຊຍະບູລີ", phone: "020 22223333", note: "ນັກລົງທຶນຫຼັກ" },
-            { id: 2, projectId: 'p1', name: "Loos VWJ", village: "ບ້ານນາ", district: "ເມືອງພຽງ", province: "ແຂວງໄຊຍະບູລີ", phone: "020 55556666", note: "ຜູ້ຮ່ວມທຶນ" }
-        ];
-
-        let investmentsData = [
-            { id: 1, projectId: 'p1', date: "2026-06-29", investorName: "Txaj fwm", amount: "10000000", method: "ໂອນ", receiver: "", round: 1, receipt: "", note: "-" }
-        ];
-
-        let expensesData = [
-            { id: 1, projectId: 'p1', date: "2026-06-30", desc: "ຊື້ອຸປະກອນກໍ່ສ້າງ", amount: "2000000", fee: "5000", receipt1: "", receipt2: "", note: "-" }
-        ];
-
+        let investorsData = [];
+        let investmentsData = [];
+        let expensesData = [];
         const districtsData = {
             "ແຂວງໄຊຍະບູລີ": ["ເມືອງໄຊຍະບູລີ", "ເມືອງຄອບ", "ເມືອງຊຽງຮ່ອນ", "ເມືອງພຽງ", "ເມືອງປາກລາຍ", "ເມືອງແກ່ນທ້າວ", "ເມືອງໍ່ເຕັນ", "ເມືອງທົ່ງມີໄຊ", "ເມືອງຊາທອງ", "ເມືອງຮົງສາ", "ເມືອງເງິນ"],
             "ແຂວງຫຼວງພະບາງ": ["ເມືອງຫຼວງພະບາງ", "ເມືອງຊຽງເງິນ", "ເມືອງນານ", "ເມືອງປາກອູ", "ເມືອງຊື່ນ", "ເມືອງງอย", "ເມືອງປາກແຊງ", "ເມືອງໂຮນ"],
