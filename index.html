@@ -395,7 +395,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-    <!-- Script -->
+<!-- Script -->
     <script>
         // 1. ຕັ້ງຄ່າ Firebase Config (ຕ້ອງຢູ່ເທິງສຸດ)
         const firebaseConfig = {
@@ -430,7 +430,7 @@
         let investmentsData = [];
         let expensesData = [];
 
-        // ຟັງຊັນໂຫຼດຂໍ້ມູນຈາກ Firebase Cloud Database
+        // ຟັງຊັນໂຫຼດຂໍ້ມູນຈາກ Firebase Cloud Database (ແກ້ໄຂໂຄດຊ້ອນກັນແລ້ວ)
         function loadDataFromFirebase() {
             db.collection("investors").onSnapshot((snapshot) => {
                 investorsData = [];
@@ -447,25 +447,6 @@
             db.collection("expenses").onSnapshot((snapshot) => {
                 expensesData = [];
                 snapshot.forEach((doc) => { expensesData.push({ id: doc.id, ...doc.data() }); });
-                renderExpenses();
-            });
-        }
-
-            // 2. ໂຫຼດເງິນລົງທຶນ
-            db.collection("investments").onSnapshot((snapshot) => {
-                investmentsData = [];
-                snapshot.forEach((doc) => {
-                    investmentsData.push({ id: doc.id, ...doc.data() });
-                });
-                renderInvestments();
-            });
-
-            // 3. ໂຫຼດລາຍຈ່າຍ
-            db.collection("expenses").onSnapshot((snapshot) => {
-                expensesData = [];
-                snapshot.forEach((doc) => {
-                    expensesData.push({ id: doc.id, ...doc.data() });
-                });
                 renderExpenses();
             });
         }
@@ -654,7 +635,6 @@
             document.getElementById('investorForm').reset();
         }
 
-        // ບັນທຶກນັກລົງທຶນລົງ Firebase Firestore
         document.getElementById('investorForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const newInv = {
@@ -710,7 +690,6 @@
             document.querySelectorAll('.inv-checkbox').forEach(cb => cb.checked = masterCheckbox.checked);
         }
 
-        // ລຶບນັກລົງທຶນຈາກ Firebase
         async function deleteSelectedInvestors() {
             if (currentUser.role !== 'ADMIN') { showCustomAlert("ທ່ານບໍ່ມີສິດໃນການລຶບຂໍ້ມູນ!"); return; }
             const checkboxes = document.querySelectorAll('.inv-checkbox:checked');
@@ -766,7 +745,6 @@
             }
         }
 
-        // ບັນທຶກເງິນລົງທຶນລົງ Firebase (ພ້ອມຮູບ Cloudinary)
         document.getElementById('investmentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const method = document.getElementById('investMethod').value;
@@ -874,7 +852,6 @@
             document.getElementById('expenseForm').reset();
         }
 
-        // ບັນທຶກລາຍຈ່າຍລົງ Firebase
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const rawAmount = document.getElementById('expenseAmount').value.replace(/,/g, '');
