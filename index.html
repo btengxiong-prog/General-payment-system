@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="lo">
 <head>
@@ -806,6 +807,1226 @@
             }
         }
 
+        document.getElementById('investmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const method = document.getElementById('investMethod').value;
+            const receiver = method === 'ສົດ' ? document.getElementById('investReceiver').value : '';
+            const rawAmount = document.getElementById('investAmount').value.replace(/,/g, '');
+            const fileInput = document.getElementById('investReceipt');
+            
+            let receiptUrl = '';
+
+            // ຖ້າມີການເລືອກໄຟລ໌ຮູບ ໃຫ້ອັບໂຫຼດຂຶ້ນ Cloudinary ກ່ອນ
+            if (fileInput.files && fileInput.files[0]) {
+                showCustomAlert("ກຳລັງອັບໂຫຼດຫຼັກຖານຂຶ້ນລະບົບ, ກະລຸນາຖ້າจักครู่...", "ກຳລັງດຳເນີນການ");
+                receiptUrl = await uploadToCloudinary(fileInput.files[0]);
+                closeCustomModal(); // ປິດໜ້າต่างກຳລັງໂຫຼດ
+                if (!receiptUrl) return; // ຖ້າອັບໂຫຼດບໍ່ຜ່ານ ໃຫ້ຢຸດການບັນທຶກ
+            }
+
+            const newInvest = {
+                id: Date.now(),
+                projectId: selectedProjectId,
+                date: document.getElementById('investDate').value,
+                investorName: document.getElementById('investorSelect').value,
+                amount: rawAmount,
+                method: method,
+                receiver: receiver,
+                round: document.getElementById('investRound').value,
+                receipt: receiptUrl, // ເກັບສະເພາະ URL
+                note: document.getElementById('investNote').value || '-'
+            };
+
+            investmentsData.push(newInvest);
+            renderInvestments();
+            closeInvestmentModal();
+            showCustomAlert("ເພີ່ມລາຍການລົງທຶນສຳເລັດ!");
+        });
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (uploadEvent) {
+                    saveRecord(uploadEvent.target.result);
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                saveRecord('');
+            }
+        });
+
+        function renderInvestments() {
+            const tbody = document.getElementById('investmentTableBody');
+            tbody.innerHTML = "";
+
+            let filteredInvestments = selectedProjectId 
+                ? investmentsData.filter(inv => inv.projectId === selectedProjectId)
+                : [];
+
+            document.getElementById('selectAllInvest').checked = false;
+
+            if (filteredInvestments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນລາຍການລົງທຶນໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
+                return;
+            }
+
+            filteredInvestments.forEach((inv, index) => {
+                let noteText = inv.note || '-';
+                if (inv.method === 'ສົດ' && inv.receiver) {
+                    noteText = `ຜູ້ຮັບເງິນສົດ: ${inv.receiver} ${inv.note && inv.note !== '-' ? '(' + inv.note + ')' : ''}`;
+                }
+
+                const formattedDate = formatDateToDDMMYYYY(inv.date);
+                const formattedAmount = formatNumber(inv.amount);
+
+                let receiptHtml = inv.receipt 
+                    ? `<img src="${inv.receipt}" class="w-10 h-10 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${inv.receipt}')" title="ຄລິກເພື່ອເບິ່ງຮູບໃຫຍ່">`
+                    : `<span class="text-gray-400 text-xs">ບໍ່ມີຫຼັກຖານ</span>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-3 border text-center">${index + 1}</td>
+                    <td class="p-3 border">${formattedDate}</td>
+                    <td class="p-3 border">${inv.investorName}</td>
+                    <td class="p-3 border">${formattedAmount}</td>
+                    <td class="p-3 border">${inv.method}</td>
+                    <td class="p-3 border text-center">${inv.round}</td>
+                    <td class="p-3 border text-center">${receiptHtml}</td>
+                    <td class="p-3 border">${noteText}</td>
+                    <td class="p-3 border text-center">
+                        <input type="checkbox" class="invest-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function toggleSelectAllInvest(masterCheckbox) {
+            const checkboxes = document.querySelectorAll('.invest-checkbox');
+            checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+        }
+
+        function deleteSelectedInvestments() {
+            if (currentUser.role !== 'ADMIN') {
+                showCustomAlert("ທ່ານບໍ່ມີສິດໃນການລຶບຂໍ້ມູນ!");
+                return;
+            }
+            const checkboxes = document.querySelectorAll('.invest-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showCustomAlert("ກະລຸນາເລືອກລາຍການທີ່ຕ້ອງການລຶບກ່ອນ!");
+                return;
+            }
+            showCustomConfirm(`ທ່ານຕ້ອງການລຶບຂໍ້ມູນທີ່ເລືອກ ${checkboxes.length} ລາຍການແທ້ບໍ?`, () => {
+                const idsToDelete = Array.from(checkboxes).map(cb => Number(cb.getAttribute('data-id')));
+                investmentsData = investmentsData.filter(inv => !idsToDelete.includes(inv.id));
+                renderInvestments();
+                showCustomAlert("ລຶບຂໍ້ມູນສຳເລັດ!");
+            });
+        }
+
+        // Functions ສຳລັບ ລາຍຈ່າຍ (TAB 4)
+        function openExpenseModal() {
+            if (!selectedProjectId) {
+                showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນເພີ່ມລາຍຈ່າຍ!", "ແຈ້ງເຕືອນ");
+                return;
+            }
+            document.getElementById('expenseModal').classList.remove('hidden');
+        }
+
+        function closeExpenseModal() {
+            document.getElementById('expenseModal').classList.add('hidden');
+            document.getElementById('expenseForm').reset();
+        }
+
+        document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const rawAmount = document.getElementById('expenseAmount').value.replace(/,/g, '');
+            const rawFee = document.getElementById('expenseFee').value.replace(/,/g, '') || '0';
+            const fileInput1 = document.getElementById('expenseReceipt1');
+            const fileInput2 = document.getElementById('expenseReceipt2');
+
+            let receipt1Url = '';
+            let receipt2Url = '';
+
+            showCustomAlert("ກຳລັງອັບໂຫຼດຫຼັກຖານລາຍຈ່າຍ, ກະລຸນາຖ້າจักครู่...", "ກຳລັງດຳເນີນການ");
+
+            if (fileInput1.files && fileInput1.files[0]) {
+                receipt1Url = await uploadToCloudinary(fileInput1.files[0]);
+            }
+            if (fileInput2.files && fileInput2.files[0]) {
+                receipt2Url = await uploadToCloudinary(fileInput2.files[0]);
+            }
+
+            closeCustomModal();
+
+            const newExpense = {
+                id: Date.now(),
+                projectId: selectedProjectId,
+                date: document.getElementById('expenseDate').value,
+                desc: document.getElementById('expenseDesc').value,
+                amount: rawAmount,
+                fee: rawFee,
+                receipt1: receipt1Url, // URL ບິນເບື້ອງ
+                receipt2: receipt2Url, // URL ບິນໂອນ
+                note: document.getElementById('expenseNote').value || '-'
+            };
+
+            expensesData.push(newExpense);
+            renderExpenses();
+            closeExpenseModal();
+            showCustomAlert("ເພີ່ມລາຍຈ່າຍສຳເລັດ!");
+        });
+
+            const processFiles = () => {
+                if (fileInput1.files && fileInput1.files[0]) {
+                    const reader1 = new FileReader();
+                    reader1.onload = function(e1) {
+                        receipt1Data = e1.target.result;
+                        proceedFile2();
+                    };
+                    reader1.readAsDataURL(fileInput1.files[0]);
+                } else {
+                    proceedFile2();
+                }
+            };
+
+            const proceedFile2 = () => {
+                if (fileInput2.files && fileInput2.files[0]) {
+                    const reader2 = new FileReader();
+                    reader2.onload = function(e2) {
+                        receipt2Data = e2.target.result;
+                        saveExpenseRecord();
+                    };
+                    reader2.readAsDataURL(fileInput2.files[0]);
+                } else {
+                    saveExpenseRecord();
+                }
+            };
+
+            processFiles();
+        });
+
+        function renderExpenses() {
+            const tbody = document.getElementById('expenseTableBody');
+            tbody.innerHTML = "";
+
+            let filteredExpenses = selectedProjectId 
+                ? expensesData.filter(exp => exp.projectId === selectedProjectId)
+                : [];
+
+            document.getElementById('selectAllExpense').checked = false;
+
+            if (filteredExpenses.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນລາຍຈ່າຍໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
+                return;
+            }
+
+            let totalAmount = 0;
+            let totalFee = 0;
+
+            filteredExpenses.forEach((exp, index) => {
+                totalAmount += Number(exp.amount || 0);
+                totalFee += Number(exp.fee || 0);
+
+                const formattedDate = formatDateToDDMMYYYY(exp.date);
+                const formattedAmount = formatNumber(exp.amount);
+                const formattedFee = formatNumber(exp.fee);
+
+                let receipt1Html = exp.receipt1 
+                    ? `<img src="${exp.receipt1}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt1}')" title="ບິນເບື້ອງ">`
+                    : `-`;
+
+                let receipt2Html = exp.receipt2 
+                    ? `<img src="${exp.receipt2}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt2}')" title="ບິນໂອນ">`
+                    : `-`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-3 border text-center">${index + 1}</td>
+                    <td class="p-3 border">${formattedDate}</td>
+                    <td class="p-3 border">${exp.desc}</td>
+                    <td class="p-3 border">${formattedAmount}</td>
+                    <td class="p-3 border">${formattedFee}</td>
+                    <td class="p-3 border text-center">${receipt1Html}</td>
+                    <td class="p-3 border text-center">${receipt2Html}</td>
+                    <td class="p-3 border">${exp.note}</td>
+                    <td class="p-3 border text-center">
+                        <input type="checkbox" class="expense-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${exp.id}">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // ແຖວລວມລາຍຈ່າຍທັງໝົດຢູ່ລຸ່ມສຸດຂອງຕາຕະລາງ
+            const totalTr = document.createElement('tr');
+            totalTr.className = "bg-gray-50 font-bold text-gray-800";
+            totalTr.innerHTML = `
+                <td colspan="3" class="p-3 border text-right">ລວມລາຍຈ່າຍທັງໝົດ</td>
+                <td class="p-3 border text-blue-600">${formatNumber(totalAmount)}</td>
+                <td class="p-3 border text-blue-600">${formatNumber(totalFee)}</td>
+                <td colspan="4" class="p-3 border"></td>
+            `;
+            tbody.appendChild(totalTr);
+        }
+
+        function toggleSelectAllExpense(masterCheckbox) {
+            const checkboxes = document.querySelectorAll('.expense-checkbox');
+            checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+        }
+
+        function deleteSelectedExpenses() {
+            if (currentUser.role !== 'ADMIN') {
+                showCustomAlert("ທ່ານບໍ່ມີສິດໃນການລຶບຂໍ້ມູນ!");
+                return;
+            }
+            const checkboxes = document.querySelectorAll('.expense-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showCustomAlert("ກະລຸນາເລືອກລາຍການທີ່ຕ້ອງການລຶບກ່ອນ!");
+                return;
+            }
+            showCustomConfirm(`ທ່ານຕ້ອງການລຶບຂໍ້ມູນທີ່ເລືອກ ${checkboxes.length} ລາຍການແທ້ບໍ?`, () => {
+                const idsToDelete = Array.from(checkboxes).map(cb => Number(cb.getAttribute('data-id')));
+                expensesData = expensesData.filter(exp => !idsToDelete.includes(exp.id));
+                renderExpenses();
+                showCustomAlert("ລຶບຂໍ້ມູນສຳເລັດ!");
+            });
+        }
+
+
+        // ອັບເດດຊື່ໂຄງການໃນໜ້າລາຍງານ
+        function updateReportActiveProject() {
+            const proj = projectsData.find(p => p.id === selectedProjectId);
+            const projName = proj ? proj.name : 'ຍັງບໍ່ໄດ້ເລືອກ';
+            document.getElementById('currentActiveProjectReport').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
+        }
+
+// ຈັດການການປ່ຽນແປງປະເພດລາຍງານ
+        function handleReportTypeChange() {
+            const type = document.getElementById('reportType').value;
+            const container = document.getElementById('subReportFilterContainer');
+            
+            if (type === 'monthly') {
+                container.innerHTML = `
+                    <label class="block text-gray-700 font-medium mb-1">ເລືອກເດືອນ</label>
+                    <select id="reportMonth" onchange="generateReport()" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                        <option value="01">ມັງກອນ (ເດືອນ 1)</option>
+                        <option value="02">ກຸມພາ (ເດືອນ 2)</option>
+                        <option value="03">ມີນາ (ເດືອນ 3)</option>
+                        <option value="04">ເມສາ (ເດືອນ 4)</option>
+                        <option value="05">ພຶດສະພາ (ເດືອນ 5)</option>
+                        <option value="06" selected>ມິຖຸນາ (ເດືອນ 6)</option>
+                        <option value="07">ກໍລະກົດ (ເດືອນ 7)</option>
+                        <option value="08">ສິງຫາ (ເດືອນ 8)</option>
+                        <option value="09">ກັນຍາ (ເດືອນ 9)</option>
+                        <option value="10">ຕຸລາ (ເດືອນ 10)</option>
+                        <option value="11">ພະຈິກ (ເດືອນ 11)</option>
+                        <option value="12">ທັນວາ (ເດືອນ 12)</option>
+                    </select>
+                `;
+            } else if (type === 'period') {
+                container.innerHTML = `
+                    <label class="block text-gray-700 font-medium mb-1">ເລືອກຊ່ວງໄລຍະເວລາ</label>
+                    <select id="reportPeriodInput" onchange="generateReport()" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                        <option value="3">ປະຈຳ 3 ເດືອນ</option>
+                        <option value="6">ປະຈຳ 6 ເດືອນ</option>
+                        <option value="9" selected>ປະຈຳ 9 ເດືອນ</option>
+                        <option value="12">ປະຈຳ 12 ເດືອນ (1 ປີ)</option>
+                    </select>
+                `;
+            } else if (type === 'quarter') {
+                container.innerHTML = `
+                    <label class="block text-gray-700 font-medium mb-1">ເລືອກໄຕມາດ</label>
+                    <select id="reportQuarterInput" onchange="generateReport()" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                        <option value="1">ໄຕມາດ 1 (ເດືອນ 1-2-3)</option>
+                        <option value="2" selected>ໄຕມາດ 2 (ເດືອນ 4-5-6)</option>
+                        <option value="3">ໄຕມາດ 3 (ເດືອນ 7-8-9)</option>
+                        <option value="4">ໄຕມາດ 4 (ເດືອນ 10-11-12)</option>
+                    </select>
+                `;
+            }
+            
+            // ອັບເດດລາຍງານຖ້າມີການເລືອກໂຄງການໄວ້ແລ້ວ
+            if (selectedProjectId) {
+                generateReport();
+            }
+        }
+
+        // ເອີ້ນໃຊ້ງານເບື້ອງຕົ້ນເມື່ອໂຫຼດໜ້າຈໍ
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(() => {
+                handleReportTypeChange();
+            }, 100);
+        });
+
+        // ຟັງຊັນປະມວນຜົນ ແລະ ສະແດງລາຍງານ
+        function generateReport() {
+            if (!selectedProjectId) {
+                showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນເບິ່ງລາຍງານ!", "ແຈ້ງເຕືອນ");
+                return;
+            }
+
+            const selectedYear = document.getElementById('reportYear').value;
+            const type = document.getElementById('reportType').value;
+            
+            let filteredInvestments = investmentsData.filter(inv => inv.projectId === selectedProjectId);
+            let filteredExpenses = expensesData.filter(exp => exp.projectId === selectedProjectId);
+
+            let periodLabel = "";
+
+            // ກັ່ນຕອງຕາມເງື່ອນໄຂເວລາ
+            if (type === 'monthly') {
+                const m = document.getElementById('reportMonth').value;
+                periodLabel = `ປະຈຳເດືອນ ${m}/${selectedYear}`;
+                filteredInvestments = filteredInvestments.filter(i => i.date && i.date.startsWith(`${selectedYear}-${m}`));
+                filteredExpenses = filteredExpenses.filter(e => e.date && e.date.startsWith(`${selectedYear}-${m}`));
+            } else if (type === 'quarter') {
+                const q = document.getElementById('reportQuarterInput').value;
+                let months = [];
+                if (q === '1') months = ['01', '02', '03'];
+                else if (q === '2') months = ['04', '05', '06'];
+                else if (q === '3') months = ['07', '08', '09'];
+                else if (q === '4') months = ['10', '11', '12'];
+
+                periodLabel = `ປະຈຳໄຕມາດ ${q} (${selectedYear})`;
+                filteredInvestments = filteredInvestments.filter(i => {
+                    if (!i.date || !i.date.startsWith(selectedYear)) return false;
+                    const mPart = i.date.split('-')[1];
+                    return months.includes(mPart);
+                });
+                filteredExpenses = filteredExpenses.filter(e => {
+                    if (!e.date || !e.date.startsWith(selectedYear)) return false;
+                    const mPart = e.date.split('-')[1];
+                    return months.includes(mPart);
+                });
+            } else if (type === 'period') {
+                const monthsCount = parseInt(document.getElementById('reportPeriodInput').value);
+                periodLabel = `ປະຈຳ ${monthsCount} ເດືອນ (${selectedYear})`;
+                
+                filteredInvestments = filteredInvestments.filter(i => {
+                    if (!i.date || !i.date.startsWith(selectedYear)) return false;
+                    const m = parseInt(i.date.split('-')[1]);
+                    return m <= monthsCount;
+                });
+                filteredExpenses = filteredExpenses.filter(e => {
+                    if (!e.date || !e.date.startsWith(selectedYear)) return false;
+                    const m = parseInt(e.date.split('-')[1]);
+                    return m <= monthsCount;
+                });
+            }
+
+            // ຄຳນວນຍອດລວມ
+            let totalInvAmount = filteredInvestments.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+            let totalExpAmount = filteredExpenses.reduce((sum, item) => sum + Number(item.amount || 0) + Number(item.fee || 0), 0);
+            let balance = totalInvAmount - totalExpAmount;
+
+            // ປ່ຽນຫົວຂໍ້ ແລະ ສະແດງຜົນລົງຕາຕະລາງ
+            document.getElementById('reportDetailTitle').textContent = `ລາຍງານການເຄື່ອນໄຫວ (${periodLabel})`;
+
+            const tbody = document.getElementById('reportTableBody');
+            tbody.innerHTML = `
+                <tr class="bg-gray-50 font-semibold">
+                    <td colspan="4" class="p-3 border text-gray-700">ລາຍການເຄື່ອນໄຫວ ${periodLabel}</td>
+                </tr>
+                <tr>
+                    <td class="p-3 border text-center">1</td>
+                    <td class="p-3 border">ລາຍຮັບທັງໝົດ (ເງິນລົງທຶນ)</td>
+                    <td class="p-3 border text-right font-semibold text-green-600">${formatNumber(totalInvAmount)}</td>
+                    <td class="p-3 border text-right">-</td>
+                </tr>
+                <tr>
+                    <td class="p-3 border text-center">2</td>
+                    <td class="p-3 border">ລາຍຈ່າຍທັງໝົດ (ລວມຄ່າທຳນຽມ)</td>
+                    <td class="p-3 border text-right">-</td>
+                    <td class="p-3 border text-right font-semibold text-red-600">${formatNumber(totalExpAmount)}</td>
+                </tr>
+                <tr class="bg-gray-100 font-bold">
+                    <td colspan="2" class="p-3 border text-right">ລວມທັງໝົດ</td>
+                    <td class="p-3 border text-right text-green-600">${formatNumber(totalInvAmount)}</td>
+                    <td class="p-3 border text-right text-red-600">${formatNumber(totalExpAmount)}</td>
+                </tr>
+                <tr class="bg-blue-50 font-bold text-blue-800">
+                    <td colspan="3" class="p-3 border text-right">ຍອດເຫຼືອ (ລາຍຮັບ - ລາຍຈ່າຍ)</td>
+                    <td class="p-3 border text-right text-xl">${formatNumber(balance)} ₭</td>
+                </tr>
+            `;
+        }
+
+        const firebaseConfig = {
+        apiKey: "AIzaSyCcaB-1T-nwn07ViLUNcjTBh_KYYGapH2Q",
+        authDomain: "welfare-fund-system.firebaseapp.com",
+        projectId: "welfare-fund-system",
+        storageBucket: "welfare-fund-system.firebasestorage.app",
+        messagingSenderId: "1021514415892",
+        appId: "1:1021514415892:web:99074c852f522d2e544c01",
+        measurementId: "G-7BQ17KFV49"
+        };
+
+    </script>
+</body>
+=======
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ລະບົບຈັດການການລົງທຶນ ແລະ ຫຼັກຖານການຊຳລະເງິນ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Lao:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Phetsarath OT', 'Times New Roman', Times, serif, sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="flex items-center justify-center min-h-screen bg-blue-50">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+            <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">ເຂົ້າສູ່ລະບົບ</h2>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ຊື່ຜູ້ໃຊ້ (Username)</label>
+                    <input type="text" id="usernameInput" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ປ້ອນ Username">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ລະຫັດຜ່ານ (Password)</label>
+                    <input type="password" id="passwordInput" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ປ້ອນ Password">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-lg font-semibold hover:bg-blue-700 transition">ເຂົ້າສູ່ລະບົບ</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="appScreen" class="hidden">
+        <!-- Navigation Menu -->
+        <nav class="bg-white shadow-md">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex space-x-8 font-semibold text-gray-700">
+                    <button onclick="switchTab('projects')" class="hover:text-blue-600 focus:text-blue-600">ໂຄງການທັງໝົດ</button>
+                    <button onclick="switchTab('investors')" class="hover:text-blue-600 focus:text-blue-600">ນັກລົງທຶນ</button>
+                    <button onclick="switchTab('investments')" class="hover:text-blue-600 focus:text-blue-600">ຈ/ນ ເງິນລົງທຶນ</button>
+                    <button onclick="switchTab('expenses')" class="hover:text-blue-600 focus:text-blue-600">ລາຍຈ່າຍ</button>
+                    <button onclick="switchTab('reports')" class="hover:text-blue-600 focus:text-blue-600">ລາຍງານ</button>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userInfo" class="text-sm font-medium text-gray-600"></span>
+                    <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">ອອກຈາກລະບົບ</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Content Area -->
+        <div class="max-w-7xl mx-auto p-6">
+            
+            <!-- TAB 1: ໂຄງການທັງໝົດ -->
+            <div id="tab-projects" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">ລາຍຊື່ໂຄງການທັງໝົດ</h2>
+                    <button id="addProjectBtn" onclick="openProjectModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມໂຄງການ</button>
+                </div>
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <ul id="projectList" class="divide-y divide-gray-200">
+                        <!-- ໂຄງການຈະຖືກໂຫຼດຜ່ານ JS -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- TAB 2: ນັກລົງທຶນ -->
+            <div id="tab-investors" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">ຂໍ້ມູນນັກລົງທຶນ (ນິຕິບຸກຄົນ)</h2>
+                        <p id="currentActiveProjectInv" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button id="deleteInvestorBtn" onclick="deleteSelectedInvestors()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
+                        <button id="addInvestorBtn" onclick="openInvestorModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມນັກລົງທຶນ</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700 text-sm">
+                                <th class="p-3 border text-center">ລ/ດ</th>
+                                <th class="p-3 border">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
+                                <th class="p-3 border">ບ້ານ</th>
+                                <th class="p-3 border">ເມືອງ</th>
+                                <th class="p-3 border">ແຂວງ</th>
+                                <th class="p-3 border">ເບີໂທລະສັບ</th>
+                                <th class="p-3 border">ໝາຍເຫດ</th>
+                                <th class="p-3 border text-center">
+                                    <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="investorTableBody" class="text-sm text-gray-700">
+                            <!-- ຂໍ້ມູນຈະຖືກໂຫຼດດ້ວຍ Script -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 3: ຈ/ນ ເງິນລົງທຶນ -->
+            <div id="tab-investments" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">ຈຳນວນເງິນລົງທຶນ ແລະ ຫຼັກຖານການຊຳລະ</h2>
+                        <p id="currentActiveProjectInvest" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button id="deleteInvestmentBtn" onclick="deleteSelectedInvestments()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
+                        <button id="addInvestmentBtn" onclick="openInvestmentModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍການລົງທຶນ</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700 text-sm">
+                                <th class="p-3 border text-center">ລ/ດ</th>
+                                <th class="p-3 border">ວັນ/ເດືອນ/ປີ</th>
+                                <th class="p-3 border">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
+                                <th class="p-3 border">ຈ/ນ ເງິນລົງທຶນ</th>
+                                <th class="p-3 border">ໂອນ/ສົດ</th>
+                                <th class="p-3 border text-center">ລົງທຶນຄັ້ງທີ່</th>
+                                <th class="p-3 border text-center">ຫຼັກຖານ</th>
+                                <th class="p-3 border">ໝາຍເຫດ</th>
+                                <th class="p-3 border text-center">
+                                    <input type="checkbox" id="selectAllInvest" onclick="toggleSelectAllInvest(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="investmentTableBody" class="text-sm text-gray-700">
+                            <!-- ຂໍ້ມູນຈະຖືກໂຫຼດດ້ວຍ Script -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 4: ລາຍຈ່າຍ -->
+            <div id="tab-expenses" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">ບັນທຶກລາຍຈ່າຍໂຄງການ</h2>
+                        <p id="currentActiveProjectExpense" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button id="deleteExpenseBtn" onclick="deleteSelectedExpenses()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
+                        <button id="addExpenseBtn" onclick="openExpenseModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍຈ່າຍ</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700 text-sm">
+                                <th rowspan="2" class="p-3 border text-center align-middle">ລ/ດ</th>
+                                <th rowspan="2" class="p-3 border align-middle">ວັນ/ເດືອນ/ປີ</th>
+                                <th rowspan="2" class="p-3 border align-middle">ເນື້ອໃນ (ລາຍຈ່າຍ)</th>
+                                <th rowspan="2" class="p-3 border align-middle">ຈ/ນ ເງິນ (ຈ່າຍ)</th>
+                                <th rowspan="2" class="p-3 border align-middle">ຄ່າທຳນຽມ</th>
+                                <th colspan="2" class="p-2 border text-center">ຫຼັກຖານ</th>
+                                <th rowspan="2" class="p-3 border align-middle">ໝາຍເຫດ</th>
+                                <th rowspan="2" class="p-3 border text-center align-middle">
+                                    <input type="checkbox" id="selectAllExpense" onclick="toggleSelectAllExpense(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                                </th>
+                            </tr>
+                            <tr class="bg-gray-100 text-gray-700 text-xs">
+                                <th class="p-2 border text-center">ບິນເບື້ອງ</th>
+                                <th class="p-2 border text-center">ບິນໂອນ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenseTableBody" class="text-sm text-gray-700">
+                            <!-- ຂໍ້ມູນລາຍຈ່າຍຈະຖືກໂຫຼດຜ່ານ JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+    <!-- TAB 5: ລາຍງານ -->
+    <div id="tab-reports" class="tab-content hidden">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">ລາຍງານສະຫຼຸບ</h2>
+                <p id="currentActiveProjectReport" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+            </div>
+        </div>
+
+        <!-- ຕົວກັ່ນຕອງລາຍງານ (ປັບເປັນ 3 ຖັນ ແລະ ເອົາປຸ່ມສີຟ້າອອກ) -->
+        <div class="bg-white p-6 rounded-lg shadow mb-6 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <div>
+                <label class="block text-gray-700 font-medium mb-1">ເລືອກປີ</label>
+                <select id="reportYear" onchange="generateReport()" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                    <option value="2026">ປີ 2026</option>
+                    <option value="2025">ປີ 2025</option>
+                    <option value="2024">ປີ 2024</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-700 font-medium mb-1">ເລືອກຮູບແບບລາຍງານ</label>
+                <select id="reportType" onchange="handleReportTypeChange()" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                    <option value="monthly">1. ລາຍງານປະຈຳເດືອນ</option>
+                    <option value="period">2. ລາຍງານປະຈຳ 3, 6, 9, 12 ເດືອນ</option>
+                    <option value="quarter">3. ລາຍງານປະຈຳໄຕມາດ</option>
+                </select>
+            </div>
+
+            <!-- ຕົວເລືອກຍ່ອຍ ຕາມປະເພດລາຍງານ -->
+            <div id="subReportFilterContainer">
+                <!-- ຈະຖືກປ່ຽນດ້ວຍ JavaScript ຕາມ reportType -->
+            </div>
+        </div>
+
+        <!-- ຕາຕະລາງລາຍລະອຽດ -->
+        <div class="bg-white rounded-lg shadow overflow-hidden p-6">
+            <h3 id="reportDetailTitle" class="text-lg font-bold text-gray-800 mb-4">ລາຍງານການເຄື່ອນໄຫວ</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-200 text-gray-700 text-sm">
+                            <th class="p-3 border text-center w-16">ລ/ດ</th>
+                            <th class="p-3 border">ເນື້ອໃນລາຍການ</th>
+                            <th class="p-3 border text-right">ລວມ (ລາຍຮັບ / ລົງທຶນ)</th>
+                            <th class="p-3 border text-right">ລວມ (ລາຍຈ່າຍ)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody" class="text-sm text-gray-700">
+                        <tr>
+                            <td colspan="4" class="p-6 text-center text-gray-500">ກະລຸນາເລືອກໂຄງການເພື່ອສະແດງລາຍງານ</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal ເພີ່ມຈຳນວນເງິນລົງທຶນ -->
+    <div id="investmentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold text-blue-600 mb-4">ເພີ່ມລາຍການລົງທຶນໃໝ່</h3>
+            <form id="investmentForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ວັນ/ເດືອນ/ປີ</label>
+                    <input type="date" id="investDate" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</label>
+                    <select id="investorSelect" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                        <!-- ດຶງມາຈາກລາຍຊື່ນັກລົງທຶນໃນໂຄງການນັ້ນໆ -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ຈຳນວນເງິນລົງທຶນ</label>
+                    <input type="text" id="investAmount" required oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ຕົວຢ່າງ: 1,000,000">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ປະເພດການຊຳລະ</label>
+                    <select id="investMethod" onchange="toggleReceiverField()" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                        <option value="ໂອນ">ໂອນ</option>
+                        <option value="ສົດ">ສົດ</option>
+                    </select>
+                </div>
+                <div id="receiverContainer" class="hidden">
+                    <label class="block text-gray-700 font-medium mb-1">ຜູ້ຮັບເງິນສົດ</label>
+                    <input type="text" id="investReceiver" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ປ້ອນຊື່ຜູ້ຮັບເງິນສົດ">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ລົງທຶນຄັ້ງທີ່</label>
+                    <input type="number" id="investRound" required min="1" value="1" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ຫຼັກຖານການໂອນເງິນ (ອັບໂຫຼດຮູບ)</label>
+                    <input type="file" id="investReceipt" accept="image/*" class="w-full border rounded-lg p-2 text-sm bg-white focus:ring focus:ring-blue-300">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ໝາຍເຫດ</label>
+                    <input type="text" id="investNote" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeInvestmentModal()" class="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400">ຍົກເລີກ</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">ບັນທຶກ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal ເພີ່ມລາຍຈ່າຍ -->
+    <div id="expenseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold text-blue-600 mb-4">ເພີ່ມລາຍຈ່າຍໃໝ່</h3>
+            <form id="expenseForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ວັນ/ເດືອນ/ປີ</label>
+                    <input type="date" id="expenseDate" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ເນື້ອໃນ (ລາຍຈ່າຍ)</label>
+                    <input type="text" id="expenseDesc" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ປ້ອນເນື້ອໃນລາຍຈ່າຍ">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ຈຳນວນເງິນ (ຈ່າຍ)</label>
+                    <input type="text" id="expenseAmount" required oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ຕົວຢ່າງ: 500,000">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ຄ່າທຳນຽມ</label>
+                    <input type="text" id="expenseFee" oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="0">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ຫຼັກຖານ: ບິນເບື້ອງ (ອັບໂຫຼດຮູບ)</label>
+                    <input type="file" id="expenseReceipt1" accept="image/*" class="w-full border rounded-lg p-2 text-sm bg-white focus:ring focus:ring-blue-300">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ຫຼັກຖານ: ບິນໂອນ (ອັບໂຫຼດຮູບ)</label>
+                    <input type="file" id="expenseReceipt2" accept="image/*" class="w-full border rounded-lg p-2 text-sm bg-white focus:ring focus:ring-blue-300">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ໝາຍເຫດ</label>
+                    <input type="text" id="expenseNote" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeExpenseModal()" class="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400">ຍົກເລີກ</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">ບັນທຶກ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal ສະແດງຮູບພາບຫຼັກຖານເຕັມຈໍ -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-70 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-4 max-w-2xl w-full text-center relative shadow-2xl">
+            <button onclick="closeImageModal()" class="absolute top-3 right-3 text-gray-500 hover:text-black font-bold text-xl">&times;</button>
+            <h3 class="text-lg font-bold text-blue-600 mb-3">ຫຼັກຖານ</h3>
+            <img id="fullImagePreview" src="" class="max-h-[70vh] mx-auto rounded shadow object-contain">
+        </div>
+    </div>
+
+    <!-- CUSTOM SYSTEM ALERT / CONFIRM MODAL -->
+    <div id="customModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl text-center">
+            <div id="modalIcon" class="mb-4 text-4xl">ℹ️</div>
+            <h3 id="modalTitle" class="text-lg font-bold text-gray-800 mb-2">ແຈ້ງເຕືອນ</h3>
+            <p id="modalMessage" class="text-gray-600 mb-6 text-sm"></p>
+            <div id="modalButtons" class="flex justify-center space-x-3">
+                <button id="modalOkBtn" onclick="closeCustomModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700">ຕົກລົງ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script>
+        const USERS = {
+            "GOLD-ADMIN": { pass: "GA@29962200", role: "ADMIN", name: "Administrator" },
+            "GOLD-XY": { pass: "XY29962200", role: "USER", name: "User ທົ່ວໄປ" }
+        };
+
+        let currentUser = null;
+        
+        let projectsData = [
+            { id: 'p1', name: 'Qz-ຫ້ວຍຫານ' },
+            { id: 'p2', name: 'Qz-ນ້ຳປຸຍ' },
+            { id: 'p3', name: 'Qz-ໂພນແກ້ວ' }
+        ];
+
+        let selectedProjectId = null;
+
+        let investorsData = [
+            { id: 1, projectId: 'p1', name: "Paaj nruag", village: "ບ້ານສີໄຄ", district: "ເມືອງໄຊຍະບູລີ", province: "ແຂວງໄຊຍະບູລີ", phone: "020 22223333", note: "ນັກລົງທຶນຫຼັກ" },
+            { id: 2, projectId: 'p1', name: "Loos VWJ", village: "ບ້ານນາ", district: "ເມືອງພຽງ", province: "ແຂວງໄຊຍະບູລີ", phone: "020 55556666", note: "ຜູ້ຮ່ວມທຶນ" }
+        ];
+
+        let investmentsData = [
+            { id: 1, projectId: 'p1', date: "2026-06-29", investorName: "Txaj fwm", amount: "10000000", method: "ໂອນ", receiver: "", round: 1, receipt: "", note: "-" }
+        ];
+
+        let expensesData = [
+            { id: 1, projectId: 'p1', date: "2026-06-30", desc: "ຊື້ອຸປະກອນກໍ່ສ້າງ", amount: "2000000", fee: "5000", receipt1: "", receipt2: "", note: "-" }
+        ];
+
+        const districtsData = {
+            "ແຂວງໄຊຍະບູລີ": ["ເມືອງໄຊຍະບູລີ", "ເມືອງຄອບ", "ເມືອງຊຽງຮ່ອນ", "ເມືອງພຽງ", "ເມືອງປາກລາຍ", "ເມືອງແກ່ນທ້າວ", "ເມືອງໍ່ເຕັນ", "ເມືອງທົ່ງມີໄຊ", "ເມືອງຊາທອງ", "ເມືອງຮົງສາ", "ເມືອງເງິນ"],
+            "ແຂວງຫຼວງພະບາງ": ["ເມືອງຫຼວງພະບາງ", "ເມືອງຊຽງເງິນ", "ເມືອງນານ", "ເມືອງປາກອູ", "ເມືອງຊື່ນ", "ເມືອງງอย", "ເມືອງປາກແຊງ", "ເມືອງໂຮນ"],
+            "ນະຄອນຫຼວງວຽງຈັນ": ["ເມືອງຈັນທະບູລີ", "ເມືອງສີໂຄດຕະບອງ", "ເມືອງໄຊເສດຖາ", "ເມືອງສີສັດຕະນາກ", "ເມືອງນາຊາຍທອງ", "ເມືອງໄຊທານີ", "ເມືອງຫາດຊາຍຜອງ"]
+        };
+
+        function formatDateToDDMMYYYY(dateString) {
+            if (!dateString) return '';
+            const parts = dateString.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateString;
+        }
+
+        function formatNumber(numStr) {
+            if (!numStr) return '0';
+            const cleanNum = numStr.toString().replace(/[^0-9]/g, '');
+            if (!cleanNum) return '0';
+            return Number(cleanNum).toLocaleString('en-US');
+        }
+
+        function formatCurrencyInput(input) {
+            let val = input.value.replace(/[^0-9]/g, '');
+            if (val) {
+                input.value = Number(val).toLocaleString('en-US');
+            } else {
+                input.value = '';
+            }
+        }
+
+        function showCustomAlert(message, title = "ແຈ້ງເຕືອນ") {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('modalIcon').textContent = "🔔";
+            document.getElementById('modalButtons').innerHTML = `
+                <button onclick="closeCustomModal()" class="bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700">ຕົກລົງ</button>
+            `;
+            document.getElementById('customModal').classList.remove('hidden');
+        }
+
+        function showCustomConfirm(message, onConfirm, title = "ຢືນຢັນການດຳເນີນການ") {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('modalIcon').textContent = "⚠️";
+            document.getElementById('modalButtons').innerHTML = `
+                <button onclick="closeCustomModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">ຍົກເລີກ</button>
+                <button id="confirmActionBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ຕົກລົງ</button>
+            `;
+            document.getElementById('customModal').classList.remove('hidden');
+            
+            document.getElementById('confirmActionBtn').onclick = () => {
+                closeCustomModal();
+                onConfirm();
+            };
+        }
+
+        function closeCustomModal() {
+            document.getElementById('customModal').classList.add('hidden');
+        }
+
+        function openImageViewer(imgSrc) {
+            document.getElementById('fullImagePreview').src = imgSrc;
+            document.getElementById('imageModal').classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.add('hidden');
+        }
+
+        function updateDistricts() {
+            const provinceSelect = document.getElementById('invProvince');
+            const districtSelect = document.getElementById('invDistrict');
+            const selectedProvince = provinceSelect.value;
+            
+            districtSelect.innerHTML = "";
+            if (districtsData[selectedProvince]) {
+                districtsData[selectedProvince].forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d;
+                    opt.textContent = d;
+                    districtSelect.appendChild(opt);
+                });
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const u = document.getElementById('usernameInput').value.trim();
+            const p = document.getElementById('passwordInput').value.trim();
+
+            if (USERS[u] && USERS[u].pass === p) {
+                currentUser = USERS[u];
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.remove('hidden');
+                document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name} (${currentUser.role})`;
+
+                if (currentUser.role === 'ADMIN') {
+                    document.getElementById('addProjectBtn').classList.remove('hidden');
+                    document.getElementById('addInvestorBtn').classList.remove('hidden');
+                    document.getElementById('deleteInvestorBtn').classList.remove('hidden');
+                    document.getElementById('addInvestmentBtn').classList.remove('hidden');
+                    document.getElementById('deleteInvestmentBtn').classList.remove('hidden');
+                    document.getElementById('addExpenseBtn').classList.remove('hidden');
+                    document.getElementById('deleteExpenseBtn').classList.remove('hidden');
+                } else {
+                    document.getElementById('addProjectBtn').classList.add('hidden');
+                    document.getElementById('addInvestorBtn').classList.add('hidden');
+                    document.getElementById('deleteInvestorBtn').classList.add('hidden');
+                    document.getElementById('addInvestmentBtn').classList.add('hidden');
+                    document.getElementById('deleteInvestmentBtn').classList.add('hidden');
+                    document.getElementById('addExpenseBtn').classList.add('hidden');
+                    document.getElementById('deleteExpenseBtn').classList.add('hidden');
+                }
+                renderProjects();
+                renderInvestors();
+                renderInvestments();
+                renderExpenses();
+            } else {
+                showCustomAlert("ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານ ບໍ່ຖືກຕ້ອງ!", "ຜິດພາດ");
+            }
+        });
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('appScreen').classList.add('hidden');
+            document.getElementById('loginForm').reset();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            
+            // ເພີ່ມຄຳສັ່ງນີ້: ຖ້າກົດເຂົ້າມາໜ້າລາຍງານ ໃຫ້ບັງຄັບໂຫຼດກ່ອງເລືອກເດືອນ/ໄຕມາດທັນທີ
+            if (tabName === 'reports') {
+                handleReportTypeChange();
+            }
+        }
+
+// 1. ປັບປຸງຟັງຊັນ renderProjects ເພື່ອສະແດງປຸ່ມ ແກ້ໄຂ ແລະ ລຶບ ສະເພາະ ADMIN
+        function renderProjects() {
+            const ul = document.getElementById('projectList');
+            ul.innerHTML = "";
+            projectsData.forEach(proj => {
+                const li = document.createElement('li');
+                li.className = "p-4 hover:bg-gray-50 flex justify-between items-center border-b last:border-b-0";
+                
+                // ສ່ວນເບື້ອງຊ້າຍ (ປຸ່ມເລືອກ ແລະ ຊື່ໂຄງການ)
+                let leftDiv = `
+                    <div class="flex items-center space-x-3">
+                        <input type="radio" name="selectedProject" value="${proj.id}" ${selectedProjectId === proj.id ? 'checked' : ''} onchange="selectProject('${proj.id}')" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                        <span class="font-medium text-gray-800">${proj.name}</span>
+                    </div>
+                `;
+
+                // ສ່ວນເບື້ອງຂວາ (ປຸ່ມແກ້ໄຂ/ລຶບ ສຳລັບ Admin)
+                let rightDiv = '';
+                if (currentUser && currentUser.role === 'ADMIN') {
+                    rightDiv = `
+                        <div class="flex space-x-2">
+                            <button onclick="editProject('${proj.id}')" class="text-sm bg-yellow-500 text-white px-3 py-1.5 rounded font-semibold hover:bg-yellow-600 transition">ແກ້ໄຂ</button>
+                            <button onclick="deleteProject('${proj.id}')" class="text-sm bg-red-500 text-white px-3 py-1.5 rounded font-semibold hover:bg-red-600 transition">ລຶບ</button>
+                        </div>
+                    `;
+                }
+
+                li.innerHTML = leftDiv + rightDiv;
+                ul.appendChild(li);
+            });
+        }
+
+        // 2. ຟັງຊັນສຳລັບແກ້ໄຂຊື່ໂຄງການ
+        function editProject(projId) {
+            if (currentUser.role !== 'ADMIN') return;
+            const proj = projectsData.find(p => p.id === projId);
+            if (!proj) return;
+            
+            const newName = prompt("ແກ້ໄຂຊື່ໂຄງການ:", proj.name);
+            if (newName && newName.trim() !== "") {
+                proj.name = newName.trim();
+                renderProjects();
+                
+                // ຖ້າໂຄງການທີ່ກຳລັງແກ້ໄຂ ຖືກເລືອກຢູ່ໃຫ້ອັບເດດຊື່ໃນທຸກໜ້າ
+                if (selectedProjectId === projId) {
+                    selectProject(projId); 
+                }
+                showCustomAlert("ແກ້ໄຂຊື່ໂຄງການສຳເລັດ!");
+            }
+        }
+
+        // 3. ຟັງຊັນສຳລັບລຶບໂຄງການ
+        function deleteProject(projId) {
+            if (currentUser.role !== 'ADMIN') return;
+            const proj = projectsData.find(p => p.id === projId);
+            if (!proj) return;
+
+            showCustomConfirm(`ທ່ານຕ້ອງການລຶບໂຄງການ "${proj.name}" ແທ້ບໍ?`, () => {
+                // ລຶບໂຄງການອອກຈາກ Data
+                projectsData = projectsData.filter(p => p.id !== projId);
+                
+                // ຖ້າໂຄງການທີ່ລຶບແມ່ນໂຄງການທີ່ກຳລັງເລືອກຢູ່ ໃຫ້ລ້າງຄ່າອອກ
+                if (selectedProjectId === projId) {
+                    selectedProjectId = null;
+                    document.getElementById('currentActiveProjectInv').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
+                    document.getElementById('currentActiveProjectInvest').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
+                    document.getElementById('currentActiveProjectExpense').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
+                    document.getElementById('currentActiveProjectReport').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
+                    
+                    // ອັບເດດຕາຕະລາງໃຫ້ຫວ່າງເປົ່າ
+                    renderInvestors();
+                    renderInvestments();
+                    renderExpenses();
+                }
+                
+                renderProjects();
+                showCustomAlert("ລຶບໂຄງການສຳເລັດ!");
+            });
+        }
+
+        function selectProject(projId) {
+            selectedProjectId = projId;
+            const proj = projectsData.find(p => p.id === projId);
+            const projName = proj ? proj.name : 'ຍັງບໍ່ໄດ້ເລືອກ';
+            document.getElementById('currentActiveProjectInv').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
+            document.getElementById('currentActiveProjectInvest').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
+            document.getElementById('currentActiveProjectExpense').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
+            
+            // ເພີ່ມບ່ອນນີ້:
+            updateReportActiveProject();
+
+            renderInvestors();
+            renderInvestments();
+            renderExpenses();
+        }
+
+        function openProjectModal() {
+            if (currentUser.role !== 'ADMIN') {
+                showCustomAlert("ທ່ານບໍ່ມີສິດໃນການເພີ່ມ ຫຼື ແກ້ໄຂຂໍ້ມູນ!");
+                return;
+            }
+            const projectName = prompt("ປ້ອນຊື່ໂຄງການໃໝ່ (ຕົວຢ່າງ: Qz-ໂຄງການໃໝ່):");
+            if (projectName) {
+                const newId = 'p_' + Date.now();
+                projectsData.push({ id: newId, name: projectName });
+                renderProjects();
+                showCustomAlert("ເພີ່ມໂຄງການສຳເລັດ!");
+            }
+        }
+
+        function openInvestorModal() {
+            if (!selectedProjectId) {
+                showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນເພີ່ມນັກລົງທຶນ!", "ແຈ້ງເຕືອນ");
+                return;
+            }
+            updateDistricts();
+            document.getElementById('investorModal').classList.remove('hidden');
+        }
+
+        function closeInvestorModal() {
+            document.getElementById('investorModal').classList.add('hidden');
+            document.getElementById('investorForm').reset();
+        }
+
+        document.getElementById('investorForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newInv = {
+                id: Date.now(),
+                projectId: selectedProjectId,
+                name: document.getElementById('invName').value,
+                village: document.getElementById('invVillage').value,
+                district: document.getElementById('invDistrict').value,
+                province: document.getElementById('invProvince').value,
+                phone: document.getElementById('invPhone').value,
+                note: document.getElementById('invNote').value
+            };
+            investorsData.push(newInv);
+            renderInvestors();
+            closeInvestorModal();
+            showCustomAlert("ເພີ່ມນັກລົງທຶນສຳເລັດ!");
+        });
+
+        function renderInvestors() {
+            const tbody = document.getElementById('investorTableBody');
+            tbody.innerHTML = "";
+
+            let filteredInvestors = selectedProjectId 
+                ? investorsData.filter(inv => inv.projectId === selectedProjectId)
+                : [];
+
+            document.getElementById('selectAll').checked = false;
+
+            if (filteredInvestors.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນນັກລົງທຶນໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
+                return;
+            }
+
+            filteredInvestors.forEach((inv, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-3 border text-center">${index + 1}</td>
+                    <td class="p-3 border">${inv.name}</td>
+                    <td class="p-3 border">${inv.village}</td>
+                    <td class="p-3 border">${inv.district}</td>
+                    <td class="p-3 border">${inv.province}</td>
+                    <td class="p-3 border">${inv.phone}</td>
+                    <td class="p-3 border">${inv.note}</td>
+                    <td class="p-3 border text-center">
+                        <input type="checkbox" class="inv-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function toggleSelectAll(masterCheckbox) {
+            const checkboxes = document.querySelectorAll('.inv-checkbox');
+            checkboxes.forEach(cb => cb.checked = masterCheckbox.checked);
+        }
+
+        function deleteSelectedInvestors() {
+            if (currentUser.role !== 'ADMIN') {
+                showCustomAlert("ທ່ານບໍ່ມີສິດໃນການລຶບຂໍ້ມູນ!");
+                return;
+            }
+            const checkboxes = document.querySelectorAll('.inv-checkbox:checked');
+            if (checkboxes.length === 0) {
+                showCustomAlert("ກະລຸນາເລືອກລາຍການທີ່ຕ້ອງການລຶບກ່ອນ!");
+                return;
+            }
+            showCustomConfirm(`ທ່ານຕ້ອງການລຶບຂໍ້ມູນທີ່ເລືອກ ${checkboxes.length} ລາຍການແທ້ບໍ?`, () => {
+                const idsToDelete = Array.from(checkboxes).map(cb => Number(cb.getAttribute('data-id')));
+                investorsData = investorsData.filter(inv => !idsToDelete.includes(inv.id));
+                renderInvestors();
+                showCustomAlert("ລຶບຂໍ້ມູນສຳເລັດ!");
+            });
+        }
+
+        // Functions ສຳລັບ ຈ/ນ ເງິນລົງທຶນ
+        function openInvestmentModal() {
+            if (!selectedProjectId) {
+                showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນເພີ່ມລາຍການລົງທຶນ!", "ແຈ້ງເຕືອນ");
+                return;
+            }
+            const select = document.getElementById('investorSelect');
+            select.innerHTML = "";
+            const matchedInvestors = investorsData.filter(inv => inv.projectId === selectedProjectId);
+            
+            if (matchedInvestors.length === 0) {
+                showCustomAlert("ໂຄງການນີ້ຍັງບໍ່ມີລາຍຊື່ນັກລົງທຶນ, ກະລຸນາເພີ່ມນັກລົງທຶນກ່ອນ!", "ແຈ້ງເຕືອນ");
+                return;
+            }
+
+            matchedInvestors.forEach(inv => {
+                const opt = document.createElement('option');
+                opt.value = inv.name;
+                opt.textContent = inv.name;
+                select.appendChild(opt);
+            });
+
+            document.getElementById('investmentModal').classList.remove('hidden');
+        }
+
+        function closeInvestmentModal() {
+            document.getElementById('investmentModal').classList.add('hidden');
+            document.getElementById('investmentForm').reset();
+            document.getElementById('receiverContainer').classList.add('hidden');
+        }
+
+        function toggleReceiverField() {
+            const method = document.getElementById('investMethod').value;
+            const container = document.getElementById('receiverContainer');
+            if (method === 'ສົດ') {
+                container.classList.remove('hidden');
+                document.getElementById('investReceiver').required = true;
+            } else {
+                container.classList.add('hidden');
+                document.getElementById('investReceiver').required = false;
+            }
+        }
+
         document.getElementById('investmentForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const method = document.getElementById('investMethod').value;
@@ -1242,6 +2463,34 @@
         measurementId: "G-7BQ17KFV49"
         };
 
+        // ຟັງຊັນອັບໂຫຼດຮູບຂຶ້ນ Cloudinary ແລ້ວສົ່ງຄືນເປັນ URL
+        async function uploadToCloudinary(file) {
+            const cloudName = "ໃສ່_Cloud_Name_ຂອງທ່ານບ່ອນນີ້"; // ຕົວຢ່າງ: "dxxxxxx"
+            const uploadPreset = "ໃສ່_Upload_Preset_ຂອງທ່ານບ່ອນນີ້"; // ຕົວຢ່າງ: "investment_uploads"
+
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", uploadPreset);
+
+            try {
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.secure_url) {
+                    return data.secure_url; // ໄດ້ URL ຮູບພາບຈາກ Cloudinary
+                } else {
+                    throw new Error("Failed to upload image to Cloudinary");
+                }
+            } catch (error) {
+                console.error("Upload Error:", error);
+                showCustomAlert("ອັບໂຫຼດຮູບພາບບໍ່ສຳເລັດ, ກະລຸນາລองใหม่อีกຄັ້ງ!", "ຜິດພາດ");
+                return null;
+            }
+        }
+
     </script>
 </body>
+>>>>>>> 6567af8bf054fe1e530dd1cc85a7b3b6c42ee317
 </html>
