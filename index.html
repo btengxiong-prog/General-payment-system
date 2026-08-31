@@ -397,14 +397,26 @@
 
     <!-- Script -->
     <script>
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        // 1. ຕັ້ງຄ່າ Firebase Config (ຕ້ອງຢູ່ເທິງສຸດ)
+        const firebaseConfig = {
+            apiKey: "AIzaSyCcaB-1T-nwn07ViLUNcjTBh_KYYGapH2Q",
+            authDomain: "welfare-fund-system.firebaseapp.com",
+            projectId: "welfare-fund-system",
+            storageBucket: "welfare-fund-system.firebasestorage.app",
+            messagingSenderId: "1021514415892",
+            appId: "1:1021514415892:web:99074c852f522d2e544c01",
+            measurementId: "G-7BQ17KFV49"
+        };
 
+        // 2. ບັນຊີຜູ້ໃຊ້ສຳລັບ Login
         const USERS = {
             "GOLD-ADMIN": { pass: "GA@29962200", role: "ADMIN", name: "Administrator" },
             "GOLD-XY": { pass: "XY29962200", role: "USER", name: "User ທົ່ວໄປ" }
         };
+
+        // 3. ເລີ່ມຕົ້ນເຊື່ອມຕໍ່ Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
         let currentUser = null;
         let projectsData = [
@@ -418,16 +430,26 @@
         let investmentsData = [];
         let expensesData = [];
 
-        // ໂຫຼດຂໍ້ມູນຈາກ Firebase ມາສະແດງທັນທີທີ່ເປີດໜ້າเว็บ
+        // ຟັງຊັນໂຫຼດຂໍ້ມູນຈາກ Firebase Cloud Database
         function loadDataFromFirebase() {
-            // 1. ໂຫຼດນັກລົງທຶນ
             db.collection("investors").onSnapshot((snapshot) => {
                 investorsData = [];
-                snapshot.forEach((doc) => {
-                    investorsData.push({ id: doc.id, ...doc.data() });
-                });
+                snapshot.forEach((doc) => { investorsData.push({ id: doc.id, ...doc.data() }); });
                 renderInvestors();
             });
+
+            db.collection("investments").onSnapshot((snapshot) => {
+                investmentsData = [];
+                snapshot.forEach((doc) => { investmentsData.push({ id: doc.id, ...doc.data() }); });
+                renderInvestments();
+            });
+
+            db.collection("expenses").onSnapshot((snapshot) => {
+                expensesData = [];
+                snapshot.forEach((doc) => { expensesData.push({ id: doc.id, ...doc.data() }); });
+                renderExpenses();
+            });
+        }
 
             // 2. ໂຫຼດເງິນລົງທຶນ
             db.collection("investments").onSnapshot((snapshot) => {
