@@ -886,31 +886,32 @@
             let receipt1Url = '';
             let receipt2Url = '';
 
-            if (fileInput1 && fileInput1.files && fileInput1.files[0]) {
-                const optFile1 = await compressImage(fileInput1.files[0], 1200, 0.7);
-                receipt1Url = await uploadToCloudinary(optFile1);
-            }
-            if (fileInput2 && fileInput2.files && fileInput2.files[0]) {
-                const optFile2 = await compressImage(fileInput2.files[0], 1200, 0.7);
-                receipt2Url = await uploadToCloudinary(optFile2);
-            }
-
-            const newExpense = {
-                projectId: selectedProjectId,
-                date: dateVal,
-                desc: descVal,
-                amount: rawAmount,
-                fee: rawFee,
-                method: methodVal, // ດຶງຄ່າ ສົດ/ໂອນ ຈາກ Dropdown ໄດ້ຢ່າງຖືກຕ້ອງແນ່ນອນ
-                receipt1: receipt1Url || '',
-                receipt2: receipt2Url || '',
-                note: noteVal
-            };
-
             try {
+                if (fileInput1 && fileInput1.files && fileInput1.files[0]) {
+                    const optFile1 = await compressImage(fileInput1.files[0], 1200, 0.7);
+                    receipt1Url = await uploadToCloudinary(optFile1);
+                }
+                if (fileInput2 && fileInput2.files && fileInput2.files[0]) {
+                    const optFile2 = await compressImage(fileInput2.files[0], 1200, 0.7);
+                    receipt2Url = await uploadToCloudinary(optFile2);
+                }
+
+                const newExpense = {
+                    projectId: selectedProjectId,
+                    date: dateVal,
+                    desc: descVal,
+                    amount: rawAmount,
+                    fee: rawFee,
+                    method: methodVal,
+                    receipt1: receipt1Url || '',
+                    receipt2: receipt2Url || '',
+                    note: noteVal
+                };
+
                 await db.collection("expenses").add(newExpense);
                 showCustomAlert("ເພີ່ມລາຍຈ່າຍສຳເລັດ!");
             } catch (error) {
+                console.error("Expense Save Error:", error);
                 showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
             }
         });
