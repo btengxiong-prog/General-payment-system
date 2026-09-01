@@ -330,7 +330,7 @@
         </div>
     </div>
 
-    <!-- Modal ເພີ່ມລາຍຈ່າຍ -->
+<!-- Modal ເພີ່ມລາຍຈ່າຍ -->
     <div id="expenseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 class="text-xl font-bold text-blue-600 mb-4">ເພີ່ມລາຍຈ່າຍໃໝ່</h3>
@@ -351,6 +351,16 @@
                     <label class="block text-gray-700 font-medium mb-1">ຄ່າທຳນຽມ</label>
                     <input type="text" id="expenseFee" oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="0">
                 </div>
+                
+                <!-- ເພີ່ມຊ່ອງເລືອກ ສົດ/ໂອນ ຢູ່ບ່ອນນີ້ -->
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ປະເພດການຊຳລະ</label>
+                    <select id="expenseMethod" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                        <option value="ໂອນ">ໂອນ</option>
+                        <option value="ສົດ">ສົດ</option>
+                    </select>
+                </div>
+
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">ຫຼັກຖານ: ບິນເບື້ອງ (ອັບໂຫຼດຮູບ)</label>
                     <input type="file" id="expenseReceipt1" accept="image/*" class="w-full border rounded-lg p-2 text-sm bg-white focus:ring focus:ring-blue-300">
