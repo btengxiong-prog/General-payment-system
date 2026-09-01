@@ -753,20 +753,15 @@
             const rawAmount = document.getElementById('investAmount').value.replace(/,/g, '');
             const fileInput = document.getElementById('investReceipt');
             
+            // ປິດຟອມທັນທີເພື່ອຄວາມໄວ (User ບໍ່ຕ້ອງຖ້າ)
+            closeInvestmentModal();
+            showCustomAlert("ກຳລັງບັນທຶກຂໍ້ມູນລົງລະບົບ...", "ກຳລັງດຳເນີນການ");
+
             let receiptUrl = '';
             if (fileInput.files && fileInput.files[0]) {
-                showCustomAlert("ກຳລັງບີບອັດ ແລະ ອັບໂຫຼດຫຼັກຖານ, ກະລຸນາລໍຖ້າ...", "ກຳລັງດຳເນີນການ");
-                
-                // ບີບອັດຮູບກ່ອນອັບໂຫຼດ (ກຳນົດຂະໜາດສູງສຸດ 1200px ແລະ ຄຸນນະພາບ 70%)
+                // ບີບອັດ ແລະ ອາັບໂຫຼດຢູ່ເບື້ອງຫຼັງ (Background)
                 const optimizedFile = await compressImage(fileInput.files[0], 1200, 0.7);
                 receiptUrl = await uploadToCloudinary(optimizedFile);
-                closeCustomModal(); 
-                
-                // ຖ້າອັບໂຫຼດບໍ່ຜ່ານ (ໄດ້ຄ່າ null) ໃຫ້ຢຸດການทำงาน
-                if (!receiptUrl) {
-                    showCustomAlert("ອັບໂຫຼດຮູບພາບບໍ່ສຳເລັດ, ບໍ່ສາມາດບັນທຶກຂໍ້ມູນໄດ້", "ຜິດພາດ");
-                    return; 
-                }
             }
 
             const newInvest = {
@@ -777,13 +772,12 @@
                 method: method,
                 receiver: receiver,
                 round: document.getElementById('investRound').value,
-                receipt: receiptUrl,
+                receipt: receiptUrl || '',
                 note: document.getElementById('investNote').value || '-'
             };
 
             try {
                 await db.collection("investments").add(newInvest);
-                closeInvestmentModal();
                 showCustomAlert("ເພີ່ມລາຍການລົງທຶນສຳເລັດ!");
             } catch (error) {
                 showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
@@ -868,13 +862,22 @@
             const fileInput1 = document.getElementById('expenseReceipt1');
             const fileInput2 = document.getElementById('expenseReceipt2');
 
+            // ປິດຟອມທັນທີ
+            closeExpenseModal();
+            showCustomAlert("ກຳລັງບັນທຶກລາຍຈ່າຍ...", "ກຳລັງດຳເນີນການ");
+
             let receipt1Url = '';
             let receipt2Url = '';
 
-            showCustomAlert("ກຳລັງອັບໂຫຼດຫຼັກຖານລາຍຈ່າຍ, ກະລຸນາລໍຖ້າ...", "ກຳລັງດຳເນີນການ");
-            if (fileInput1.files && fileInput1.files[0]) receipt1Url = await uploadToCloudinary(fileInput1.files[0]);
-            if (fileInput2.files && fileInput2.files[0]) receipt2Url = await uploadToCloudinary(fileInput2.files[0]);
-            closeCustomModal();
+            // ອັບໂຫຼດຮູບທັງສອງຢູ່ເບື້ອງຫຼັງ
+            if (fileInput1.files && fileInput1.files[0]) {
+                const optFile1 = await compressImage(fileInput1.files[0], 1200, 0.7);
+                receipt1Url = await uploadToCloudinary(optFile1);
+            }
+            if (fileInput2.files && fileInput2.files[0]) {
+                const optFile2 = await compressImage(fileInput2.files[0], 1200, 0.7);
+                receipt2Url = await uploadToCloudinary(optFile2);
+            }
 
             const newExpense = {
                 projectId: selectedProjectId,
@@ -882,14 +885,13 @@
                 desc: document.getElementById('expenseDesc').value,
                 amount: rawAmount,
                 fee: rawFee,
-                receipt1: receipt1Url,
-                receipt2: receipt2Url,
+                receipt1: receipt1Url || '',
+                receipt2: receipt2Url || '',
                 note: document.getElementById('expenseNote').value || '-'
             };
 
             try {
                 await db.collection("expenses").add(newExpense);
-                closeExpenseModal();
                 showCustomAlert("ເພີ່ມລາຍຈ່າຍສຳເລັດ!");
             } catch (error) {
                 showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
