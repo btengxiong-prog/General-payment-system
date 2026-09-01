@@ -526,12 +526,13 @@
                 if (data.secure_url) {
                     return data.secure_url;
                 } else {
-                    console.error("Cloudinary response error:", data);
-                    throw new Error(data.error?.message || "Cloudinary error");
+                    console.error("Cloudinary error details:", data);
+                    showCustomAlert("Cloudinary ปฏิເສດຮູບ: " + (data.error?.message || "Error"), "ຜິດພາດ");
+                    return null;
                 }
             } catch (error) {
-                console.error("Upload Error:", error);
-                showCustomAlert("ອັບໂຫຼດຮູບພາບບໍ່ສຳເລັດ! (ກວດສອບ Unsigned Preset ໃນ Cloudinary)", "ຜິດພາດ");
+                console.error("Fetch Upload Error:", error);
+                showCustomAlert("ອັບໂຫຼດຮູບພາບບໍ່ສຳເລັດ! (ກວດສອບການເຊື່ອມຕໍ່)", "ຜິດພາດ");
                 return null;
             }
         }
