@@ -290,9 +290,11 @@
                     <input type="date" id="investDate" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
                 </div>
                 <div>
+                <div>
                     <label class="block text-gray-700 font-medium mb-1">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</label>
-                    <select id="investorSelect" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                    <select id="investorSelect" required onchange="updateInvestmentRound()" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
                     </select>
+                </div>
                 </div>
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">ຈຳນວນເງິນລົງທຶນ</label>
@@ -1165,6 +1167,25 @@
                     <td colspan="2" class="p-3 border text-right text-xl">${formatNumber(balanceTotal)} ₭</td>
                 </tr>
             `;
+        }
+
+        function updateInvestmentRound() {
+            if (!selectedProjectId) return;
+            const investorName = document.getElementById('investorSelect').value;
+            
+            // ດຶງຂໍ້ມູນການລົງທຶນເກົ່າທັງໝົດຂອງຄົນນີ້ ໃນໂຄງການນີ້
+            const pastInvestments = investmentsData.filter(inv => 
+                inv.projectId === selectedProjectId && inv.investorName === investorName
+            );
+            
+            // ຊອກຫາລົງທຶນຄັ້ງຫຼ້າສຸດ ແລ້ວບວກ 1
+            let maxRound = 0;
+            if (pastInvestments.length > 0) {
+                maxRound = Math.max(...pastInvestments.map(inv => Number(inv.round) || 0));
+            }
+            
+            // ອັບເດດຄ່າເຂົ້າໄປໃນກ່ອງ "ລົງທຶນຄັ້ງທີ່" ໂອໂຕ້
+            document.getElementById('investRound').value = maxRound + 1;
         }
 
     </script>
