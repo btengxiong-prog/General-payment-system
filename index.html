@@ -663,6 +663,7 @@
                 document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name} (${currentUser.role})`;
 
                 if (currentUser.role === 'ADMIN') {
+                    // ADMIN: ເຫັນທຸກປຸ່ມທຸກຄຳສັ່ງ ແລະ ເຫັນຖັນ Checkbox ປົກກະຕິ
                     document.getElementById('addProjectBtn').classList.remove('hidden');
                     document.getElementById('addInvestorBtn').classList.remove('hidden');
                     document.getElementById('deleteInvestorBtn').classList.remove('hidden');
@@ -670,14 +671,21 @@
                     document.getElementById('deleteInvestmentBtn').classList.remove('hidden');
                     document.getElementById('addExpenseBtn').classList.remove('hidden');
                     document.getElementById('deleteExpenseBtn').classList.remove('hidden');
+                    document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
                 } else {
+                    // USER ທົ່ວໄປ: ເຊື່ອງປຸ່ມເພີ່ມ/ລຶບ ອື່ນໆ
                     document.getElementById('addProjectBtn').classList.add('hidden');
                     document.getElementById('addInvestorBtn').classList.add('hidden');
                     document.getElementById('deleteInvestorBtn').classList.add('hidden');
                     document.getElementById('addInvestmentBtn').classList.add('hidden');
                     document.getElementById('deleteInvestmentBtn').classList.add('hidden');
-                    document.getElementById('addExpenseBtn').classList.add('hidden');
+                    
+                    // ອະນຸຍາດໃຫ້ USER ເຫັນປຸ່ມ "+ ເພີ່ມລາຍຈ່າຍ" ໄດ້ (ແຕ່ເຊື່ອງປຸ່ມລຶບ)
+                    document.getElementById('addExpenseBtn').classList.remove('hidden');
                     document.getElementById('deleteExpenseBtn').classList.add('hidden');
+                    
+                    // ເຊື່ອງຫົວຕາຕະລາງ Checkbox ສຳລັບ USER
+                    document.querySelectorAll('.admin-col-th').forEach(el => el.classList.add('hidden'));
                 }
                 
                 loadDataFromFirebase();
@@ -773,11 +781,11 @@
             const tbody = document.getElementById('investorTableBody');
             tbody.innerHTML = "";
             let filteredInvestors = selectedProjectId ? investorsData.filter(inv => inv.projectId === selectedProjectId) : [];
-            document.getElementById('selectAll').checked = false;
+            const selectAllCb = document.getElementById('selectAll');
+            if (selectAllCb) selectAllCb.checked = false;
 
-            // 1. ກວດສອບສິດແຄ່ເທື່ອດຽວ (ເອົາໄວ້ນອກ Loop)
             const isAdmin = currentUser && currentUser.role === 'ADMIN';
-            const colspan = isAdmin ? 8 : 7; // ຖ້າເປັນແອດມິນໃຫ້ມີ 8 ຖັນ, ຢູເຊີ 7 ຖັນ
+            const colspan = isAdmin ? 8 : 7;
 
             if (filteredInvestors.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນນັກລົງທຶນໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
@@ -785,9 +793,9 @@
             }
 
             filteredInvestors.forEach((inv, index) => {
-                // 2. ສ້າງກ່ອງຕິກຖ້າເປັນ ADMIN
+                // ຖ້າເປັນ USER ຈະບໍ່ມີ <td> ຂອງ checkbox ເລີຍ (ຕັດອອກສົມບູນ)
                 const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="inv-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}"></td>` : '';
-
+                
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
                 tr.innerHTML = `
@@ -798,7 +806,7 @@
                     <td class="p-3 border">${inv.province}</td>
                     <td class="p-3 border">${inv.phone}</td>
                     <td class="p-3 border">${inv.note}</td>
-                    ${checkboxHtml} <!-- 3. ວາງຕົວແປໄວ້ທ້າຍສຸດ -->
+                    ${checkboxHtml}
                 `;
                 tbody.appendChild(tr);
             });
@@ -913,14 +921,15 @@
             const tbody = document.getElementById('investmentTableBody');
             tbody.innerHTML = "";
             let filteredInvestments = selectedProjectId ? investmentsData.filter(inv => inv.projectId === selectedProjectId) : [];
-            
-            // ເພີ່ມການລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່ (ນ້ອຍໄປໃຫຍ່)
             filteredInvestments.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+            const selectAllCb = document.getElementById('selectAllInvest');
+            if (selectAllCb) selectAllCb.checked = false;
 
-            document.getElementById('selectAllInvest').checked = false;
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+            const colspan = isAdmin ? 9 : 8;
 
             if (filteredInvestments.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນລາຍການລົງທຶນໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນລາຍການລົງທຶນໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
                 return;
             }
 
@@ -934,8 +943,6 @@
                 const formattedAmount = formatNumber(inv.amount);
                 let receiptHtml = inv.receipt ? `<img src="${inv.receipt}" class="w-10 h-10 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${inv.receipt}')" title="ເບິ່ງຮູບໃຫຍ່">` : `<span class="text-gray-400 text-xs">ບໍ່ມີຫຼັກຖານ</span>`;
 
-            // ເພີ່ມ 2 ແຖວນີ້ເພື່ອກວດສອບສິດ ADMIN
-                const isAdmin = currentUser && currentUser.role === 'ADMIN';
                 const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="invest-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}"></td>` : '';
 
                 const tr = document.createElement('tr');
@@ -949,7 +956,7 @@
                     <td class="p-3 border text-center">${inv.round}</td>
                     <td class="p-3 border text-center">${receiptHtml}</td>
                     <td class="p-3 border">${noteText}</td>
-                    ${checkboxHtml} <!-- ເອົາຕົວແປມາໃສ່ແທນບ່ອນນີ້ -->
+                    ${checkboxHtml}
                 `;
                 tbody.appendChild(tr);
             });
@@ -1056,14 +1063,16 @@
             const tbody = document.getElementById('expenseTableBody');
             tbody.innerHTML = "";
             let filteredExpenses = selectedProjectId ? expensesData.filter(exp => exp.projectId === selectedProjectId) : [];
-            
-            // ເພີ່ມການລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່ (ນ້ອຍໄປໃຫຍ່)
             filteredExpenses.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+            const selectAllCb = document.getElementById('selectAllExpense');
+            if (selectAllCb) selectAllCb.checked = false;
 
-            document.getElementById('selectAllExpense').checked = false;
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+            const colspan = isAdmin ? 9 : 8;
+            const emptyColspan = isAdmin ? 4 : 3;
 
             if (filteredExpenses.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນລາຍຈ່າຍໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນລາຍຈ່າຍໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
                 return;
             }
 
@@ -1083,33 +1092,32 @@
                 let displayNote = (exp.note && exp.note !== '-') ? exp.note : '';
                 let finalNoteHtml = `<span class="${methodColor} font-bold">[${displayMethod}]</span> ${displayNote}`;
 
-            // ເພີ່ມ 2 ແຖວນີ້ເພື່ອກວດສອບສິດ ADMIN
-                const isAdmin = currentUser && currentUser.role === 'ADMIN';
-                const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="invest-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}"></td>` : '';
+                const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="expense-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${exp.id}"></td>` : '';
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
                 tr.innerHTML = `
                     <td class="p-3 border text-center">${index + 1}</td>
                     <td class="p-3 border">${formattedDate}</td>
-                    <td class="p-3 border">${inv.investorName}</td>
+                    <td class="p-3 border">${exp.desc}</td>
                     <td class="p-3 border">${formattedAmount}</td>
-                    <td class="p-3 border">${inv.method}</td>
-                    <td class="p-3 border text-center">${inv.round}</td>
-                    <td class="p-3 border text-center">${receiptHtml}</td>
-                    <td class="p-3 border">${noteText}</td>
-                    ${checkboxHtml} <!-- ເອົາຕົວແປມາໃສ່ແທນບ່ອນນີ້ -->
+                    <td class="p-3 border">${formattedFee}</td>
+                    <td class="p-3 border text-center">${receipt1Html}</td>
+                    <td class="p-3 border text-center">${receipt2Html}</td>
+                    <td class="p-3 border">${finalNoteHtml}</td>
+                    ${checkboxHtml}
                 `;
                 tbody.appendChild(tr);
             });
 
+            // ແຖວສະຫຼຸບຍອດລວມ
             const totalTr = document.createElement('tr');
             totalTr.className = "bg-gray-50 font-bold text-gray-800";
             totalTr.innerHTML = `
                 <td colspan="3" class="p-3 border text-right">ລວມລາຍຈ່າຍທັງໝົດ</td>
                 <td class="p-3 border text-blue-600">${formatNumber(totalAmount)}</td>
                 <td class="p-3 border text-blue-600">${formatNumber(totalFee)}</td>
-                <td colspan="4" class="p-3 border"></td>
+                <td colspan="${emptyColspan}" class="p-3 border"></td>
             `;
             tbody.appendChild(totalTr);
         }
