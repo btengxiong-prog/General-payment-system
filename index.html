@@ -897,6 +897,7 @@
             document.getElementById('expenseForm').reset();
         }
 
+// ໂຄດຮັບການ Submit ຟອມລາຍຈ່າຍ (ປັບປຸງການສົ່ງໄຟລ໌ໃຫ້ຖືກຕ້ອງສົມບູນ)
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -911,18 +912,24 @@
             const fileInput2 = document.getElementById('expenseReceipt2');
 
             closeExpenseModal();
-            showCustomAlert("ກຳລັງບັນທຶກລາຍຈ່າຍ...", "ກຳລັງດຳເນີນການ");
+            showCustomAlert("ກຳລັງອັບໂຫຼດຮູບ ແລະ ບັນທຶກລາຍຈ່າຍ...", "ກຳລັງດຳເນີນການ");
 
             let receipt1Url = '';
             let receipt2Url = '';
 
-            if (fileInput1 && fileInput1.files && fileInput1.files[0]) {
-                const optFile1 = await compressImage(fileInput1.files[0], 1200, 0.7);
-                receipt1Url = await uploadToCloudinary(optFile1);
-            }
-            if (fileInput2 && fileInput2.files && fileInput2.files[0]) {
-                const optFile2 = await compressImage(fileInput2.files[0], 1200, 0.7);
-                receipt2Url = await uploadToCloudinary(optFile2);
+            try {
+                // ຈັດການບີບອັດ ແລະ ອາັບໂຫຼດ ບິນເຄື່ອງ (Receipt 1)
+                if (fileInput1 && fileInput1.files && fileInput1.files[0]) {
+                    const optFile1 = await compressImage(fileInput1.files[0], 1200, 0.7);
+                    receipt1Url = await uploadToCloudinary(optFile1);
+                }
+                // ຈັດການບີບອັດ ແລະ ອາັບໂຫຼດ ບິນໂອນ (Receipt 2)
+                if (fileInput2 && fileInput2.files && fileInput2.files[0]) {
+                    const optFile2 = await compressImage(fileInput2.files[0], 1200, 0.7);
+                    receipt2Url = await uploadToCloudinary(optFile2);
+                }
+            } catch (err) {
+                console.error("Image processing error:", err);
             }
 
             const newExpense = {
@@ -939,7 +946,7 @@
 
             try {
                 await db.collection("expenses").add(newExpense);
-                showCustomAlert("ເພີ່ມລາຍຈ່າຍສຳເລັດ!");
+                showCustomAlert("ເພີ່ມລາຍຈ່າຍ ແລະ ບັນທຶກບິນສຳເລັດ!");
             } catch (error) {
                 showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
             }
