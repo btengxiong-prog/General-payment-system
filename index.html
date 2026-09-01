@@ -298,7 +298,6 @@
                     <label class="block text-gray-700 font-medium mb-1">ຈຳນວນເງິນລົງທຶນ</label>
                     <input type="text" id="investAmount" required oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ຕົວຢ່າງ: 1,000,000">
                 </div>
-    <!-- ບ່ອນເພີ່ມໃນ Modal ລາຍຈ່າຍ -->
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">ປະເພດການຊຳລະ</label>
                     <select id="investMethod" onchange="toggleReceiverField()" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
@@ -330,7 +329,7 @@
         </div>
     </div>
 
-<!-- Modal ເພີ່ມລາຍຈ່າຍ -->
+    <!-- Modal ເພີ່ມລາຍຈ່າຍ -->
     <div id="expenseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 class="text-xl font-bold text-blue-600 mb-4">ເພີ່ມລາຍຈ່າຍໃໝ່</h3>
@@ -351,8 +350,6 @@
                     <label class="block text-gray-700 font-medium mb-1">ຄ່າທຳນຽມ</label>
                     <input type="text" id="expenseFee" oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="0">
                 </div>
-                
-                <!-- ເພີ່ມຊ່ອງເລືອກ ສົດ/ໂອນ ຢູ່ບ່ອນນີ້ -->
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">ປະເພດການຊຳລະ</label>
                     <select id="expenseMethod" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
@@ -360,7 +357,6 @@
                         <option value="ສົດ">ສົດ</option>
                     </select>
                 </div>
-
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">ຫຼັກຖານ: ບິນເຄື່ອງ (ອັບໂຫຼດຮູບ)</label>
                     <input type="file" id="expenseReceipt1" accept="image/*" class="w-full border rounded-lg p-2 text-sm bg-white focus:ring focus:ring-blue-300">
@@ -410,13 +406,13 @@
     <script>
         // 1. ຕັ້ງຄ່າ Firebase Config (ຕ້ອງຢູ່ເທິງສຸດ)
         const firebaseConfig = {
-        apiKey: "AIzaSyAIdtySgi5IXC0uB0AMb5Gx3_UIAUqIgIQ",
-        authDomain: "general-payment-system.firebaseapp.com",
-        projectId: "general-payment-system",
-        storageBucket: "general-payment-system.firebasestorage.app",
-        messagingSenderId: "533366343829",
-        appId: "1:533366343829:web:8067fded87d9f79d4af39c",
-        measurementId: "G-137YKJBXGV"
+            apiKey: "AIzaSyAIdtySgi5IXC0uB0AMb5Gx3_UIAUqIgIQ",
+            authDomain: "general-payment-system.firebaseapp.com",
+            projectId: "general-payment-system",
+            storageBucket: "general-payment-system.firebasestorage.app",
+            messagingSenderId: "533366343829",
+            appId: "1:533366343829:web:8067fded87d9f79d4af39c",
+            measurementId: "G-137YKJBXGV"
         };
 
         // 2. ບັນຊີຜູ້ໃຊ້ສຳລັບ Login
@@ -441,14 +437,8 @@
         let investmentsData = [];
         let expensesData = [];
 
-// ຟັງຊັນໂຫຼດຂໍ້ມູນຈາກ Firebase Cloud Database (ເພີ່ມການກຳນົດໂຄງການເລີ່ມຕົ້ນ)
+        // ຟັງຊັນໂຫຼດຂໍ້ມູນຈາກ Firebase Cloud Database (ແບບມາດຕະຖານເດີມ ບໍ່ບ໋ອກຂໍ້ມູນ)
         function loadDataFromFirebase() {
-            // ຖ້າຫາກຍັງບໍ່ທันເລືອກໂຄງການ ໃຫ້ກຳນົດເປັນໂຄງການທຳອິດ (p1) ເພື່ອໃຫ້ຂໍ້ມູນສະແດງທັນທີ
-            if (!selectedProjectId) {
-                selectedProjectId = 'p1';
-                selectProject('p1'); // ເອີ້ນໃຊ້ຟັງຊັນເລືອກໂຄງການ ແລະ ຣິນເດີຕາຕະລາງ
-            }
-
             db.collection("investors").onSnapshot((snapshot) => {
                 investorsData = [];
                 snapshot.forEach((doc) => { investorsData.push({ id: doc.id, ...doc.data() }); });
@@ -474,7 +464,7 @@
             "ນະຄອນຫຼວງວຽງຈັນ": ["ເມືອງຈັນທະບູລີ", "ເມືອງສີໂຄດຕະບອງ", "ເມືອງໄຊເສດຖາ", "ເມືອງສີສັດຕະນາກ", "ເມືອງນາຊາຍທອງ", "ເມືອງໄຊທານີ", "ເມືອງຫາດຊາຍຜອງ"]
         };
 
-// 1. ຟັງຊັນອັບໂຫຼດຮູບຂຶ້ນ Cloudinary (ຕາມໂຄງສ້າງຫຼັກເດີມ)
+        // ຟັງຊັນອັບໂຫຼດຮູບຂຶ້ນ Cloudinary (ໃຊ້ Cloudinary ເກັບຮູບຕາມເດີມ)
         async function uploadToCloudinary(file) {
             const cloudName = "eqiroyxu"; 
             const uploadPreset = "investment_preset";
@@ -496,9 +486,59 @@
                 }
             } catch (error) {
                 console.error("Upload Error:", error);
-                showCustomAlert("ອັບໂຫຼດຮູບພາບບໍ່ສຳເລັດ! (ກວດສອບການເຊື່ອມຕໍ່ ຫຼື Unsigned Preset ໃນ Cloudinary)", "ຜິດພາດ");
+                showCustomAlert("ອັບໂຫຼດຮູບພາບບໍ່ສຳເລັດ! (ກວດສອບ Unsigned Preset ໃນ Cloudinary)", "ຜິດພາດ");
                 return null;
             }
+        }
+
+        // ຟັງຊັນບີບອັດຮູບ (ຮັກສາໄວ້ຕາມທີ່ທ່ານຕ້ອງການ)
+        function compressImage(file, maxWidth, quality) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob((blob) => {
+                            resolve(new File([blob], file.name, {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            }));
+                        }, 'image/jpeg', quality);
+                    };
+                    img.onerror = (error) => reject(error);
+                };
+                reader.onerror = (error) => reject(error);
+            });
+        }
+
+        function formatDateToDDMMYYYY(dateString) {
+            if (!dateString) return '';
+            const parts = dateString.split('-');
+            if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            return dateString;
+        }
+
+        function formatNumber(numStr) {
+            if (!numStr) return '0';
+            const cleanNum = numStr.toString().replace(/[^0-9]/g, '');
+            if (!cleanNum) return '0';
+            return Number(cleanNum).toLocaleString('en-US');
         }
 
         function formatCurrencyInput(input) {
@@ -577,7 +617,7 @@
                     document.getElementById('deleteExpenseBtn').classList.add('hidden');
                 }
                 
-                loadDataFromFirebase(); // ເອີ້ນໂຫຼດຂໍ້ມູນຈາກ Cloud Database
+                loadDataFromFirebase();
                 renderProjects();
             } else {
                 showCustomAlert("ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານ ບໍ່ຖືກຕ້ອງ!", "ຜິດພາດ");
@@ -757,13 +797,11 @@
             const rawAmount = document.getElementById('investAmount').value.replace(/,/g, '');
             const fileInput = document.getElementById('investReceipt');
             
-            // ປິດຟອມທັນທີເພື່ອຄວາມໄວ (User ບໍ່ຕ້ອງຖ້າ)
             closeInvestmentModal();
             showCustomAlert("ກຳລັງບັນທຶກຂໍ້ມູນລົງລະບົບ...", "ກຳລັງດຳເນີນການ");
 
             let receiptUrl = '';
             if (fileInput.files && fileInput.files[0]) {
-                // ບີບອັດ ແລະ ອາັບໂຫຼດຢູ່ເບື້ອງຫຼັງ (Background)
                 const optimizedFile = await compressImage(fileInput.files[0], 1200, 0.7);
                 receiptUrl = await uploadToCloudinary(optimizedFile);
             }
@@ -859,7 +897,6 @@
             document.getElementById('expenseForm').reset();
         }
 
-// --- ເລີ່ມຕົ້ນໂຄດບັນທຶກລາຍຈ່າຍ (ສະບັບສົມບູນ) ---
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -894,7 +931,7 @@
                 desc: descVal,
                 amount: rawAmount,
                 fee: rawFee,
-                method: methodVal, // ດຶງຄ່າ ສົດ/ໂອນ ຈາກ Dropdown ໄດ້ຢ່າງຖືກຕ້ອງແນ່ນອນ
+                method: methodVal,
                 receipt1: receipt1Url || '',
                 receipt2: receipt2Url || '',
                 note: noteVal
@@ -930,7 +967,6 @@
                 let receipt1Html = exp.receipt1 ? `<img src="${exp.receipt1}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt1}')" title="ບິນເຄື່ອງ">` : `-`;
                 let receipt2Html = exp.receipt2 ? `<img src="${exp.receipt2}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt2}')" title="ບິນໂອນ">` : `-`;
 
-                // ສະແດງ [ສົດ]/[ໂອນ] ໃນຫ້ອງໝາຍເຫດອັດຕະໂນມັດ
                 let displayMethod = exp.method === 'ສົດ' ? 'ສົດ' : 'ໂອນ';
                 let methodColor = exp.method === 'ສົດ' ? 'text-green-600' : 'text-blue-600';
                 let displayNote = (exp.note && exp.note !== '-') ? exp.note : '';
@@ -1047,7 +1083,6 @@
                 filteredExpenses = filteredExpenses.filter(e => e.date && e.date.startsWith(selectedYear) && parseInt(e.date.split('-')[1]) <= monthsCount);
             }
 
-            // ຄຳນວນແຍກ ສົດ / ໂອນ ໂດຍອ່ານຈາກ method ໂດຍກົງ
             let receiveCash = filteredInvestments.filter(i => i.method === 'ສົດ').reduce((sum, i) => sum + Number(i.amount || 0), 0);
             let receiveTransfer = filteredInvestments.filter(i => i.method !== 'ສົດ').reduce((sum, i) => sum + Number(i.amount || 0), 0);
             
@@ -1068,7 +1103,6 @@
                 <tr><td class="p-3 border text-center">2</td><td class="p-3 border">ລາຍຈ່າຍທັງໝົດ (ລວມຄ່າທຳນຽມ)</td><td class="p-3 border text-right">-</td><td class="p-3 border text-right font-semibold text-red-600">${formatNumber(totalExpAmount)}</td></tr>
                 <tr class="bg-gray-100 font-bold"><td colspan="2" class="p-3 border text-right">ລວມທັງໝົດ</td><td class="p-3 border text-right text-green-600">${formatNumber(totalInvAmount)}</td><td class="p-3 border text-right text-red-600">${formatNumber(totalExpAmount)}</td></tr>
                 
-                <!-- ຕາຕະລາງສະຫຼຸບເພີ່ມເຕີມຕາມທີ່ຕ້ອງການ -->
                 <tr class="bg-blue-50 font-bold text-gray-800"><td colspan="4" class="p-3 border">ສະຫຼຸບຍອດແຍກຕາມປະເພດການຊຳລະ (ສົດ / ໂອນ)</td></tr>
                 <tr><td class="p-3 border text-center">3</td><td class="p-3 border">ຮັບເງິນສົດ</td><td class="p-3 border text-right text-green-600">${formatNumber(receiveCash)}</td><td class="p-3 border text-right">-</td></tr>
                 <tr><td class="p-3 border text-center">4</td><td class="p-3 border">ຮັບເງິນໂອນ</td><td class="p-3 border text-right text-green-600">${formatNumber(receiveTransfer)}</td><td class="p-3 border text-right">-</td></tr>
@@ -1088,44 +1122,6 @@
                 </tr>
             `;
         }
-
-// 2. ຟັງຊັນບີບອັດຮູບ (ຮັກສາໄວ້ຕາມທີ່ທ່ານຕ້ອງການ - ບໍ່ໄດ້ຕັດອອກ)
-        function compressImage(file, maxWidth, quality) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = (event) => {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-
-                        // ຖ້າຮູບໃຫຍ່ເກີນ maxWidth ທີ່ກຳหนด ຈະทำการຫຍໍ້ຂະໜາດລົງມາພໍດີ
-                        if (width > maxWidth) {
-                            height = Math.round((height * maxWidth) / width);
-                            width = maxWidth;
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        canvas.toBlob((blob) => {
-                            resolve(new File([blob], file.name, {
-                                type: 'image/jpeg',
-                                lastModified: Date.now()
-                            }));
-                        }, 'image/jpeg', quality);
-                    };
-                    img.onerror = (error) => reject(error);
-                };
-                reader.onerror = (error) => reject(error);
-            });
-        }
-
     </script>
 </body>
 </html>
