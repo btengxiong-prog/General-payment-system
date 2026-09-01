@@ -858,18 +858,25 @@
 
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // 1. ດຶງຄ່າທັງໝົດອອກມາກ່ອນທີ່ຈະປິດ/ລ້າງຟອມ
+            const dateVal = document.getElementById('expenseDate').value;
+            const descVal = document.getElementById('expenseDesc').value;
+            const noteVal = document.getElementById('expenseNote').value || '-';
             const rawAmount = document.getElementById('expenseAmount').value.replace(/,/g, '');
             const rawFee = document.getElementById('expenseFee').value.replace(/,/g, '') || '0';
-            const method = document.getElementById('expenseMethod').value; // <--- ເພີ່ມການດຶງຄ່າ ສสด/ໂອນ
+            const method = document.getElementById('expenseMethod').value;
             const fileInput1 = document.getElementById('expenseReceipt1');
             const fileInput2 = document.getElementById('expenseReceipt2');
 
+            // 2. ປິດຟອມທັນທີ ເພື່ອຄວາມໄວ
             closeExpenseModal();
             showCustomAlert("ກຳລັງບັນທຶກລາຍຈ່າຍ...", "ກຳລັງດຳເນີນການ");
 
             let receipt1Url = '';
             let receipt2Url = '';
 
+            // 3. ອັບໂຫຼດຮູບຢູ່ເບື້ອງຫຼັງ
             if (fileInput1.files && fileInput1.files[0]) {
                 const optFile1 = await compressImage(fileInput1.files[0], 1200, 0.7);
                 receipt1Url = await uploadToCloudinary(optFile1);
@@ -879,18 +886,20 @@
                 receipt2Url = await uploadToCloudinary(optFile2);
             }
 
+            // 4. ສ້າງ Object ຂໍ້ມູນເພື່ອກຽມບັນທຶກ
             const newExpense = {
                 projectId: selectedProjectId,
-                date: document.getElementById('expenseDate').value,
-                desc: document.getElementById('expenseDesc').value,
+                date: dateVal,         // <--- ໃຊ້ຄ່າທີ່ດຶງມາກ່ອນໜ້ານີ້
+                desc: descVal,         // <--- ໃຊ້ຄ່າທີ່ດຶງມາກ່ອນໜ້ານີ້
                 amount: rawAmount,
                 fee: rawFee,
-                method: method, // <--- ບັນທຶກປະເພດການຈ່າຍ
+                method: method,
                 receipt1: receipt1Url || '',
                 receipt2: receipt2Url || '',
-                note: document.getElementById('expenseNote').value || '-'
+                note: noteVal
             };
 
+            // 5. ບັນທຶກລົງ Firebase
             try {
                 await db.collection("expenses").add(newExpense);
                 showCustomAlert("ເພີ່ມລາຍຈ່າຍສຳເລັດ!");
