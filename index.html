@@ -937,10 +937,9 @@
                 let receipt1Html = exp.receipt1 ? `<img src="${exp.receipt1}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt1}')" title="ບິນເຄື່ອງ">` : `-`;
                 let receipt2Html = exp.receipt2 ? `<img src="${exp.receipt2}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt2}')" title="ບິນໂອນ">` : `-`;
 
-                // ປັບປຸງການອ່ານຄ່າ method ໃຫ້ຖືກຕ້ອງຕາມທີ່ເລືອກ (ສົດ ຫຼື ໂອນ)
-                let currentMethod = (exp.method && exp.method.trim() === 'ສົດ') ? 'ສົດ' : 'ໂອນ';
-                let displayMethod = currentMethod;
-                let methodColor = currentMethod === 'ສົດ' ? 'text-green-600' : 'text-blue-600';
+                // ສະແດງ [ສົດ]/[ໂອນ] ໃນຫ້ອງໝາຍເຫດອັດຕະໂນມັດ
+                let displayMethod = exp.method === 'ສົດ' ? 'ສົດ' : 'ໂອນ';
+                let methodColor = exp.method === 'ສົດ' ? 'text-green-600' : 'text-blue-600';
                 let displayNote = (exp.note && exp.note !== '-') ? exp.note : '';
                 let finalNoteHtml = `<span class="${methodColor} font-bold">[${displayMethod}]</span> ${displayNote}`;
 
@@ -1055,12 +1054,12 @@
                 filteredExpenses = filteredExpenses.filter(e => e.date && e.date.startsWith(selectedYear) && parseInt(e.date.split('-')[1]) <= monthsCount);
             }
 
-            // ຄຳນວນແຍກ ສົດ / ໂອນ ຢ່າງຖືກຕ້ອງຕາມ method ທີ່ບັນທຶກໄວ້ຈິງ
-            let receiveCash = filteredInvestments.filter(i => i.method && i.method.trim() === 'ສົດ').reduce((sum, i) => sum + Number(i.amount || 0), 0);
-            let receiveTransfer = filteredInvestments.filter(i => !i.method || i.method.trim() !== 'ສົດ').reduce((sum, i) => sum + Number(i.amount || 0), 0);
+            // ຄຳນວນແຍກ ສົດ / ໂອນ ໂດຍອ່ານຈາກ method ໂດຍກົງ
+            let receiveCash = filteredInvestments.filter(i => i.method === 'ສົດ').reduce((sum, i) => sum + Number(i.amount || 0), 0);
+            let receiveTransfer = filteredInvestments.filter(i => i.method !== 'ສົດ').reduce((sum, i) => sum + Number(i.amount || 0), 0);
             
-            let expenseCash = filteredExpenses.filter(e => e.method && e.method.trim() === 'ສົດ').reduce((sum, e) => sum + Number(e.amount || 0) + Number(e.fee || 0), 0);
-            let expenseTransfer = filteredExpenses.filter(e => !e.method || e.method.trim() !== 'ສົດ').reduce((sum, e) => sum + Number(e.amount || 0) + Number(e.fee || 0), 0);
+            let expenseCash = filteredExpenses.filter(e => e.method === 'ສົດ').reduce((sum, e) => sum + Number(e.amount || 0) + Number(e.fee || 0), 0);
+            let expenseTransfer = filteredExpenses.filter(e => e.method !== 'ສົດ').reduce((sum, e) => sum + Number(e.amount || 0) + Number(e.fee || 0), 0);
 
             let totalInvAmount = receiveCash + receiveTransfer;
             let totalExpAmount = expenseCash + expenseTransfer;
@@ -1076,6 +1075,7 @@
                 <tr><td class="p-3 border text-center">2</td><td class="p-3 border">ລາຍຈ່າຍທັງໝົດ (ລວມຄ່າທຳນຽມ)</td><td class="p-3 border text-right">-</td><td class="p-3 border text-right font-semibold text-red-600">${formatNumber(totalExpAmount)}</td></tr>
                 <tr class="bg-gray-100 font-bold"><td colspan="2" class="p-3 border text-right">ລວມທັງໝົດ</td><td class="p-3 border text-right text-green-600">${formatNumber(totalInvAmount)}</td><td class="p-3 border text-right text-red-600">${formatNumber(totalExpAmount)}</td></tr>
                 
+                <!-- ຕາຕະລາງສະຫຼຸບເພີ່ມເຕີມຕາມທີ່ຕ້ອງການ -->
                 <tr class="bg-blue-50 font-bold text-gray-800"><td colspan="4" class="p-3 border">ສະຫຼຸບຍອດແຍກຕາມປະເພດການຊຳລະ (ສົດ / ໂອນ)</td></tr>
                 <tr><td class="p-3 border text-center">3</td><td class="p-3 border">ຮັບເງິນສົດ</td><td class="p-3 border text-right text-green-600">${formatNumber(receiveCash)}</td><td class="p-3 border text-right">-</td></tr>
                 <tr><td class="p-3 border text-center">4</td><td class="p-3 border">ຮັບເງິນໂອນ</td><td class="p-3 border text-right text-green-600">${formatNumber(receiveTransfer)}</td><td class="p-3 border text-right">-</td></tr>
