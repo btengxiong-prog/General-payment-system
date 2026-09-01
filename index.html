@@ -184,56 +184,12 @@
                 </div>
             </div>
 
-            <!-- TAB 5: ລາຍງານ -->
+<!-- TAB 5: ລາຍງານ -->
             <div id="tab-reports" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-6">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">ລາຍງານສະຫຼຸບ</h2>
                         <p id="currentActiveProjectReport" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
-                    </div>
-                </div>
-
-<!-- TAB 6: ການລົງທຶນ (ເພີ່ມໃໝ່) -->
-            <div id="tab-invest_new" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ການລົງທຶນ (ສັງລວມ)</h2>
-                        <p id="currentActiveProjectInvestNew" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
-                    </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-lg shadow overflow-x-auto">
-                    <div class="flex justify-between font-bold text-black mb-2 text-lg">
-                        <div>ຕາຕະລາງສັງລວມເງິນລົງທຶນຂອງນັກລົງທຶນ</div>
-                        <div>ປະຈຳງວດ: <span id="investSummaryPeriod" class="font-normal">ລວມທັງໝົດ</span></div>
-                    </div>
-                    <table class="w-full text-left border-collapse border-2 border-black">
-                        <thead>
-                            <tr class="text-black font-bold text-sm">
-                                <th class="p-2 border border-black text-center w-12">ລ/ດ</th>
-                                <th class="p-2 border border-black text-center">ວັນ/ເດືອນ/ປີ (ລົງທຶນ)</th>
-                                <th class="p-2 border border-black text-center">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
-                                <th class="p-2 border border-black text-center">ຈ/ນ ເງິນ (ລົງທຶນ)</th>
-                                <th class="p-2 border border-black text-center">ໝາຍເຫດ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="investSummaryTableBody" class="text-sm text-black">
-                            <!-- ຂໍ້ມູນຈະຖືກໂຫຼດຜ່ານ JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- TAB 7: ເງິນທວນຄືນ (ເພີ່ມໃໝ່) -->
-                <div id="tab-refunds" class="tab-content hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h2 class="text-2xl font-bold text-gray-800">ເງິນທວນຄືນ</h2>
-                            <p id="currentActiveProjectRefund" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-                        ກຳລັງພັດທະນາໜ້າເງິນທວນຄືນ... (ສາມາດເພີ່ມຕາຕະລາງພາຍຫຼັງໄດ້)
                     </div>
                 </div>
 
@@ -279,10 +235,51 @@
                         </table>
                     </div>
                 </div>
-            </div>
+            </div> <!-- ປິດ TAB 5 ບ່ອນນີ້ -->
 
-        </div>
-    </div>
+            <!-- TAB 6: ການລົງທຶນ (ເພີ່ມໃໝ່) -->
+            <div id="tab-invest_new" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">ການລົງທຶນ (ສັງລວມ)</h2>
+                        <p id="currentActiveProjectInvestNew" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow overflow-x-auto">
+                    <div class="flex justify-between font-bold text-black mb-2 text-lg">
+                        <div>ຕາຕະລາງສັງລວມເງິນລົງທຶນຂອງນັກລົງທຶນ</div>
+                        <div>ປະຈຳງວດ: <span id="investSummaryPeriod" class="font-normal">ລວມທັງໝົດ</span></div>
+                    </div>
+                    <table class="w-full text-left border-collapse border-2 border-black">
+                        <thead>
+                            <tr class="text-black font-bold text-sm">
+                                <th class="p-2 border border-black text-center w-12">ລ/ດ</th>
+                                <th class="p-2 border border-black text-center">ວັນ/ເດືອນ/ປີ (ລົງທຶນ)</th>
+                                <th class="p-2 border border-black text-center">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
+                                <th class="p-2 border border-black text-center">ຈ/ນ ເງິນ (ລົງທຶນ)</th>
+                                <th class="p-2 border border-black text-center">ໝາຍເຫດ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="investSummaryTableBody" class="text-sm text-black">
+                            <!-- ຂໍ້ມູນຈະຖືກໂຫຼດຜ່ານ JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div> <!-- ປິດ TAB 6 ບ່ອນນີ້ -->
+
+            <!-- TAB 7: ເງິນທວນຄືນ (ເພີ່ມໃໝ່) -->
+            <div id="tab-refunds" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">ເງິນທວນຄືນ</h2>
+                        <p id="currentActiveProjectRefund" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+                    ກຳລັງພັດທະນາໜ້າເງິນທວນຄືນ... (ສາມາດເພີ່ມຕາຕະລາງພາຍຫຼັງໄດ້)
+                </div>
+            </div> <!-- ປິດ TAB 7 ບ່ອນນີ້ -->
 
     <!-- Modal ເພີ່ມນັກລົງທຶນ -->
     <div id="investorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
@@ -489,7 +486,7 @@
         let investmentsData = [];
         let expensesData = [];
 
-        // ຟັງຊັນໂຫຼດຂໍ້ມູນຈາກ Firebase Cloud Database
+// ຟັງຊັນໂຫຼດຂໍ້ມູນຈາກ Firebase Cloud Database
         function loadDataFromFirebase() {
             db.collection("investors").onSnapshot((snapshot) => {
                 investorsData = [];
@@ -501,6 +498,7 @@
                 investmentsData = [];
                 snapshot.forEach((doc) => { investmentsData.push({ id: doc.id, ...doc.data() }); });
                 renderInvestments();
+                renderInvestSummary(); // <-- ເພີ່ມແຖວນີ້ເຂົ້າໄປ ເພື່ອໃຫ້ຕາຕະລາງ TAB 6 ໂຫຼດຂໍ້ມູນ
             });
 
             db.collection("expenses").onSnapshot((snapshot) => {
@@ -713,11 +711,10 @@
             selectedProjectId = projId;
             const proj = projectsData.find(p => p.id === projId);
             const projName = proj ? proj.name : 'ຍັງບໍ່ໄດ້ເລືອກ';
+            
             document.getElementById('currentActiveProjectInv').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
             document.getElementById('currentActiveProjectInvest').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
             document.getElementById('currentActiveProjectExpense').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
-            
-            // 2 ແຖວທີ່ເພີ່ມໃໝ່
             if(document.getElementById('currentActiveProjectInvestNew')) document.getElementById('currentActiveProjectInvestNew').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
             if(document.getElementById('currentActiveProjectRefund')) document.getElementById('currentActiveProjectRefund').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
             
@@ -725,6 +722,7 @@
             renderInvestors();
             renderInvestments();
             renderExpenses();
+            renderInvestSummary(); // <-- ເພີ່ມແຖວນີ້ເຂົ້າໄປ ເພື່ອໃຫ້ອັບເດດຕາຕະລາງ TAB 6 ເວລາປ່ຽນໂຄງການ
         }
 
         function openInvestorModal() {
