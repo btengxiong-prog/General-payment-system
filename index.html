@@ -247,9 +247,15 @@
                 </div>
 
                 <div class="bg-white p-6 rounded-lg shadow overflow-x-auto">
-                    <div class="flex justify-between font-bold text-black mb-2 text-lg">
+                    <div class="flex justify-between font-bold text-black mb-2 text-lg items-center">
                         <div>ຕາຕະລາງສັງລວມເງິນລົງທຶນຂອງນັກລົງທຶນ</div>
-                        <div>ປະຈຳງວດ: <span id="investSummaryPeriod" class="font-normal">ລວມທັງໝົດ</span></div>
+                        <div class="flex items-center space-x-2 text-sm">
+                            <label>ປະຈຳງວດ:</label>
+                            <!-- ສ້າງ Dropdown ໃຫ້ເລືອກຄັ້ງທີ່ລົງທຶນ -->
+                            <select id="investRoundFilter" onchange="renderInvestSummary()" class="border border-black rounded p-1 font-normal bg-white focus:ring focus:ring-blue-300">
+                                <option value="all">ລວມທັງໝົດ</option>
+                            </select>
+                        </div>
                     </div>
                     <table class="w-full text-left border-collapse border-2 border-black">
                         <thead>
@@ -1239,27 +1245,68 @@
 
         function renderInvestSummary() {
             const tbody = document.getElementById('investSummaryTableBody');
-            if (!tbody) return;
+            const filterSelect = document.getElementById('investRoundFilter');
+            
+            if (!tbody || !filterSelect) return;
             tbody.innerHTML = "";
             
             let filteredInvestments = selectedProjectId ? investmentsData.filter(inv => inv.projectId === selectedProjectId) : [];
-            filteredInvestments.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 
-            if (filteredInvestments.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນການລົງທຶນ' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
+            // 1. ສ້າງຕົວເລືອກ "ລົງທຶນຄັ້ງທີ່" ໃຫ້ Dropdown ອັດຕະໂນມັດ
+            const rounds = [...new Set(filteredInvestments.map(i => Number(i.round || 1)))].sort((a,b) => a - b);
+            const currentSelection = filterSelect.value;
+            
+            filterSelect.innerHTML = `<option value="all">ລວມທັງໝົດ</option>`;
+            rounds.forEach(r => {
+                filterSelect.innerHTML += `<option value="${r}">ຄັ້ງທີ່ ${r}</option>`;
+            });
+            
+            // ຮັກສາຄ່າທີ່ຜູ້ໃຊ້ກຳລັງເລືອກໄວ້
+            filterSelect.value = currentSelection;
+            if (!filterSelect.value) filterSelect.value = 'all';
+
+            // 2. ຈັດກຽມຂໍ້ມູນຕາມເງື່ອນໄຂທີ່ເລືອກ
+            let displayData = [];
+            
+            if (filterSelect.value === 'all') {
+                // ຖ້າເລືອກ "ລວມທັງໝົດ": ໃຫ້ຈັດກຸ່ມຕາມຊື່ນັກລົງທຶນ ແລ້ວບວກເງິນເຂົ້າກັນ
+                const grouped = {};
+                filteredInvestments.forEach(inv => {
+                    if (!grouped[inv.investorName]) {
+                        grouped[inv.investorName] = {
+                            date: inv.date,
+                            investorName: inv.investorName,
+                            amount: 0,
+                            note: 'ລວມທຸກຄັ້ງ'
+                        };
+                    }
+                    grouped[inv.investorName].amount += Number(inv.amount || 0);
+                    // ອັບເດດໃຫ້ສະແດງວັນທີຫຼ້າສຸດທີ່ຈ່າຍເງິນ
+                    if (new Date(inv.date) > new Date(grouped[inv.investorName].date)) {
+                        grouped[inv.investorName].date = inv.date;
+                    }
+                });
+                displayData = Object.values(grouped);
+            } else {
+                // ຖ້າເລືອກສະເພາະຄັ້ງທີ (ຕົວຢ່າງ: ຄັ້ງທີ່ 1): ກັ່ນຕອງເອົາສະເພາະຮອບນັ້ນ
+                const selectedRound = Number(filterSelect.value);
+                displayData = filteredInvestments.filter(inv => Number(inv.round || 1) === selectedRound);
+            }
+
+            // ລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່
+            displayData.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+            if (displayData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ບໍ່ມີຂໍ້ມູນໃນຮອບທີ່ເລືອກ' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
                 return;
             }
 
-            // ໝາຍເຫດ: ຕອນນີ້ດຶງຂໍ້ມູນທັງໝົດເຂົ້າພາກທີ I ກ່ອນ ເພາະຍັງບໍ່ມີເງື່ອນໄຂແຍກສຳເລັດ/ບໍ່ສຳເລັດ
-            let group1 = filteredInvestments; 
-            let group2 = []; 
-            
             let html = "";
             
             // --- ພາກທີ I ---
             html += `<tr class="font-bold bg-gray-50"><td colspan="5" class="p-2 border border-black">I. ນັກລົງທຶນ (ໄດ້ສຳເລັດການລົງທຶນ)</td></tr>`;
             let total1 = 0;
-            group1.forEach((inv, index) => {
+            displayData.forEach((inv, index) => {
                 total1 += Number(inv.amount || 0);
                 html += `
                     <tr>
@@ -1279,26 +1326,10 @@
 
             // --- ພາກທີ II ---
             html += `<tr class="font-bold bg-gray-50"><td colspan="5" class="p-2 border border-black">II. ນັກລົງທຶນ (ບໍ່ທັນສຳເລັດການລົງທຶນ)</td></tr>`;
-            let total2 = 0;
-            if (group2.length === 0) {
-                html += `<tr><td class="p-2 border border-black text-center text-gray-400" colspan="5">ບໍ່ມີລາຍການ</td></tr>`;
-            } else {
-                group2.forEach((inv, index) => {
-                    total2 += Number(inv.amount || 0);
-                    html += `
-                        <tr>
-                            <td class="p-2 border border-black text-center">${index + 1}</td>
-                            <td class="p-2 border border-black text-center">${formatDateToDDMMYYYY(inv.date)}</td>
-                            <td class="p-2 border border-black">${inv.investorName}</td>
-                            <td class="p-2 border border-black text-right">${formatNumber(inv.amount)}</td>
-                            <td class="p-2 border border-black">${inv.note || ''}</td>
-                        </tr>
-                    `;
-                });
-            }
+            html += `<tr><td class="p-2 border border-black text-center text-gray-400" colspan="5">ບໍ່ມີລາຍການ</td></tr>`;
             html += `<tr class="font-bold">
                         <td colspan="3" class="p-2 border border-black text-center">ລວມເງິນລົງຕົວຈິງ</td>
-                        <td class="p-2 border border-black text-right">${formatNumber(total2)}</td>
+                        <td class="p-2 border border-black text-right">0</td>
                         <td class="p-2 border border-black"></td>
                      </tr>`;
 
