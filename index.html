@@ -468,23 +468,31 @@
             "ນະຄອນຫຼວງວຽງຈັນ": ["ເມືອງຈັນທະບູລີ", "ເມືອງສີໂຄດຕະບອງ", "ເມືອງໄຊເສດຖາ", "ເມືອງສີສັດຕະນາກ", "ເມືອງນາຊາຍທອງ", "ເມືອງໄຊທານີ", "ເມືອງຫາດຊາຍຜອງ"]
         };
 
-// 1. ປ່ຽນແທນ Function uploadToCloudinary ເດີມທັງໝົດ
-        async function uploadToCloudinary(base64Data) {
-            // ເນື່ອງຈາກເຮົາແປງເປັນ Base64 ສຳເລັດແລ້ວໃນຟັງຊັນບີບອັດ ຈຶ່ງສົ່ງຄ່າຕໍ່ໄດ້ເລີຍ
-            return base64Data; 
-        }
-        function formatDateToDDMMYYYY(dateString) {
-            if (!dateString) return '';
-            const parts = dateString.split('-');
-            if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-            return dateString;
-        }
+// 1. ຟັງຊັນອັບໂຫຼດຮູບຂຶ້ນ Cloudinary (ຕາມໂຄງສ້າງຫຼັກເດີມ)
+        async function uploadToCloudinary(file) {
+            const cloudName = "eqiroyxu"; 
+            const uploadPreset = "investment_preset";
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", uploadPreset);
 
-        function formatNumber(numStr) {
-            if (!numStr) return '0';
-            const cleanNum = numStr.toString().replace(/[^0-9]/g, '');
-            if (!cleanNum) return '0';
-            return Number(cleanNum).toLocaleString('en-US');
+            try {
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                    method: "POST",
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.secure_url) {
+                    return data.secure_url;
+                } else {
+                    console.error("Cloudinary response error:", data);
+                    throw new Error(data.error?.message || "Cloudinary error");
+                }
+            } catch (error) {
+                console.error("Upload Error:", error);
+                showCustomAlert("ອັບໂຫຼດຮູບພາບບໍ່ສຳເລັດ! (ກວດສອບການເຊື່ອມຕໍ່ ຫຼື Unsigned Preset ໃນ Cloudinary)", "ຜິດພາດ");
+                return null;
+            }
         }
 
         function formatCurrencyInput(input) {
@@ -1075,7 +1083,7 @@
             `;
         }
 
-// 2. ປ່ຽນແທນ Function compressImage ເດີມທັງໝົດ
+// 2. ຟັງຊັນບີບອັດຮູບ (ຮັກສາໄວ້ຕາມທີ່ທ່ານຕ້ອງການ - ບໍ່ໄດ້ຕັດອອກ)
         function compressImage(file, maxWidth, quality) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -1085,15 +1093,13 @@
                     img.src = event.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        
-                        // ບັງຄັບຫຼຸດຂະໜາດລົງມາເພື່ອບໍ່ໃຫ້ກາຍ 1MB ຂອງ Firebase
-                        const MAX_SAFE_WIDTH = 800; 
                         let width = img.width;
                         let height = img.height;
 
-                        if (width > MAX_SAFE_WIDTH) {
-                            height = Math.round((height * MAX_SAFE_WIDTH) / width);
-                            width = MAX_SAFE_WIDTH;
+                        // ຖ້າຮູບໃຫຍ່ເກີນ maxWidth ທີ່ກຳหนด ຈະทำการຫຍໍ້ຂະໜາດລົງມາພໍດີ
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
                         }
 
                         canvas.width = width;
@@ -1101,13 +1107,16 @@
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        // ແປງເປັນ Base64 ໂດຍກົງ ດ້ວຍ Quality 0.5 (ຮູບຈະຍັງແຈ້ງຢູ່ ແຕ່ຂະໜາດນ້ອຍລົງຫຼາຍ)
-                        const base64String = canvas.toDataURL('image/jpeg', 0.5);
-                        resolve(base64String);
+                        canvas.toBlob((blob) => {
+                            resolve(new File([blob], file.name, {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            }));
+                        }, 'image/jpeg', quality);
                     };
-                    img.onerror = () => resolve(''); // ຖ້າ error ໃຫ້ສົ່ງຄ່າວ່າງ
+                    img.onerror = (error) => reject(error);
                 };
-                reader.onerror = () => resolve(''); // ຖ້າ error ໃຫ້ສົ່ງຄ່າວ່າງ
+                reader.onerror = (error) => reject(error);
             });
         }
 
