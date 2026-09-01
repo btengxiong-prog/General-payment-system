@@ -760,7 +760,7 @@
         document.getElementById('investmentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // 1. ເກັບຄ່າທັງໝົດໄວ້ກ່ອນປິດຟອມ ເພາະ form.reset() ຈະລ້າງຄ່າທิ้ง
+            // 1. ເກັບຄ່າທັງໝົດໄວ້ໃນຕົວແປກ່ອນປິດຟອມ
             const dateVal = document.getElementById('investDate').value;
             const investorNameVal = document.getElementById('investorSelect').value;
             const method = document.getElementById('investMethod').value;
@@ -770,14 +770,13 @@
             const noteVal = document.getElementById('investNote').value || '-';
             
             const fileInput = document.getElementById('investReceipt');
-            const hasFile = fileInput.files && fileInput.files[0];
-            const fileToUpload = hasFile ? fileInput.files[0] : null;
+            const fileToUpload = (fileInput && fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
 
-            // 2. ປິດຟອມຫຼັງຈາກເກັບຄ່າແລ້ວ
+            // 2. ປິດ Modal ແລະ ສະແດງຂໍ້ຄວາມກຳລັງໂຫຼດ
             closeInvestmentModal();
             showCustomAlert("ກຳລັງບັນທຶກຂໍ້ມູນລົງລະບົບ...", "ກຳລັງດຳເນີນການ");
 
-            // 3. ອັບໂຫຼດຮູບຢູ່ເບື້ອງຫຼັງ
+            // 3. ອັບໂຫຼດຮູບ (ຖ້າມີ)
             let receiptUrl = '';
             if (fileToUpload) {
                 try {
@@ -788,7 +787,7 @@
                 }
             }
 
-            // 4. ບັນທຶກລົງ Firebase Firestore
+            // 4. ບັນທຶກລົງ Firebase
             const newInvest = {
                 projectId: selectedProjectId,
                 date: dateVal,
