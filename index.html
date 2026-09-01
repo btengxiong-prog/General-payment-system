@@ -1250,7 +1250,9 @@
             if (!tbody || !filterSelect) return;
             tbody.innerHTML = "";
             
+            // ດຶງຂໍ້ມູນການລົງທຶນ ແລະ ລາຍຊື່ນັກລົງທຶນທັງໝົດໃນໂຄງການ
             let filteredInvestments = selectedProjectId ? investmentsData.filter(inv => inv.projectId === selectedProjectId) : [];
+            let projectInvestors = selectedProjectId ? investorsData.filter(inv => inv.projectId === selectedProjectId) : [];
 
             // 1. ສ້າງຕົວເລືອກ "ລົງທຶນຄັ້ງທີ່" ໃຫ້ Dropdown ອັດຕະໂນມັດ
             const rounds = [...new Set(filteredInvestments.map(i => Number(i.round || 1)))].sort((a,b) => a - b);
@@ -1267,9 +1269,11 @@
 
             // 2. ຈັດກຽມຂໍ້ມູນຕາມເງື່ອນໄຂທີ່ເລືອກ
             let displayData = [];
-            
+            let unpaidData = [];
+            let maxAmountForUnpaid = 0;
+
             if (filterSelect.value === 'all') {
-                // ຖ້າເລືອກ "ລວມທັງໝົດ": ໃຫ້ຈັດກຸ່ມຕາມຊື່ນັກລົງທຶນ ແລ້ວບວກເງິນເຂົ້າກັນ
+                // ກໍລະນີເລືອກ "ລວມທັງໝົດ"
                 const grouped = {};
                 filteredInvestments.forEach(inv => {
                     if (!grouped[inv.investorName]) {
@@ -1281,55 +1285,100 @@
                         };
                     }
                     grouped[inv.investorName].amount += Number(inv.amount || 0);
-                    // ອັບເດດໃຫ້ສະແດງວັນທີຫຼ້າສຸດທີ່ຈ່າຍເງິນ
+                    // ເອົາວັນທີຈ່າຍຫຼ້າສຸດ
                     if (new Date(inv.date) > new Date(grouped[inv.investorName].date)) {
                         grouped[inv.investorName].date = inv.date;
                     }
                 });
                 displayData = Object.values(grouped);
+
+                // ຄົນທີ່ບໍ່ເຄີຍລົງທຶນເລີຍຈັກຄັ້ງ
+                const paidNames = displayData.map(i => i.investorName);
+                const neverPaid = projectInvestors.filter(inv => !paidNames.includes(inv.name));
+                
+                unpaidData = neverPaid.map(inv => ({
+                    date: '', // ວັນທີວ່າງເປົ່າ
+                    investorName: inv.name,
+                    amount: 0,
+                    note: 'ຍັງບໍ່ເຄີຍລົງທຶນ'
+                }));
+
             } else {
-                // ຖ້າເລືອກສະເພາະຄັ້ງທີ (ຕົວຢ່າງ: ຄັ້ງທີ່ 1): ກັ່ນຕອງເອົາສະເພາະຮອບນັ້ນ
+                // ກໍລະນີເລືອກງວດໃດໜຶ່ງ (ເຊັ່ນ: ຄັ້ງທີ່ 3)
                 const selectedRound = Number(filterSelect.value);
                 displayData = filteredInvestments.filter(inv => Number(inv.round || 1) === selectedRound);
+                
+                // ຊອກຫາຈຳນວນເງິນທີ່ຈ່າຍສູງສຸດໃນງວດນັ້ນ
+                if (displayData.length > 0) {
+                    maxAmountForUnpaid = Math.max(...displayData.map(i => Number(i.amount || 0)));
+                }
+
+                // ດຶງຊື່ຄົນທີ່ຈ່າຍແລ້ວໃນງວດນີ້
+                const paidNames = displayData.map(i => i.investorName);
+                // ທຽບຫາຄົນທີ່ "ຍັງບໍ່ທັນຈ່າຍ" ໃນງວດນີ້
+                const unpaid = projectInvestors.filter(inv => !paidNames.includes(inv.name));
+
+                // ສ້າງຂໍ້ມູນສຳລັບຄົນຍັງບໍ່ຈ່າຍ
+                unpaidData = unpaid.map(inv => ({
+                    date: '', // ວັນທີວ່າງເປົ່າ
+                    investorName: inv.name,
+                    amount: maxAmountForUnpaid, // ເອົາເງິນສູງສຸດມາຕັ້ງ
+                    note: 'ຍັງບໍ່ທັນຊຳລະ'
+                }));
             }
 
-            // ລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່
+            // ລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່ (ສະເພາະກຸ່ມທີ່ຈ່າຍແລ້ວ)
             displayData.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
-
-            if (displayData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ບໍ່ມີຂໍ້ມູນໃນຮອບທີ່ເລືອກ' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
-                return;
-            }
 
             let html = "";
             
-            // --- ພາກທີ I ---
+            // --- ພາກທີ I (ສຳເລັດ) ---
             html += `<tr class="font-bold bg-gray-50"><td colspan="5" class="p-2 border border-black">I. ນັກລົງທຶນ (ໄດ້ສຳເລັດການລົງທຶນ)</td></tr>`;
             let total1 = 0;
-            displayData.forEach((inv, index) => {
-                total1 += Number(inv.amount || 0);
-                html += `
-                    <tr>
-                        <td class="p-2 border border-black text-center">${index + 1}</td>
-                        <td class="p-2 border border-black text-center">${formatDateToDDMMYYYY(inv.date)}</td>
-                        <td class="p-2 border border-black">${inv.investorName}</td>
-                        <td class="p-2 border border-black text-right">${formatNumber(inv.amount)}</td>
-                        <td class="p-2 border border-black">${inv.note || ''}</td>
-                    </tr>
-                `;
-            });
+            if (displayData.length === 0) {
+                html += `<tr><td class="p-2 border border-black text-center text-gray-400" colspan="5">ບໍ່ມີລາຍການ</td></tr>`;
+            } else {
+                displayData.forEach((inv, index) => {
+                    total1 += Number(inv.amount || 0);
+                    html += `
+                        <tr>
+                            <td class="p-2 border border-black text-center">${index + 1}</td>
+                            <td class="p-2 border border-black text-center">${formatDateToDDMMYYYY(inv.date)}</td>
+                            <td class="p-2 border border-black">${inv.investorName}</td>
+                            <td class="p-2 border border-black text-right">${formatNumber(inv.amount)}</td>
+                            <td class="p-2 border border-black">${inv.note || ''}</td>
+                        </tr>
+                    `;
+                });
+            }
             html += `<tr class="font-bold">
                         <td colspan="3" class="p-2 border border-black text-center">ລວມເງິນລົງຕົວຈິງ</td>
                         <td class="p-2 border border-black text-right">${formatNumber(total1)}</td>
                         <td class="p-2 border border-black"></td>
                      </tr>`;
 
-            // --- ພາກທີ II ---
+            // --- ພາກທີ II (ບໍ່ທັນສຳເລັດ) ---
             html += `<tr class="font-bold bg-gray-50"><td colspan="5" class="p-2 border border-black">II. ນັກລົງທຶນ (ບໍ່ທັນສຳເລັດການລົງທຶນ)</td></tr>`;
-            html += `<tr><td class="p-2 border border-black text-center text-gray-400" colspan="5">ບໍ່ມີລາຍການ</td></tr>`;
-            html += `<tr class="font-bold">
-                        <td colspan="3" class="p-2 border border-black text-center">ລວມເງິນລົງຕົວຈິງ</td>
-                        <td class="p-2 border border-black text-right">0</td>
+            let total2 = 0;
+            if (unpaidData.length === 0) {
+                html += `<tr><td class="p-2 border border-black text-center text-gray-400" colspan="5">ບໍ່ມີລາຍການ</td></tr>`;
+            } else {
+                unpaidData.forEach((inv, index) => {
+                    total2 += Number(inv.amount || 0);
+                    html += `
+                        <tr class="text-red-600">
+                            <td class="p-2 border border-black text-center">${index + 1}</td>
+                            <td class="p-2 border border-black text-center">${inv.date}</td>
+                            <td class="p-2 border border-black">${inv.investorName}</td>
+                            <td class="p-2 border border-black text-right">${formatNumber(inv.amount)}</td>
+                            <td class="p-2 border border-black">${inv.note || ''}</td>
+                        </tr>
+                    `;
+                });
+            }
+            html += `<tr class="font-bold text-red-600">
+                        <td colspan="3" class="p-2 border border-black text-center">ລວມເງິນລົງຕົວຈິງ (ຄາດຄະເນ)</td>
+                        <td class="p-2 border border-black text-right">${formatNumber(total2)}</td>
                         <td class="p-2 border border-black"></td>
                      </tr>`;
 
