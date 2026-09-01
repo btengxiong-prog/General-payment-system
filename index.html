@@ -947,6 +947,12 @@
                 let receipt1Html = exp.receipt1 ? `<img src="${exp.receipt1}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt1}')" title="ບິນເບື້ອງ">` : `-`;
                 let receipt2Html = exp.receipt2 ? `<img src="${exp.receipt2}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt2}')" title="ບິນໂອນ">` : `-`;
 
+                // ຈັດການສະແດງຜົນໃນຫ້ອງໝາຍເຫດ (ເອົາ ສົດ/ໂອນ ມາໂຊທາງໜ້າເລີຍ)
+                let displayMethod = exp.method === 'ສົດ' ? 'ສົດ' : 'ໂອນ';
+                let methodColor = exp.method === 'ສົດ' ? 'text-green-600' : 'text-blue-600';
+                let displayNote = (exp.note && exp.note !== '-') ? exp.note : '';
+                let finalNoteHtml = `<span class="${methodColor} font-bold">[${displayMethod}]</span> ${displayNote}`;
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
                 tr.innerHTML = `
@@ -957,7 +963,7 @@
                     <td class="p-3 border">${formattedFee}</td>
                     <td class="p-3 border text-center">${receipt1Html}</td>
                     <td class="p-3 border text-center">${receipt2Html}</td>
-                    <td class="p-3 border font-semibold text-gray-800">${exp.note}</td>
+                    <td class="p-3 border">${finalNoteHtml}</td>
                     <td class="p-3 border text-center">
                         <input type="checkbox" class="expense-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${exp.id}">
                     </td>
