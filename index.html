@@ -759,36 +759,46 @@
 
         document.getElementById('investmentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // 1. ອ່ານຄ່າທັງໝົດເກັບໄວ້ກ່ອນ (ຫ້າມປິດຟອມກ່ອນເດັດຂາດ)
+            const dateVal = document.getElementById('investDate').value;
+            const investorNameVal = document.getElementById('investorSelect').value;
             const method = document.getElementById('investMethod').value;
             const receiver = method === 'ສົດ' ? document.getElementById('investReceiver').value : '';
             const rawAmount = document.getElementById('investAmount').value.replace(/,/g, '');
-            const fileInput = document.getElementById('investReceipt');
+            const roundVal = document.getElementById('investRound').value;
+            const noteVal = document.getElementById('investNote').value || '-';
             
-            // ປິດຟອມທັນທີເພື່ອຄວາມໄວ (User ບໍ່ຕ້ອງຖ້າ)
-            closeInvestmentModal();
-            showCustomAlert("ກຳລັງບັນທຶກຂໍ້ມູນລົງລະບົບ...", "ກຳລັງດຳເນີນການ");
-
-            let receiptUrl = '';
-            if (fileInput.files && fileInput.files[0]) {
-                // ບີບອັດ ແລະ ອາັບໂຫຼດຢູ່ເບື້ອງຫຼັງ (Background)
-                const optimizedFile = await compressImage(fileInput.files[0], 1200, 0.7);
-                receiptUrl = await uploadToCloudinary(optimizedFile);
-            }
-
-            const newInvest = {
-                projectId: selectedProjectId,
-                date: document.getElementById('investDate').value,
-                investorName: document.getElementById('investorSelect').value,
-                amount: rawAmount,
-                method: method,
-                receiver: receiver,
-                round: document.getElementById('investRound').value,
-                receipt: receiptUrl || '',
-                note: document.getElementById('investNote').value || '-'
-            };
+            const fileInput = document.getElementById('investReceipt');
+            const fileToUpload = (fileInput.files && fileInput.files.length > 0) ? fileInput.files[0] : null;
+            
+            // 2. ແຈ້ງເຕືອນລໍຖ້າການອັບໂຫຼດ (ແຕ່ຍັງບໍ່ທັນລ້າງຟອມ)
+            showCustomAlert("ກຳລັງບັນທຶກຂໍ້ມູນ ແລະ ອັບໂຫຼດຮູບ...", "ກຳລັງດຳເນີນການ");
 
             try {
+                let receiptUrl = '';
+                if (fileToUpload) {
+                    const optimizedFile = await compressImage(fileToUpload, 1200, 0.7);
+                    receiptUrl = await uploadToCloudinary(optimizedFile);
+                }
+
+                // 3. ບັນທຶກຂໍ້ມູນທັງໝົດລົງ Firebase
+                const newInvest = {
+                    projectId: selectedProjectId,
+                    date: dateVal, // ວັນທີຈະມາແລ້ວ
+                    investorName: investorNameVal,
+                    amount: rawAmount,
+                    method: method,
+                    receiver: receiver,
+                    round: roundVal,
+                    receipt: receiptUrl || '', // ຮູບຫຼັກຖານຈະມາແລ້ວ
+                    note: noteVal
+                };
+
                 await db.collection("investments").add(newInvest);
+                
+                // 4. ບັນທຶກສຳເລັດ ຈຶ່ງຄ່ອຍສັ່ງປິດໜ້າຈໍ ແລະ ລ້າງຟອມ
+                closeInvestmentModal();
                 showCustomAlert("ເພີ່ມລາຍການລົງທຶນສຳເລັດ!");
             } catch (error) {
                 showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
