@@ -304,7 +304,7 @@
                     <select id="expenseMethod" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
                         <option value="ໂອນ">ໂອນ</option>
                         <option value="ສົດ">ສົດ</option>
-                    </select>
+                    </select>ຫ
                 </div>
                 <div id="receiverContainer" class="hidden">
                     <label class="block text-gray-700 font-medium mb-1">ຜູ້ຮັບເງິນສົດ</label>
@@ -866,51 +866,56 @@
             document.getElementById('expenseForm').reset();
         }
 
+// --- ເລີ່ມຕົ້ນໂຄດບັນທຶກລາຍຈ່າຍ ---
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // 1. ດຶງຄ່າທຸກຢ່າງມາກຳໄວ້ກ່ອນ (ລວມເຖິງ ສົດ/ໂອນ) ກ່ອນທີ່ຟອມຈະປິດ
-            const methodInput = document.getElementById('expenseMethod');
-            const methodVal = methodInput ? methodInput.value : 'ໂອນ'; // ດຶງຄ່າ ສົດ/ໂອນ
+            // 1. ດຶງຄ່າອອກມາ "ທັນທີ" ກ່ອນທີ່ຈະປິດຟອມ (ເພີ່ມ .trim() ຕັດຍະຫວ່າງປ້ອງກັນການຜິດພາດ)
+            const methodEl = document.getElementById('expenseMethod');
+            const methodVal = methodEl ? methodEl.value.trim() : 'ໂອນ';
             
             const dateVal = document.getElementById('expenseDate').value;
             const descVal = document.getElementById('expenseDesc').value;
             const noteVal = document.getElementById('expenseNote').value || '-';
             const rawAmount = document.getElementById('expenseAmount').value.replace(/,/g, '');
             const rawFee = document.getElementById('expenseFee').value.replace(/,/g, '') || '0';
+
             const fileInput1 = document.getElementById('expenseReceipt1');
             const fileInput2 = document.getElementById('expenseReceipt2');
+            let file1 = fileInput1 && fileInput1.files ? fileInput1.files[0] : null;
+            let file2 = fileInput2 && fileInput2.files ? fileInput2.files[0] : null;
 
-            // 2. ປິດຟອມທັນທີ
+            // 2. ປິດ Modal ຫຼັງຈາກດຶງຂໍ້ມູນສຳເລັດແລ້ວ
             closeExpenseModal();
             showCustomAlert("ກຳລັງບັນທຶກລາຍຈ່າຍ...", "ກຳລັງດຳເນີນການ");
 
             let receipt1Url = '';
             let receipt2Url = '';
 
-            // 3. ອັບໂຫຼດຮູບ
-            if (fileInput1 && fileInput1.files && fileInput1.files[0]) {
-                const optFile1 = await compressImage(fileInput1.files[0], 1200, 0.7);
+            // 3. ອັບໂຫຼດຮູບຫຼັກຖານ
+            if (file1) {
+                const optFile1 = await compressImage(file1, 1200, 0.7);
                 receipt1Url = await uploadToCloudinary(optFile1);
             }
-            if (fileInput2 && fileInput2.files && fileInput2.files[0]) {
-                const optFile2 = await compressImage(fileInput2.files[0], 1200, 0.7);
+            if (file2) {
+                const optFile2 = await compressImage(file2, 1200, 0.7);
                 receipt2Url = await uploadToCloudinary(optFile2);
             }
 
-            // 4. ສົ່ງຂໍ້ມູນໄປ Firebase ດ້ວຍຄ່າທີ່ດຶງມາໄວ້ແລ້ວ
+            // 4. ສ້າງ Object ຂໍ້ມູນດ້ວຍຄ່າທີ່ດຶງມາໄວ້ຕອນທຳອິດ
             const newExpense = {
                 projectId: selectedProjectId,
                 date: dateVal,
                 desc: descVal,
                 amount: rawAmount,
                 fee: rawFee,
-                method: methodVal, // <--- ສົ່ງຄ່າ ສົດ/ໂອນ ທີ່ແນ່ນອນເຂົ້າໄປ
+                method: methodVal, // <--- ໂຕນີ້ຈະຕ້ອງເປັນ "ສົດ" ຢ່າງແນ່ນອນຖ້າເລືອກສົດ
                 receipt1: receipt1Url || '',
                 receipt2: receipt2Url || '',
                 note: noteVal
             };
 
+            // 5. ບັນທຶກລົງຖານຂໍ້ມູນ
             try {
                 await db.collection("expenses").add(newExpense);
                 showCustomAlert("ເພີ່ມລາຍຈ່າຍສຳເລັດ!");
@@ -918,6 +923,7 @@
                 showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
             }
         });
+        // --- ສິ້ນສຸດໂຄດບັນທຶກລາຍຈ່າຍ ---
 
         function renderExpenses() {
             const tbody = document.getElementById('expenseTableBody');
