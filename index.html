@@ -171,7 +171,7 @@
                                 </th>
                             </tr>
                             <tr class="bg-gray-100 text-gray-700 text-xs">
-                                <th class="p-2 border text-center">ບິນເຄື່ອງ</th>
+                                <th class="p-2 border text-center">ບິນເບື້ອງ</th>
                                 <th class="p-2 border text-center">ບິນໂອນ</th>
                             </tr>
                         </thead>
@@ -298,6 +298,7 @@
                     <label class="block text-gray-700 font-medium mb-1">ຈຳນວນເງິນລົງທຶນ</label>
                     <input type="text" id="investAmount" required oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ຕົວຢ່າງ: 1,000,000">
                 </div>
+    <!-- ບ່ອນເພີ່ມໃນ Modal ລາຍຈ່າຍ -->
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">ປະເພດການຊຳລະ</label>
                     <select id="investMethod" onchange="toggleReceiverField()" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
@@ -329,7 +330,7 @@
         </div>
     </div>
 
-    <!-- Modal ເພີ່ມລາຍຈ່າຍ -->
+<!-- Modal ເພີ່ມລາຍຈ່າຍ -->
     <div id="expenseModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 class="text-xl font-bold text-blue-600 mb-4">ເພີ່ມລາຍຈ່າຍໃໝ່</h3>
@@ -350,6 +351,8 @@
                     <label class="block text-gray-700 font-medium mb-1">ຄ່າທຳນຽມ</label>
                     <input type="text" id="expenseFee" oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="0">
                 </div>
+                
+                <!-- ເພີ່ມຊ່ອງເລືອກ ສົດ/ໂອນ ຢູ່ບ່ອນນີ້ -->
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">ປະເພດການຊຳລະ</label>
                     <select id="expenseMethod" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
@@ -357,8 +360,9 @@
                         <option value="ສົດ">ສົດ</option>
                     </select>
                 </div>
+
                 <div>
-                    <label class="block text-gray-700 font-medium mb-1">ຫຼັກຖານ: ບິນເຄື່ອງ (ອັບໂຫຼດຮູບ)</label>
+                    <label class="block text-gray-700 font-medium mb-1">ຫຼັກຖານ: ບິນເບື້ອງ (ອັບໂຫຼດຮູບ)</label>
                     <input type="file" id="expenseReceipt1" accept="image/*" class="w-full border rounded-lg p-2 text-sm bg-white focus:ring focus:ring-blue-300">
                 </div>
                 <div>
@@ -930,7 +934,7 @@
                 const formattedDate = formatDateToDDMMYYYY(exp.date);
                 const formattedAmount = formatNumber(exp.amount);
                 const formattedFee = formatNumber(exp.fee);
-                let receipt1Html = exp.receipt1 ? `<img src="${exp.receipt1}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt1}')" title="ບິນເຄື່ອງ">` : `-`;
+                let receipt1Html = exp.receipt1 ? `<img src="${exp.receipt1}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt1}')" title="ບິນເບື້ອງ">` : `-`;
                 let receipt2Html = exp.receipt2 ? `<img src="${exp.receipt2}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt2}')" title="ບິນໂອນ">` : `-`;
 
                 // ສະແດງ [ສົດ]/[ໂອນ] ໃນຫ້ອງໝາຍເຫດອັດຕະໂນມັດ
@@ -1050,6 +1054,7 @@
                 filteredExpenses = filteredExpenses.filter(e => e.date && e.date.startsWith(selectedYear) && parseInt(e.date.split('-')[1]) <= monthsCount);
             }
 
+            // ຄຳນວນແຍກ ສົດ / ໂອນ ໂດຍອ່ານຈາກ method ໂດຍກົງ
             let receiveCash = filteredInvestments.filter(i => i.method === 'ສົດ').reduce((sum, i) => sum + Number(i.amount || 0), 0);
             let receiveTransfer = filteredInvestments.filter(i => i.method !== 'ສົດ').reduce((sum, i) => sum + Number(i.amount || 0), 0);
             
@@ -1070,6 +1075,7 @@
                 <tr><td class="p-3 border text-center">2</td><td class="p-3 border">ລາຍຈ່າຍທັງໝົດ (ລວມຄ່າທຳນຽມ)</td><td class="p-3 border text-right">-</td><td class="p-3 border text-right font-semibold text-red-600">${formatNumber(totalExpAmount)}</td></tr>
                 <tr class="bg-gray-100 font-bold"><td colspan="2" class="p-3 border text-right">ລວມທັງໝົດ</td><td class="p-3 border text-right text-green-600">${formatNumber(totalInvAmount)}</td><td class="p-3 border text-right text-red-600">${formatNumber(totalExpAmount)}</td></tr>
                 
+                <!-- ຕາຕະລາງສະຫຼຸບເພີ່ມເຕີມຕາມທີ່ຕ້ອງການ -->
                 <tr class="bg-blue-50 font-bold text-gray-800"><td colspan="4" class="p-3 border">ສະຫຼຸບຍອດແຍກຕາມປະເພດການຊຳລະ (ສົດ / ໂອນ)</td></tr>
                 <tr><td class="p-3 border text-center">3</td><td class="p-3 border">ຮັບເງິນສົດ</td><td class="p-3 border text-right text-green-600">${formatNumber(receiveCash)}</td><td class="p-3 border text-right">-</td></tr>
                 <tr><td class="p-3 border text-center">4</td><td class="p-3 border">ຮັບເງິນໂອນ</td><td class="p-3 border text-right text-green-600">${formatNumber(receiveTransfer)}</td><td class="p-3 border text-right">-</td></tr>
