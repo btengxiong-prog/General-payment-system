@@ -298,9 +298,10 @@
                     <label class="block text-gray-700 font-medium mb-1">ຈຳນວນເງິນລົງທຶນ</label>
                     <input type="text" id="investAmount" required oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ຕົວຢ່າງ: 1,000,000">
                 </div>
+            <!-- ບ່ອນເພີ່ມໃນ Modal ລາຍຈ່າຍ -->
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">ປະເພດການຊຳລະ</label>
-                    <select id="investMethod" onchange="toggleReceiverField()" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                    <select id="expenseMethod" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
                         <option value="ໂອນ">ໂອນ</option>
                         <option value="ສົດ">ສົດ</option>
                     </select>
@@ -859,17 +860,16 @@
             e.preventDefault();
             const rawAmount = document.getElementById('expenseAmount').value.replace(/,/g, '');
             const rawFee = document.getElementById('expenseFee').value.replace(/,/g, '') || '0';
+            const method = document.getElementById('expenseMethod').value; // <--- ເພີ່ມການດຶງຄ່າ ສสด/ໂອນ
             const fileInput1 = document.getElementById('expenseReceipt1');
             const fileInput2 = document.getElementById('expenseReceipt2');
 
-            // ປິດຟອມທັນທີ
             closeExpenseModal();
             showCustomAlert("ກຳລັງບັນທຶກລາຍຈ່າຍ...", "ກຳລັງດຳເນີນການ");
 
             let receipt1Url = '';
             let receipt2Url = '';
 
-            // ອັບໂຫຼດຮູບທັງສອງຢູ່ເບື້ອງຫຼັງ
             if (fileInput1.files && fileInput1.files[0]) {
                 const optFile1 = await compressImage(fileInput1.files[0], 1200, 0.7);
                 receipt1Url = await uploadToCloudinary(optFile1);
@@ -885,6 +885,7 @@
                 desc: document.getElementById('expenseDesc').value,
                 amount: rawAmount,
                 fee: rawFee,
+                method: method, // <--- ບັນທຶກປະເພດການຈ່າຍ
                 receipt1: receipt1Url || '',
                 receipt2: receipt2Url || '',
                 note: document.getElementById('expenseNote').value || '-'
@@ -1031,9 +1032,19 @@
                 filteredExpenses = filteredExpenses.filter(e => e.date && e.date.startsWith(selectedYear) && parseInt(e.date.split('-')[1]) <= monthsCount);
             }
 
-            let totalInvAmount = filteredInvestments.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-            let totalExpAmount = filteredExpenses.reduce((sum, item) => sum + Number(item.amount || 0) + Number(item.fee || 0), 0);
-            let balance = totalInvAmount - totalExpAmount;
+            // คำนวณແຍກ ສสด / ໂອນ
+            let receiveCash = filteredInvestments.filter(i => i.method === 'ສົດ').reduce((sum, i) => sum + Number(i.amount || 0), 0);
+            let receiveTransfer = filteredInvestments.filter(i => i.method === 'ໂອນ').reduce((sum, i) => sum + Number(i.amount || 0), 0);
+            
+            let expenseCash = filteredExpenses.filter(e => e.method === 'ສົດ').reduce((sum, e) => sum + Number(e.amount || 0) + Number(e.fee || 0), 0);
+            let expenseTransfer = filteredExpenses.filter(e => e.method === 'ໂອນ' || !e.method).reduce((sum, e) => sum + Number(e.amount || 0) + Number(e.fee || 0), 0);
+
+            let totalInvAmount = receiveCash + receiveTransfer;
+            let totalExpAmount = expenseCash + expenseTransfer;
+            
+            let balanceCash = receiveCash - expenseCash;
+            let balanceTransfer = receiveTransfer - expenseTransfer;
+            let balanceTotal = totalInvAmount - totalExpAmount;
 
             document.getElementById('reportDetailTitle').textContent = `ລາຍງານການເຄື່ອນໄຫວ (${periodLabel})`;
             document.getElementById('reportTableBody').innerHTML = `
@@ -1041,7 +1052,25 @@
                 <tr><td class="p-3 border text-center">1</td><td class="p-3 border">ລາຍຮັບທັງໝົດ (ເງິນລົງທຶນ)</td><td class="p-3 border text-right font-semibold text-green-600">${formatNumber(totalInvAmount)}</td><td class="p-3 border text-right">-</td></tr>
                 <tr><td class="p-3 border text-center">2</td><td class="p-3 border">ລາຍຈ່າຍທັງໝົດ (ລວມຄ່າທຳນຽມ)</td><td class="p-3 border text-right">-</td><td class="p-3 border text-right font-semibold text-red-600">${formatNumber(totalExpAmount)}</td></tr>
                 <tr class="bg-gray-100 font-bold"><td colspan="2" class="p-3 border text-right">ລວມທັງໝົດ</td><td class="p-3 border text-right text-green-600">${formatNumber(totalInvAmount)}</td><td class="p-3 border text-right text-red-600">${formatNumber(totalExpAmount)}</td></tr>
-                <tr class="bg-blue-50 font-bold text-blue-800"><td colspan="3" class="p-3 border text-right">ຍອດເຫຼືອ (ລາຍຮັບ - ລາຍຈ່າຍ)</td><td class="p-3 border text-right text-xl">${formatNumber(balance)} ₭</td></tr>
+                
+                <!-- ຕາຕະລາງສະຫຼຸບເພີ່ມເຕີມຕາມທີ່ຕ້ອງການ -->
+                <tr class="bg-blue-50 font-bold text-gray-800"><td colspan="4" class="p-3 border">ສະຫຼຸບຍອດແຍກຕາມປະເພດການຊຳລະ (ສົດ / ໂອນ)</td></tr>
+                <tr><td class="p-3 border text-center">3</td><td class="p-3 border">ຮັບເງິນສົດ</td><td class="p-3 border text-right text-green-600">${formatNumber(receiveCash)}</td><td class="p-3 border text-right">-</td></tr>
+                <tr><td class="p-3 border text-center">4</td><td class="p-3 border">ຮັບເງິນໂອນ</td><td class="p-3 border text-right text-green-600">${formatNumber(receiveTransfer)}</td><td class="p-3 border text-right">-</td></tr>
+                <tr><td class="p-3 border text-center">5</td><td class="p-3 border">ຈ່າຍເງິນສົດ</td><td class="p-3 border text-right">-</td><td class="p-3 border text-right text-red-600">${formatNumber(expenseCash)}</td></tr>
+                <tr><td class="p-3 border text-center">6</td><td class="p-3 border">ຈ່າຍເງິນໂອນ</td><td class="p-3 border text-right">-</td><td class="p-3 border text-right text-red-600">${formatNumber(expenseTransfer)}</td></tr>
+                <tr class="bg-gray-50 font-bold">
+                    <td colspan="2" class="p-3 border text-right">ຍອດເຫຼືອເງິນສົດ (ຮັບສົດ - ຈ່າຍສົດ)</td>
+                    <td colspan="2" class="p-3 border text-right ${balanceCash >= 0 ? 'text-blue-600' : 'text-red-600'}">${formatNumber(balanceCash)} ₭</td>
+                </tr>
+                <tr class="bg-gray-50 font-bold">
+                    <td colspan="2" class="p-3 border text-right">ຍອດເຫຼືອເງິນໂອນ (ຮັບໂອນ - ຈ່າຍໂອນ)</td>
+                    <td colspan="2" class="p-3 border text-right ${balanceTransfer >= 0 ? 'text-blue-600' : 'text-red-600'}">${formatNumber(balanceTransfer)} ₭</td>
+                </tr>
+                <tr class="bg-blue-100 font-bold text-blue-900 text-base">
+                    <td colspan="2" class="p-3 border text-right">ຍອດເຫຼືອລວມທັງໝົດ</td>
+                    <td colspan="2" class="p-3 border text-right text-xl">${formatNumber(balanceTotal)} ₭</td>
+                </tr>
             `;
         }
 
