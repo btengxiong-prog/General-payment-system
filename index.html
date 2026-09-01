@@ -39,17 +39,19 @@
 
     <!-- MAIN APP -->
     <div id="appScreen" class="hidden">
-        <!-- Navigation Menu -->
+    <!-- Navigation Menu -->
         <nav class="bg-white shadow-md">
-            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                <div class="flex space-x-8 font-semibold text-gray-700">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center overflow-x-auto">
+                <div class="flex space-x-6 font-semibold text-gray-700 whitespace-nowrap">
                     <button onclick="switchTab('projects')" class="hover:text-blue-600 focus:text-blue-600">ໂຄງການທັງໝົດ</button>
                     <button onclick="switchTab('investors')" class="hover:text-blue-600 focus:text-blue-600">ນັກລົງທຶນ</button>
                     <button onclick="switchTab('investments')" class="hover:text-blue-600 focus:text-blue-600">ຈ/ນ ເງິນລົງທຶນ</button>
+                    <button onclick="switchTab('invest_new')" class="hover:text-blue-600 focus:text-blue-600">ການລົງທຶນ</button> <!-- ປຸ່ມເພີ່ມໃໝ່ -->
                     <button onclick="switchTab('expenses')" class="hover:text-blue-600 focus:text-blue-600">ລາຍຈ່າຍ</button>
+                    <button onclick="switchTab('refunds')" class="hover:text-blue-600 focus:text-blue-600">ເງິນທວນຄືນ</button> <!-- ປຸ່ມເພີ່ມໃໝ່ -->
                     <button onclick="switchTab('reports')" class="hover:text-blue-600 focus:text-blue-600">ລາຍງານ</button>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-4 pl-4">
                     <span id="userInfo" class="text-sm font-medium text-gray-600"></span>
                     <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">ອອກຈາກລະບົບ</button>
                 </div>
@@ -188,6 +190,32 @@
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">ລາຍງານສະຫຼຸບ</h2>
                         <p id="currentActiveProjectReport" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                    </div>
+                </div>
+
+        <!-- TAB 6: ການລົງທຶນ (ເພີ່ມໃໝ່) -->
+            <div id="tab-invest_new" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">ການລົງທຶນ</h2>
+                        <p id="currentActiveProjectInvestNew" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+                    ກຳລັງພັດທະນາໜ້າການລົງທຶນ... (ສາມາດເພີ່ມຕາຕະລາງພາຍຫຼັງໄດ້)
+                </div>
+            </div>
+
+            <!-- TAB 7: ເງິນທວນຄືນ (ເພີ່ມໃໝ່) -->
+                <div id="tab-refunds" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">ເງິນທວນຄືນ</h2>
+                            <p id="currentActiveProjectRefund" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+                        ກຳລັງພັດທະນາໜ້າເງິນທວນຄືນ... (ສາມາດເພີ່ມຕາຕະລາງພາຍຫຼັງໄດ້)
                     </div>
                 </div>
 
@@ -670,6 +698,11 @@
             document.getElementById('currentActiveProjectInv').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
             document.getElementById('currentActiveProjectInvest').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
             document.getElementById('currentActiveProjectExpense').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
+            
+            // 2 ແຖວທີ່ເພີ່ມໃໝ່
+            if(document.getElementById('currentActiveProjectInvestNew')) document.getElementById('currentActiveProjectInvestNew').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
+            if(document.getElementById('currentActiveProjectRefund')) document.getElementById('currentActiveProjectRefund').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
+            
             updateReportActiveProject();
             renderInvestors();
             renderInvestments();
