@@ -301,10 +301,10 @@
             <!-- ບ່ອນເພີ່ມໃນ Modal ລາຍຈ່າຍ -->
                 <div>
                     <label class="block text-gray-700 font-medium mb-1">ປະເພດການຊຳລະ</label>
-                    <select id="realExpenseMethod" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                    <select id="expenseMethod" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
                         <option value="ໂອນ">ໂອນ</option>
                         <option value="ສົດ">ສົດ</option>
-                    </select>
+                    </select>ຫ
                 </div>
                 <div id="receiverContainer" class="hidden">
                     <label class="block text-gray-700 font-medium mb-1">ຜູ້ຮັບເງິນສົດ</label>
@@ -870,9 +870,18 @@
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // ດຶງຈາກ ID ໃໝ່ (ຮັບປະກັນວ່າບໍ່ຊ້ຳກັບໂຄດເກົ່າທີ່ລີ້ຢູ່ແນ່ນອນ)
-            const methodSelect = document.getElementById('realExpenseMethod');
-            const methodVal = methodSelect ? methodSelect.value : 'ໂອນ';
+            // 1. ອ່ານຄ່າຈາກປ່ອງ Dropdown ໂດຍກົງ (ກວດສອບໃຫ້ແນ່ໃຈວ່າໃນ HTML ໃຊ້ id="expenseMethod")
+            const methodDropdown = document.getElementById('expenseMethod');
+            
+            if (!methodDropdown) {
+                alert("❌ ຜິດພາດ: ລະບົບຫາປ່ອງເລືອກ 'ປະເພດການຊຳລະ' ບໍ່ເຫັນ!");
+                return;
+            }
+
+            const methodVal = methodDropdown.value;
+
+            // 🛑 ແຈ້ງເຕືອນເພື່ອພິສູດຕົ້ນເຫດ: ຖ້າມັນຂຶ້ນວ່າ "ທ່ານເລືອກ: ສົດ" ສະແດງວ່າເຮັດວຽກປົກກະຕິແລ້ວ
+            alert("ລະບົບອ່ານປະເພດການຊຳລະໄດ້ເປັນ: " + methodVal);
 
             const dateVal = document.getElementById('expenseDate').value;
             const descVal = document.getElementById('expenseDesc').value;
@@ -898,13 +907,14 @@
                 receipt2Url = await uploadToCloudinary(optFile2);
             }
 
+            // 2. ບັນທຶກຄ່າທີ່ອ່ານໄດ້ລົງໄປແທ້ໆ
             const newExpense = {
                 projectId: selectedProjectId,
                 date: dateVal,
                 desc: descVal,
                 amount: rawAmount,
                 fee: rawFee,
-                method: methodVal, // ຈະໄດ້ຄ່າ 'ສົດ' ທີ່ທ່ານເລືອກແທ້ໆ 100%
+                method: methodVal, // <--- ຄ່າ 'ສົດ' ຫຼື 'ໂອນ' ຈະຖືກສົ່ງໄປທີ່ນີ້
                 receipt1: receipt1Url || '',
                 receipt2: receipt2Url || '',
                 note: noteVal
@@ -917,6 +927,8 @@
                 showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
             }
         });
+
+        // --- ສິ້ນສຸດໂຄດບັນທຶກລາຍຈ່າຍ ---
 
         function renderExpenses() {
             const tbody = document.getElementById('expenseTableBody');
