@@ -1270,10 +1270,11 @@
             // 2. ຈັດກຽມຂໍ້ມູນຕາມເງື່ອນໄຂທີ່ເລືອກ
             let displayData = [];
             let unpaidData = [];
-            let maxAmountForUnpaid = 0;
 
             if (filterSelect.value === 'all') {
-                // ກໍລະນີເລືອກ "ລວມທັງໝົດ"
+                // ==========================================
+                // ກໍລະນີເລືອກ "ລວມທັງໝົດ" (ແກ້ໄຂ 1% ສຸດທ້າຍ)
+                // ==========================================
                 const grouped = {};
                 filteredInvestments.forEach(inv => {
                     if (!grouped[inv.investorName]) {
@@ -1292,38 +1293,49 @@
                 });
                 displayData = Object.values(grouped);
 
-                // ຄົນທີ່ບໍ່ເຄີຍລົງທຶນເລີຍຈັກຄັ້ງ
-                const paidNames = displayData.map(i => i.investorName);
-                const neverPaid = projectInvestors.filter(inv => !paidNames.includes(inv.name));
-                
-                unpaidData = neverPaid.map(inv => ({
-                    date: '', // ວັນທີວ່າງເປົ່າ
-                    investorName: inv.name,
-                    amount: 0,
-                    note: 'ຍັງບໍ່ເຄີຍລົງທຶນ'
-                }));
+                // ຊອກຫາຍອດລວມທີ່ສູງທີ່ສຸດ (MAX) ໃນໝູ່ນັກລົງທຶນ
+                let maxTotalAmount = 0;
+                if (displayData.length > 0) {
+                    maxTotalAmount = Math.max(...displayData.map(i => Number(i.amount || 0)));
+                }
+
+                // ທຽບຍອດເງິນຂອງນັກລົງທຶນທຸກຄົນກັບຍອດ MAX
+                projectInvestors.forEach(inv => {
+                    const paidInfo = grouped[inv.name];
+                    const totalPaid = paidInfo ? Number(paidInfo.amount) : 0; // ຖ້າບໍ່ເຄີຍຈ່າຍຈະເປັນ 0
+                    const deficit = maxTotalAmount - totalPaid; // ສູດ: MAX - ຈຳນວນທີ່ຈ່າຍໄປແລ້ວ
+
+                    // ຖ້າຍັງຈ່າຍບໍ່ຄົບຕາມ MAX (ຄ້າງຈ່າຍ) ໃຫ້ເອົາໄປສະແດງໃນພາກທີ II
+                    if (deficit > 0) {
+                        unpaidData.push({
+                            date: '', // ບໍ່ສະແດງວັນທີ
+                            investorName: inv.name,
+                            amount: deficit,
+                            note: totalPaid === 0 ? 'ຍັງບໍ່ເຄີຍລົງທຶນ' : 'ຍັງຄ້າງຊຳລະອິກສ່ວນໜຶ່ງ'
+                        });
+                    }
+                });
 
             } else {
+                // ==========================================
                 // ກໍລະນີເລືອກງວດໃດໜຶ່ງ (ເຊັ່ນ: ຄັ້ງທີ່ 3)
+                // ==========================================
                 const selectedRound = Number(filterSelect.value);
                 displayData = filteredInvestments.filter(inv => Number(inv.round || 1) === selectedRound);
                 
-                // ຊອກຫາຈຳນວນເງິນທີ່ຈ່າຍສູງສຸດໃນງວດນັ້ນ
+                let maxAmountForUnpaid = 0;
                 if (displayData.length > 0) {
                     maxAmountForUnpaid = Math.max(...displayData.map(i => Number(i.amount || 0)));
                 }
 
-                // ດຶງຊື່ຄົນທີ່ຈ່າຍແລ້ວໃນງວດນີ້
                 const paidNames = displayData.map(i => i.investorName);
-                // ທຽບຫາຄົນທີ່ "ຍັງບໍ່ທັນຈ່າຍ" ໃນງວດນີ້
                 const unpaid = projectInvestors.filter(inv => !paidNames.includes(inv.name));
 
-                // ສ້າງຂໍ້ມູນສຳລັບຄົນຍັງບໍ່ຈ່າຍ
                 unpaidData = unpaid.map(inv => ({
-                    date: '', // ວັນທີວ່າງເປົ່າ
+                    date: '', 
                     investorName: inv.name,
-                    amount: maxAmountForUnpaid, // ເອົາເງິນສູງສຸດມາຕັ້ງ
-                    note: 'ຍັງບໍ່ທັນຊຳລະ'
+                    amount: maxAmountForUnpaid,
+                    note: 'ຍັງບໍ່ທັນຊຳລະໃນງວດນີ້'
                 }));
             }
 
@@ -1357,7 +1369,7 @@
                         <td class="p-2 border border-black"></td>
                      </tr>`;
 
-            // --- ພາກທີ II (ບໍ່ທັນສຳເລັດ) ---
+            // --- ພາກທີ II (ບໍ່ທັນສຳເລັດ / ຄ້າງຊຳລະ) ---
             html += `<tr class="font-bold bg-gray-50"><td colspan="5" class="p-2 border border-black">II. ນັກລົງທຶນ (ບໍ່ທັນສຳເລັດການລົງທຶນ)</td></tr>`;
             let total2 = 0;
             if (unpaidData.length === 0) {
