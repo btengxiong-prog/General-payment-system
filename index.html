@@ -867,7 +867,7 @@
             document.getElementById('expenseForm').reset();
         }
 
-// --- ເລີ່ມຕົ້ນໂຄດບັນທຶກລາຍຈ່າຍ (ສະບັບສົມບູນ) ---
+// ແກ້ໄຂຟັງຊັນ submit ລາຍຈ່າຍ - ໃຊ້ async/await ຢ່າງຖືກຕ້ອງ
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -881,42 +881,80 @@
             const fileInput1 = document.getElementById('expenseReceipt1');
             const fileInput2 = document.getElementById('expenseReceipt2');
 
+            // ສະແດງ loading
             closeExpenseModal();
-            showCustomAlert("ກຳລັງບັນທຶກລາຍຈ່າຍ...", "ກຳລັງດຳເນີນການ");
+            showCustomAlert("ກຳລັງອັບໂຫຼດຮູບພາບ ແລະ ບັນທຶກຂໍ້ມູນ...", "ກຳລັງດຳເນີນການ");
 
             let receipt1Url = '';
             let receipt2Url = '';
 
-            if (fileInput1 && fileInput1.files && fileInput1.files[0]) {
-                const optFile1 = await compressImage(fileInput1.files[0], 1200, 0.7);
-                receipt1Url = await uploadToCloudinary(optFile1);
-            }
-            if (fileInput2 && fileInput2.files && fileInput2.files[0]) {
-                const optFile2 = await compressImage(fileInput2.files[0], 1200, 0.7);
-                receipt2Url = await uploadToCloudinary(optFile2);
-            }
-
-            const newExpense = {
-                projectId: selectedProjectId,
-                date: dateVal,
-                desc: descVal,
-                amount: rawAmount,
-                fee: rawFee,
-                method: methodVal, // ດຶງຄ່າ ສົດ/ໂອນ ຈາກ Dropdown ໄດ້ຢ່າງຖືກຕ້ອງແນ່ນອນ
-                receipt1: receipt1Url || '',
-                receipt2: receipt2Url || '',
-                note: noteVal
-            };
-
             try {
+                // ອັບໂຫຼດຮູບພາບທີ 1 (ບິນເຄື່ອງ)
+                if (fileInput1 && fileInput1.files && fileInput1.files.length > 0) {
+                    const file1 = fileInput1.files[0];
+                    // ກວດສອບຂະໜາດໄຟລ໌ (ບໍ່ເກີນ 5MB)
+                    if (file1.size > 5 * 1024 * 1024) {
+                        showCustomAlert("ຮູບພາບບິນເຄື່ອງມີຂະໜາດໃຫຍ່ເກີນໄປ (ສູງສຸດ 5MB)", "ຜິດພາດ");
+                        return;
+                    }
+                    const optimizedFile1 = await compressImage(file1, 1200, 0.7);
+                    receipt1Url = await uploadToCloudinary(optimizedFile1);
+                    console.log("Uploaded receipt1 URL:", receipt1Url); // ກວດສອບ
+                }
+
+                // ອັບໂຫຼດຮູບພາບທີ 2 (ບິນໂອນ)
+                if (fileInput2 && fileInput2.files && fileInput2.files.length > 0) {
+                    const file2 = fileInput2.files[0];
+                    if (file2.size > 5 * 1024 * 1024) {
+                        showCustomAlert("ຮູບພາບບິນໂອນມີຂະໜາດໃຫຍ່ເກີນໄປ (ສູງສຸດ 5MB)", "ຜິດພາດ");
+                        return;
+                    }
+                    const optimizedFile2 = await compressImage(file2, 1200, 0.7);
+                    receipt2Url = await uploadToCloudinary(optimizedFile2);
+                    console.log("Uploaded receipt2 URL:", receipt2Url); // ກວດສອບ
+                }
+
+        // ສ້າງຂໍ້ມູນລາຍຈ່າຍ
+                const newExpense = {
+                    projectId: selectedProjectId,
+                    date: dateVal,
+                    desc: descVal,
+                    amount: rawAmount,
+                    fee: rawFee,
+                    method: methodVal,
+                    receipt1: receipt1Url || '',  // ບິນເຄື່ອງ
+                    receipt2: receipt2Url || '',  // ບິນໂອນ
+                    note: noteVal,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                console.log("Saving expense data:", newExpense); // ກວດສອບຂໍ້ມູນກ່ອນບັນທຶກ
+
+                // ບັນທຶກຂໍ້ມູນລົງ Firestore
                 await db.collection("expenses").add(newExpense);
-                showCustomAlert("ເພີ່ມລາຍຈ່າຍສຳເລັດ!");
+                
+                // ລ້າງຟອມ
+                document.getElementById('expenseForm').reset();
+                showCustomAlert("ເພີ່ມລາຍຈ່າຍສຳເລັດ! ມີຮູບພາບ " + (receipt1Url ? 'ບິນເຄື່ອງ 1 ຮູບ' : '') + (receipt2Url ? ' ແລະ ບິນໂອນ 1 ຮູບ' : '') + " ຖືກບັນທຶກແລ້ວ");
+
             } catch (error) {
+                console.error("Error saving expense:", error);
                 showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
             }
         });
 
-// ແກ້ໄຂຟັງຊັນ renderExpenses() ໃຫ້ສະແດງຮູບພາບທີ່ຖືກຕ້ອງ
+        // ເພີ່ມຟັງຊັນກວດສອບການໂຫຼດຂໍ້ມູນ
+        db.collection("expenses").onSnapshot((snapshot) => {
+            expensesData = [];
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                console.log("Expense data from Firebase:", data); // ກວດສອບຂໍ້ມູນທີ່ໄດ້ຈາກ Firebase
+                expensesData.push({ id: doc.id, ...data });
+            });
+            renderExpenses();
+        });
+
+        // ແກ້ໄຂຟັງຊັນ renderExpenses ໃຫ້ສະແດງຮູບພາບ
         function renderExpenses() {
             const tbody = document.getElementById('expenseTableBody');
             tbody.innerHTML = "";
@@ -928,7 +966,9 @@
                 return;
             }
 
-            let totalAmount = 0; let totalFee = 0;
+            let totalAmount = 0; 
+            let totalFee = 0;
+            
             filteredExpenses.forEach((exp, index) => {
                 totalAmount += Number(exp.amount || 0);
                 totalFee += Number(exp.fee || 0);
@@ -937,17 +977,26 @@
                 const formattedAmount = formatNumber(exp.amount);
                 const formattedFee = formatNumber(exp.fee);
                 
+                // ກວດສອບ URL ຮູບພາບ
+                console.log(`Expense ${index+1} - receipt1: ${exp.receipt1}, receipt2: ${exp.receipt2}`);
+                
                 // ສະແດງບິນເຄື່ອງ (ກ່ອງສີແດງ 1)
-                let receipt1Html = exp.receipt1 ? 
-                    `<img src="${exp.receipt1}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt1}')" title="ບິນເຄື່ອງ">` : 
+                let receipt1Html = (exp.receipt1 && exp.receipt1.length > 0) ? 
+                    `<img src="${exp.receipt1}" class="w-12 h-12 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" 
+                        onclick="openImageViewer('${exp.receipt1}')" 
+                        title="ບິນເຄື່ອງ"
+                        onerror="this.src=''; this.alt='ບໍ່ສາມາດໂຫຼດຮູບ'; this.className='w-12 h-12 object-cover rounded mx-auto border bg-gray-100 text-xs p-1';">` : 
                     `<span class="text-gray-400 text-xs">-</span>`;
                 
                 // ສະແດງບິນໂອນ (ກ່ອງສີແດງ 2)
-                let receipt2Html = exp.receipt2 ? 
-                    `<img src="${exp.receipt2}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt2}')" title="ບິນໂອນ">` : 
+                let receipt2Html = (exp.receipt2 && exp.receipt2.length > 0) ? 
+                    `<img src="${exp.receipt2}" class="w-12 h-12 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" 
+                        onclick="openImageViewer('${exp.receipt2}')" 
+                        title="ບິນໂອນ"
+                        onerror="this.src=''; this.alt='ບໍ່ສາມາດໂຫຼດຮູບ'; this.className='w-12 h-12 object-cover rounded mx-auto border bg-gray-100 text-xs p-1';">` : 
                     `<span class="text-gray-400 text-xs">-</span>`;
 
-                // ສະແດງ [ສົດ]/[ໂອນ] ໃນຫ້ອງໝາຍເຫດ
+                // ສະແດງວິທີການຊຳລະ
                 let displayMethod = exp.method === 'ສົດ' ? 'ສົດ' : 'ໂອນ';
                 let methodColor = exp.method === 'ສົດ' ? 'text-green-600' : 'text-blue-600';
                 let displayNote = (exp.note && exp.note !== '-') ? exp.note : '';
@@ -959,10 +1008,10 @@
                     <td class="p-3 border text-center">${index + 1}</td>
                     <td class="p-3 border">${formattedDate}</td>
                     <td class="p-3 border">${exp.desc}</td>
-                    <td class="p-3 border">${formattedAmount}</td>
-                    <td class="p-3 border">${formattedFee}</td>
-                    <td class="p-3 border text-center">${receipt1Html}</td>  <!-- ກ່ອງສີແດງ 1: ບິນເຄື່ອງ -->
-                    <td class="p-3 border text-center">${receipt2Html}</td>  <!-- ກ່ອງສີແດງ 2: ບິນໂອນ -->
+                    <td class="p-3 border text-right">${formattedAmount}</td>
+                    <td class="p-3 border text-right">${formattedFee}</td>
+                    <td class="p-3 border text-center">${receipt1Html}</td>
+                    <td class="p-3 border text-center">${receipt2Html}</td>
                     <td class="p-3 border">${finalNoteHtml}</td>
                     <td class="p-3 border text-center">
                         <input type="checkbox" class="expense-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${exp.id}">
@@ -976,8 +1025,8 @@
             totalTr.className = "bg-gray-50 font-bold text-gray-800";
             totalTr.innerHTML = `
                 <td colspan="3" class="p-3 border text-right">ລວມລາຍຈ່າຍທັງໝົດ</td>
-                <td class="p-3 border text-blue-600">${formatNumber(totalAmount)}</td>
-                <td class="p-3 border text-blue-600">${formatNumber(totalFee)}</td>
+                <td class="p-3 border text-right text-blue-600">${formatNumber(totalAmount)}</td>
+                <td class="p-3 border text-right text-blue-600">${formatNumber(totalFee)}</td>
                 <td colspan="4" class="p-3 border"></td>
             `;
             tbody.appendChild(totalTr);
