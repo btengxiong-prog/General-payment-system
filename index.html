@@ -870,52 +870,56 @@
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // 1. ດຶງຄ່າອອກມາ "ທັນທີ" ກ່ອນທີ່ຈະປິດຟອມ (ເພີ່ມ .trim() ຕັດຍະຫວ່າງປ້ອງກັນການຜິດພາດ)
-            const methodEl = document.getElementById('expenseMethod');
-            const methodVal = methodEl ? methodEl.value.trim() : 'ໂອນ';
+            // 1. ອ່ານຄ່າຈາກປ່ອງ Dropdown ໂດຍກົງ (ກວດສອບໃຫ້ແນ່ໃຈວ່າໃນ HTML ໃຊ້ id="expenseMethod")
+            const methodDropdown = document.getElementById('expenseMethod');
             
+            if (!methodDropdown) {
+                alert("❌ ຜິດພາດ: ລະບົບຫາປ່ອງເລືອກ 'ປະເພດການຊຳລະ' ບໍ່ເຫັນ!");
+                return;
+            }
+
+            const methodVal = methodDropdown.value;
+
+            // 🛑 ແຈ້ງເຕືອນເພື່ອພິສູດຕົ້ນເຫດ: ຖ້າມັນຂຶ້ນວ່າ "ທ່ານເລືອກ: ສົດ" ສະແດງວ່າເຮັດວຽກປົກກະຕິແລ້ວ
+            alert("ລະບົບອ່ານປະເພດການຊຳລະໄດ້ເປັນ: " + methodVal);
+
             const dateVal = document.getElementById('expenseDate').value;
             const descVal = document.getElementById('expenseDesc').value;
-            const noteVal = document.getElementById('expenseNote').value || '-';
             const rawAmount = document.getElementById('expenseAmount').value.replace(/,/g, '');
             const rawFee = document.getElementById('expenseFee').value.replace(/,/g, '') || '0';
+            const noteVal = document.getElementById('expenseNote').value || '-';
 
             const fileInput1 = document.getElementById('expenseReceipt1');
             const fileInput2 = document.getElementById('expenseReceipt2');
-            let file1 = fileInput1 && fileInput1.files ? fileInput1.files[0] : null;
-            let file2 = fileInput2 && fileInput2.files ? fileInput2.files[0] : null;
 
-            // 2. ປິດ Modal ຫຼັງຈາກດຶງຂໍ້ມູນສຳເລັດແລ້ວ
             closeExpenseModal();
             showCustomAlert("ກຳລັງບັນທຶກລາຍຈ່າຍ...", "ກຳລັງດຳເນີນການ");
 
             let receipt1Url = '';
             let receipt2Url = '';
 
-            // 3. ອັບໂຫຼດຮູບຫຼັກຖານ
-            if (file1) {
-                const optFile1 = await compressImage(file1, 1200, 0.7);
+            if (fileInput1 && fileInput1.files && fileInput1.files[0]) {
+                const optFile1 = await compressImage(fileInput1.files[0], 1200, 0.7);
                 receipt1Url = await uploadToCloudinary(optFile1);
             }
-            if (file2) {
-                const optFile2 = await compressImage(file2, 1200, 0.7);
+            if (fileInput2 && fileInput2.files && fileInput2.files[0]) {
+                const optFile2 = await compressImage(fileInput2.files[0], 1200, 0.7);
                 receipt2Url = await uploadToCloudinary(optFile2);
             }
 
-            // 4. ສ້າງ Object ຂໍ້ມູນດ້ວຍຄ່າທີ່ດຶງມາໄວ້ຕອນທຳອິດ
+            // 2. ບັນທຶກຄ່າທີ່ອ່ານໄດ້ລົງໄປແທ້ໆ
             const newExpense = {
                 projectId: selectedProjectId,
                 date: dateVal,
                 desc: descVal,
                 amount: rawAmount,
                 fee: rawFee,
-                method: methodVal, // <--- ໂຕນີ້ຈະຕ້ອງເປັນ "ສົດ" ຢ່າງແນ່ນອນຖ້າເລືອກສົດ
+                method: methodVal, // <--- ຄ່າ 'ສົດ' ຫຼື 'ໂອນ' ຈະຖືກສົ່ງໄປທີ່ນີ້
                 receipt1: receipt1Url || '',
                 receipt2: receipt2Url || '',
                 note: noteVal
             };
 
-            // 5. ບັນທຶກລົງຖານຂໍ້ມູນ
             try {
                 await db.collection("expenses").add(newExpense);
                 showCustomAlert("ເພີ່ມລາຍຈ່າຍສຳເລັດ!");
@@ -923,6 +927,7 @@
                 showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
             }
         });
+
         // --- ສິ້ນສຸດໂຄດບັນທຶກລາຍຈ່າຍ ---
 
         function renderExpenses() {
