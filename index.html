@@ -940,12 +940,19 @@
                 let receipt1Html = exp.receipt1 ? `<img src="${exp.receipt1}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt1}')" title="ບິນເບື້ອງ">` : `-`;
                 let receipt2Html = exp.receipt2 ? `<img src="${exp.receipt2}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt2}')" title="ບິນໂອນ">` : `-`;
 
+                // ເພີ່ມປ້າຍບອກສະຖານະ ສົດ ຫຼື ໂອນ ໃຫ້ເບິ່ງງ່າຍຂຶ້ນ
+                let methodBadge = exp.method === 'ສົດ' 
+                    ? `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs ml-2 border border-green-300">ສົດ</span>` 
+                    : (exp.method === 'ໂອນ' 
+                        ? `<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs ml-2 border border-blue-300">ໂອນ</span>` 
+                        : `<span class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded text-xs ml-2 border border-gray-300">ຂໍ້ມູນເກົ່າ (ໂອນ)</span>`);
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
                 tr.innerHTML = `
                     <td class="p-3 border text-center">${index + 1}</td>
                     <td class="p-3 border">${formattedDate}</td>
-                    <td class="p-3 border">${exp.desc}</td>
+                    <td class="p-3 border">${exp.desc} ${methodBadge}</td>
                     <td class="p-3 border">${formattedAmount}</td>
                     <td class="p-3 border">${formattedFee}</td>
                     <td class="p-3 border text-center">${receipt1Html}</td>
