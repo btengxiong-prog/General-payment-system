@@ -877,8 +877,9 @@
             const rawFee = document.getElementById('expenseFee').value.replace(/,/g, '') || '0';
             const noteVal = document.getElementById('expenseNote').value || '-';
 
-            const fileInput1 = document.getElementById('expenseReceipt1');
-            const fileInput2 = document.getElementById('expenseReceipt2');
+            // ດຶງໄຟລ໌ທັງ 2 ຊ່ອງມາ 
+            const fileInput1 = document.getElementById('expenseReceipt1'); // ບິນເຄື່ອງ
+            const fileInput2 = document.getElementById('expenseReceipt2'); // ບິນໂອນ
 
             closeExpenseModal();
             showCustomAlert("ກຳລັງບັນທຶກລາຍຈ່າຍ...", "ກຳລັງດຳເນີນການ");
@@ -887,10 +888,12 @@
             let receipt2Url = '';
 
             try {
+                // ຖ້າຜູ້ໃຊ້ອັບໂຫຼດ ບິນເຄື່ອງ
                 if (fileInput1 && fileInput1.files && fileInput1.files[0]) {
                     const optFile1 = await compressImage(fileInput1.files[0], 1200, 0.7);
                     receipt1Url = await uploadToCloudinary(optFile1);
                 }
+                // ຖ້າຜູ້ໃຊ້ອັບໂຫຼດ ບິນໂອນ
                 if (fileInput2 && fileInput2.files && fileInput2.files[0]) {
                     const optFile2 = await compressImage(fileInput2.files[0], 1200, 0.7);
                     receipt2Url = await uploadToCloudinary(optFile2);
@@ -903,8 +906,8 @@
                     amount: rawAmount,
                     fee: rawFee,
                     method: methodVal,
-                    receipt1: receipt1Url || '',
-                    receipt2: receipt2Url || '',
+                    receipt1: receipt1Url || '', // ບັນທຶກ URL ບິນເຄື່ອງລົງ Firebase
+                    receipt2: receipt2Url || '', // ບັນທຶກ URL ບິນໂອນລົງ Firebase
                     note: noteVal
                 };
 
