@@ -848,6 +848,10 @@
             const tbody = document.getElementById('investmentTableBody');
             tbody.innerHTML = "";
             let filteredInvestments = selectedProjectId ? investmentsData.filter(inv => inv.projectId === selectedProjectId) : [];
+            
+            // ເພີ່ມການລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່ (ນ້ອຍໄປໃຫຍ່)
+            filteredInvestments.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
             document.getElementById('selectAllInvest').checked = false;
 
             if (filteredInvestments.length === 0) {
@@ -985,6 +989,10 @@
             const tbody = document.getElementById('expenseTableBody');
             tbody.innerHTML = "";
             let filteredExpenses = selectedProjectId ? expensesData.filter(exp => exp.projectId === selectedProjectId) : [];
+            
+            // ເພີ່ມການລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່ (ນ້ອຍໄປໃຫຍ່)
+            filteredExpenses.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
             document.getElementById('selectAllExpense').checked = false;
 
             if (filteredExpenses.length === 0) {
