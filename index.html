@@ -97,7 +97,8 @@
                                 <th class="p-3 border">ແຂວງ</th>
                                 <th class="p-3 border">ເບີໂທລະສັບ</th>
                                 <th class="p-3 border">ໝາຍເຫດ</th>
-                                <th class="p-3 border text-center">
+                                <!-- ເພີ່ມ admin-col-th ໃສ່ບ່ອນນີ້ -->
+                                <th class="p-3 border text-center admin-col-th">
                                     <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
                                 </th>
                             </tr>
@@ -133,7 +134,8 @@
                                 <th class="p-3 border text-center">ລົງທຶນຄັ້ງທີ່</th>
                                 <th class="p-3 border text-center">ຫຼັກຖານ</th>
                                 <th class="p-3 border">ໝາຍເຫດ</th>
-                                <th class="p-3 border text-center">
+                                <!-- ເພີ່ມ admin-col-th ໃສ່ບ່ອນນີ້ -->
+                                <th class="p-3 border text-center admin-col-th">
                                     <input type="checkbox" id="selectAllInvest" onclick="toggleSelectAllInvest(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
                                 </th>
                             </tr>
@@ -168,7 +170,8 @@
                                 <th rowspan="2" class="p-3 border align-middle">ຄ່າທຳນຽມ</th>
                                 <th colspan="2" class="p-2 border text-center">ຫຼັກຖານ</th>
                                 <th rowspan="2" class="p-3 border align-middle">ໝາຍເຫດ</th>
-                                <th rowspan="2" class="p-3 border text-center align-middle">
+                                <!-- ເພີ່ມ admin-col-th ໃສ່ບ່ອນນີ້ -->
+                                <th rowspan="2" class="p-3 border text-center align-middle admin-col-th">
                                     <input type="checkbox" id="selectAllExpense" onclick="toggleSelectAllExpense(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
                                 </th>
                             </tr>
@@ -772,12 +775,19 @@
             let filteredInvestors = selectedProjectId ? investorsData.filter(inv => inv.projectId === selectedProjectId) : [];
             document.getElementById('selectAll').checked = false;
 
+            // 1. ກວດສອບສິດແຄ່ເທື່ອດຽວ (ເອົາໄວ້ນອກ Loop)
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+            const colspan = isAdmin ? 8 : 7; // ຖ້າເປັນແອດມິນໃຫ້ມີ 8 ຖັນ, ຢູເຊີ 7 ຖັນ
+
             if (filteredInvestors.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນນັກລົງທຶນໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນນັກລົງທຶນໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
                 return;
             }
 
             filteredInvestors.forEach((inv, index) => {
+                // 2. ສ້າງກ່ອງຕິກຖ້າເປັນ ADMIN
+                const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="inv-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}"></td>` : '';
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
                 tr.innerHTML = `
@@ -788,9 +798,7 @@
                     <td class="p-3 border">${inv.province}</td>
                     <td class="p-3 border">${inv.phone}</td>
                     <td class="p-3 border">${inv.note}</td>
-                    <td class="p-3 border text-center">
-                        <input type="checkbox" class="inv-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}">
-                    </td>
+                    ${checkboxHtml} <!-- 3. ວາງຕົວແປໄວ້ທ້າຍສຸດ -->
                 `;
                 tbody.appendChild(tr);
             });
@@ -926,6 +934,10 @@
                 const formattedAmount = formatNumber(inv.amount);
                 let receiptHtml = inv.receipt ? `<img src="${inv.receipt}" class="w-10 h-10 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${inv.receipt}')" title="ເບິ່ງຮູບໃຫຍ່">` : `<span class="text-gray-400 text-xs">ບໍ່ມີຫຼັກຖານ</span>`;
 
+            // ເພີ່ມ 2 ແຖວນີ້ເພື່ອກວດສອບສິດ ADMIN
+                const isAdmin = currentUser && currentUser.role === 'ADMIN';
+                const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="invest-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}"></td>` : '';
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
                 tr.innerHTML = `
@@ -937,9 +949,7 @@
                     <td class="p-3 border text-center">${inv.round}</td>
                     <td class="p-3 border text-center">${receiptHtml}</td>
                     <td class="p-3 border">${noteText}</td>
-                    <td class="p-3 border text-center">
-                        <input type="checkbox" class="invest-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}">
-                    </td>
+                    ${checkboxHtml} <!-- ເອົາຕົວແປມາໃສ່ແທນບ່ອນນີ້ -->
                 `;
                 tbody.appendChild(tr);
             });
@@ -1073,20 +1083,22 @@
                 let displayNote = (exp.note && exp.note !== '-') ? exp.note : '';
                 let finalNoteHtml = `<span class="${methodColor} font-bold">[${displayMethod}]</span> ${displayNote}`;
 
+            // ເພີ່ມ 2 ແຖວນີ້ເພື່ອກວດສອບສິດ ADMIN
+                const isAdmin = currentUser && currentUser.role === 'ADMIN';
+                const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="invest-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}"></td>` : '';
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
                 tr.innerHTML = `
                     <td class="p-3 border text-center">${index + 1}</td>
                     <td class="p-3 border">${formattedDate}</td>
-                    <td class="p-3 border">${exp.desc}</td>
+                    <td class="p-3 border">${inv.investorName}</td>
                     <td class="p-3 border">${formattedAmount}</td>
-                    <td class="p-3 border">${formattedFee}</td>
-                    <td class="p-3 border text-center">${receipt1Html}</td>
-                    <td class="p-3 border text-center">${receipt2Html}</td>
-                    <td class="p-3 border">${finalNoteHtml}</td>
-                    <td class="p-3 border text-center">
-                        <input type="checkbox" class="expense-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${exp.id}">
-                    </td>
+                    <td class="p-3 border">${inv.method}</td>
+                    <td class="p-3 border text-center">${inv.round}</td>
+                    <td class="p-3 border text-center">${receiptHtml}</td>
+                    <td class="p-3 border">${noteText}</td>
+                    ${checkboxHtml} <!-- ເອົາຕົວແປມາໃສ່ແທນບ່ອນນີ້ -->
                 `;
                 tbody.appendChild(tr);
             });
