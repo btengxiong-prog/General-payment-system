@@ -1250,9 +1250,13 @@
             if (!tbody || !filterSelect) return;
             tbody.innerHTML = "";
             
-            // ດຶງຂໍ້ມູນການລົງທຶນ ແລະ ລາຍຊື່ນັກລົງທຶນທັງໝົດໃນໂຄງການ
             let filteredInvestments = selectedProjectId ? investmentsData.filter(inv => inv.projectId === selectedProjectId) : [];
             let projectInvestors = selectedProjectId ? investorsData.filter(inv => inv.projectId === selectedProjectId) : [];
+
+            // ສ້າງລາຍຊື່ນັກລົງທຶນທັງໝົດ (ລວມຈາກລາຍຊື່ຫຼັກ ແລະ ຈາກທີ່ເຄີຍຈ່າຍຈິງ ເພື່ອປ້ອງກັນລາຍຊື່ຕົກຫຼົ່ນ)
+            const allNamesSet = new Set(projectInvestors.map(i => i.name));
+            filteredInvestments.forEach(i => allNamesSet.add(i.investorName));
+            const allNames = Array.from(allNamesSet);
 
             // 1. ສ້າງຕົວເລືອກ "ລົງທຶນຄັ້ງທີ່" ໃຫ້ Dropdown ອັດຕະໂນມັດ
             const rounds = [...new Set(filteredInvestments.map(i => Number(i.round || 1)))].sort((a,b) => a - b);
@@ -1263,17 +1267,15 @@
                 filterSelect.innerHTML += `<option value="${r}">ຄັ້ງທີ່ ${r}</option>`;
             });
             
-            // ຮັກສາຄ່າທີ່ຜູ້ໃຊ້ກຳລັງເລືອກໄວ້
             filterSelect.value = currentSelection;
             if (!filterSelect.value) filterSelect.value = 'all';
 
-            // 2. ຈັດກຽມຂໍ້ມູນຕາມເງື່ອນໄຂທີ່ເລືອກ
             let displayData = [];
             let unpaidData = [];
 
             if (filterSelect.value === 'all') {
                 // ==========================================
-                // ກໍລະນີເລືອກ "ລວມທັງໝົດ" (ແກ້ໄຂ 1% ສຸດທ້າຍ)
+                // ກໍລະນີເລືອກ "ລວມທັງໝົດ" (ລົບສ່ວນຕ່າງອັດຕະໂນມັດ)
                 // ==========================================
                 const grouped = {};
                 filteredInvestments.forEach(inv => {
@@ -1286,30 +1288,29 @@
                         };
                     }
                     grouped[inv.investorName].amount += Number(inv.amount || 0);
-                    // ເອົາວັນທີຈ່າຍຫຼ້າສຸດ
                     if (new Date(inv.date) > new Date(grouped[inv.investorName].date)) {
                         grouped[inv.investorName].date = inv.date;
                     }
                 });
                 displayData = Object.values(grouped);
 
-                // ຊອກຫາຍອດລວມທີ່ສູງທີ່ສຸດ (MAX) ໃນໝູ່ນັກລົງທຶນ
+                // ຊອກຫາຍອດລວມທີ່ສູງທີ່ສຸດ (MAX) 
                 let maxTotalAmount = 0;
                 if (displayData.length > 0) {
-                    maxTotalAmount = Math.max(...displayData.map(i => Number(i.amount || 0)));
+                    maxTotalAmount = Math.max(...displayData.map(i => Number(i.amount)));
                 }
 
-                // ທຽບຍອດເງິນຂອງນັກລົງທຶນທຸກຄົນກັບຍອດ MAX
-                projectInvestors.forEach(inv => {
-                    const paidInfo = grouped[inv.name];
-                    const totalPaid = paidInfo ? Number(paidInfo.amount) : 0; // ຖ້າບໍ່ເຄີຍຈ່າຍຈະເປັນ 0
-                    const deficit = maxTotalAmount - totalPaid; // ສູດ: MAX - ຈຳນວນທີ່ຈ່າຍໄປແລ້ວ
+                // ກວດສອບນັກລົງທຶນທຸກຄົນວ່າໃຜຈ່າຍບໍ່ຮອດ MAX 
+                allNames.forEach(name => {
+                    const paidInfo = grouped[name];
+                    const totalPaid = paidInfo ? Number(paidInfo.amount) : 0;
+                    const deficit = maxTotalAmount - totalPaid; // MAX ລົບ ຍອດຈ່າຍຈິງ
 
-                    // ຖ້າຍັງຈ່າຍບໍ່ຄົບຕາມ MAX (ຄ້າງຈ່າຍ) ໃຫ້ເອົາໄປສະແດງໃນພາກທີ II
+                    // ຖ້າຍອດຄ້າງໃຫຍ່ກວ່າ 0 ແມ່ນໃຫ້ຍົກໄປສະແດງໃນພາກທີ II
                     if (deficit > 0) {
                         unpaidData.push({
-                            date: '', // ບໍ່ສະແດງວັນທີ
-                            investorName: inv.name,
+                            date: '', // ບໍ່ຕ້ອງສະແດງວັນທີ
+                            investorName: name,
                             amount: deficit,
                             note: totalPaid === 0 ? 'ຍັງບໍ່ເຄີຍລົງທຶນ' : 'ຍັງຄ້າງຊຳລະອິກສ່ວນໜຶ່ງ'
                         });
@@ -1329,17 +1330,17 @@
                 }
 
                 const paidNames = displayData.map(i => i.investorName);
-                const unpaid = projectInvestors.filter(inv => !paidNames.includes(inv.name));
+                const unpaid = allNames.filter(name => !paidNames.includes(name));
 
-                unpaidData = unpaid.map(inv => ({
+                unpaidData = unpaid.map(name => ({
                     date: '', 
-                    investorName: inv.name,
+                    investorName: name,
                     amount: maxAmountForUnpaid,
                     note: 'ຍັງບໍ່ທັນຊຳລະໃນງວດນີ້'
                 }));
             }
 
-            // ລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່ (ສະເພາະກຸ່ມທີ່ຈ່າຍແລ້ວ)
+            // ລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່ (ສະເພາະກຸ່ມທີ່ຈ່າຍແລ້ວໃນພາກ I)
             displayData.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
 
             let html = "";
