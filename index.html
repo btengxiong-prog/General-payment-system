@@ -760,7 +760,7 @@
         document.getElementById('investmentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // 1. ເກັບຄ່າທັງໝົດໄວ້ໃນຕົວແປກ່ອນປິດຟອມ
+            // 1. ອ່ານຄ່າທັງໝົດກ່ອນ ຫ້າມປິດຟອມເດັດຂາດໃນຂັ້ນຕອນນີ້
             const dateVal = document.getElementById('investDate').value;
             const investorNameVal = document.getElementById('investorSelect').value;
             const method = document.getElementById('investMethod').value;
@@ -770,41 +770,41 @@
             const noteVal = document.getElementById('investNote').value || '-';
             
             const fileInput = document.getElementById('investReceipt');
-            const fileToUpload = (fileInput && fileInput.files && fileInput.files[0]) ? fileInput.files[0] : null;
+            const fileToUpload = (fileInput && fileInput.files && fileInput.files.length > 0) ? fileInput.files[0] : null;
 
-            // 2. ປິດ Modal ແລະ ສະແດງຂໍ້ຄວາມກຳລັງໂຫຼດ
-            closeInvestmentModal();
-            showCustomAlert("ກຳລັງບັນທຶກຂໍ້ມູນລົງລະບົບ...", "ກຳລັງດຳເນີນການ");
-
-            // 3. ອັບໂຫຼດຮູບ (ຖ້າມີ)
-            let receiptUrl = '';
-            if (fileToUpload) {
-                try {
-                    const optimizedFile = await compressImage(fileToUpload, 1200, 0.7);
-                    receiptUrl = await uploadToCloudinary(optimizedFile);
-                } catch (err) {
-                    console.error("Image upload error:", err);
-                }
-            }
-
-            // 4. ບັນທຶກລົງ Firebase
-            const newInvest = {
-                projectId: selectedProjectId,
-                date: dateVal,
-                investorName: investorNameVal,
-                amount: rawAmount,
-                method: method,
-                receiver: receiver,
-                round: roundVal,
-                receipt: receiptUrl || '',
-                note: noteVal
-            };
+            // 2. ສະແດງແຈ້ງເຕືອນໃຫ້ຜູ້ໃຊ້ລໍຖ້າ (ໂດຍບໍ່ໃຊ້ຄຳສັ່ງປິດຟອມ)
+            showCustomAlert("ກຳລັງອັບໂຫຼດຮູບ ແລະ ບັນທຶກຂໍ້ມູນ ກະລຸນາລໍຖ້າ...", "ກຳລັງດຳເນີນການ");
 
             try {
+                let receiptUrl = '';
+                // 3. ບີບອັດ ແລະ ອັບໂຫຼດຮູບ ຖ້າມີການເລືອກໄຟລ໌
+                if (fileToUpload) {
+                    const optimizedFile = await compressImage(fileToUpload, 1200, 0.7);
+                    receiptUrl = await uploadToCloudinary(optimizedFile);
+                }
+
+                // 4. ກຽມຂໍ້ມູນບັນທຶກລົງ Cloud
+                const newInvest = {
+                    projectId: selectedProjectId,
+                    date: dateVal, // ຕອນນີ້ວັນທີຈະບໍ່ຫາຍແລ້ວ
+                    investorName: investorNameVal,
+                    amount: rawAmount,
+                    method: method,
+                    receiver: receiver,
+                    round: roundVal,
+                    receipt: receiptUrl || '',
+                    note: noteVal
+                };
+
                 await db.collection("investments").add(newInvest);
-                showCustomAlert("ເພີ່ມລາຍການລົງທຶນສຳເລັດ!");
+                
+                // 5. ບັນທຶກສຳເລັດແລ້ວ ຈຶ່ງຄ່ອຍປິດຟອມ ແລະ ລ້າງຄ່າ
+                closeInvestmentModal();
+                showCustomAlert("ເພີ່ມລາຍການລົງທຶນສຳເລັດ!", "ສຳເລັດແລ້ວ");
+                
             } catch (error) {
-                showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
+                console.error("Investment Error:", error);
+                showCustomAlert("ເກີດຂໍ້ຜິດພາດ: " + error.message, "ຜິດພາດ");
             }
         });
 
@@ -883,6 +883,7 @@
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            // 1. ອ່ານຄ່າທັງໝົດກ່ອນ
             const methodVal = document.getElementById('expenseMethod').value;
             const dateVal = document.getElementById('expenseDate').value;
             const descVal = document.getElementById('expenseDesc').value;
@@ -892,39 +893,49 @@
 
             const fileInput1 = document.getElementById('expenseReceipt1');
             const fileInput2 = document.getElementById('expenseReceipt2');
+            
+            const file1 = (fileInput1 && fileInput1.files && fileInput1.files.length > 0) ? fileInput1.files[0] : null;
+            const file2 = (fileInput2 && fileInput2.files && fileInput2.files.length > 0) ? fileInput2.files[0] : null;
 
-            closeExpenseModal();
-            showCustomAlert("ກຳລັງບັນທຶກລາຍຈ່າຍ...", "ກຳລັງດຳເນີນການ");
-
-            let receipt1Url = '';
-            let receipt2Url = '';
-
-            if (fileInput1 && fileInput1.files && fileInput1.files[0]) {
-                const optFile1 = await compressImage(fileInput1.files[0], 1200, 0.7);
-                receipt1Url = await uploadToCloudinary(optFile1);
-            }
-            if (fileInput2 && fileInput2.files && fileInput2.files[0]) {
-                const optFile2 = await compressImage(fileInput2.files[0], 1200, 0.7);
-                receipt2Url = await uploadToCloudinary(optFile2);
-            }
-
-            const newExpense = {
-                projectId: selectedProjectId,
-                date: dateVal,
-                desc: descVal,
-                amount: rawAmount,
-                fee: rawFee,
-                method: methodVal, // ດຶງຄ່າ ສົດ/ໂອນ ຈາກ Dropdown ໄດ້ຢ່າງຖືກຕ້ອງແນ່ນອນ
-                receipt1: receipt1Url || '',
-                receipt2: receipt2Url || '',
-                note: noteVal
-            };
+            showCustomAlert("ກຳລັງອັບໂຫຼດບິນ ແລະ ບັນທຶກລາຍຈ່າຍ ກະລຸນາລໍຖ້າ...", "ກຳລັງດຳເນີນການ");
 
             try {
+                let receipt1Url = '';
+                let receipt2Url = '';
+
+                // 2. ອັບໂຫຼດຮູບ ບິນເຄື່ອງ
+                if (file1) {
+                    const optFile1 = await compressImage(file1, 1200, 0.7);
+                    receipt1Url = await uploadToCloudinary(optFile1);
+                }
+                
+                // 3. ອັບໂຫຼດຮູບ ບິນໂອນ
+                if (file2) {
+                    const optFile2 = await compressImage(file2, 1200, 0.7);
+                    receipt2Url = await uploadToCloudinary(optFile2);
+                }
+
+                const newExpense = {
+                    projectId: selectedProjectId,
+                    date: dateVal,
+                    desc: descVal,
+                    amount: rawAmount,
+                    fee: rawFee,
+                    method: methodVal,
+                    receipt1: receipt1Url || '',
+                    receipt2: receipt2Url || '',
+                    note: noteVal
+                };
+
                 await db.collection("expenses").add(newExpense);
-                showCustomAlert("ເພີ່ມລາຍຈ່າຍສຳເລັດ!");
+                
+                // 4. ສຳເລັດແລ້ວຈຶ່ງປິດຟອມ
+                closeExpenseModal();
+                showCustomAlert("ເພີ່ມລາຍຈ່າຍສຳເລັດ!", "ສຳເລັດແລ້ວ");
+
             } catch (error) {
-                showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
+                console.error("Expense Error:", error);
+                showCustomAlert("ເກີດຂໍ້ຜິດພາດ: " + error.message, "ຜິດພາດ");
             }
         });
 
