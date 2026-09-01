@@ -441,8 +441,14 @@
         let investmentsData = [];
         let expensesData = [];
 
-        // ຟັງຊັນໂຫຼດຂໍ້ມູນຈາກ Firebase Cloud Database (ແກ້ໄຂໂຄດຊ້ອນກັນແລ້ວ)
+// ຟັງຊັນໂຫຼດຂໍ້ມູນຈາກ Firebase Cloud Database (ເພີ່ມການກຳນົດໂຄງການເລີ່ມຕົ້ນ)
         function loadDataFromFirebase() {
+            // ຖ້າຫາກຍັງບໍ່ທันເລືອກໂຄງການ ໃຫ້ກຳນົດເປັນໂຄງການທຳອິດ (p1) ເພື່ອໃຫ້ຂໍ້ມູນສະແດງທັນທີ
+            if (!selectedProjectId) {
+                selectedProjectId = 'p1';
+                selectProject('p1'); // ເອີ້ນໃຊ້ຟັງຊັນເລືອກໂຄງການ ແລະ ຣິນເດີຕາຕະລາງ
+            }
+
             db.collection("investors").onSnapshot((snapshot) => {
                 investorsData = [];
                 snapshot.forEach((doc) => { investorsData.push({ id: doc.id, ...doc.data() }); });
