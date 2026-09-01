@@ -915,12 +915,15 @@
             document.getElementById('expenseForm').reset();
         }
 
-        // ==========================================
-        // ແກ້ໄຂ: ຟັງຊັນບັນທຶກລາຍຈ່າຍ
+// ==========================================
+        // ແກ້ໄຂ: ຟັງຊັນບັນທຶກລາຍຈ່າຍ (ປ້ອງກັນຮູບບໍ່ເຂົ້າ)
         // ==========================================
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const fileInput1 = document.getElementById('expenseReceipt1');
+            const fileInput2 = document.getElementById('expenseReceipt2');
+
             showCustomAlert("ກຳລັງອັບໂຫຼດບິນ ແລະ ບັນທຶກລາຍຈ່າຍ ກະລຸນາລໍຖ້າ...", "ກຳລັງດຳເນີນການ");
 
             const methodVal = document.getElementById('expenseMethod').value;
@@ -930,22 +933,32 @@
             const rawFee = document.getElementById('expenseFee').value.replace(/,/g, '') || '0';
             const noteVal = document.getElementById('expenseNote').value || '-';
 
-            const fileInput1 = document.getElementById('expenseReceipt1');
-            const fileInput2 = document.getElementById('expenseReceipt2');
-
             try {
                 let receipt1Url = '';
                 let receipt2Url = '';
+                let isUploadFailed = false; // ຕົວແປເຊັກວ່າການອັບໂຫຼດມີບັນຫາຫຼືບໍ່
 
+                // 1. ອັບໂຫຼດບິນເຄື່ອງ
                 if (fileInput1.files && fileInput1.files[0]) {
                     const optFile1 = await compressImage(fileInput1.files[0], 1200, 0.7);
                     receipt1Url = await uploadToCloudinary(optFile1);
+                    if (!receipt1Url) isUploadFailed = true; // ຖ້າ URL ບໍ່ກັບມາ ສະແດງວ່າລົ້ມເຫຼວ
                 }
+                
+                // 2. ອັບໂຫຼດບິນໂອນ
                 if (fileInput2.files && fileInput2.files[0]) {
                     const optFile2 = await compressImage(fileInput2.files[0], 1200, 0.7);
                     receipt2Url = await uploadToCloudinary(optFile2);
+                    if (!receipt2Url) isUploadFailed = true; // ຖ້າ URL ບໍ່ກັບມາ ສະແດງວ່າລົ້ມເຫຼວ
                 }
 
+                // ຖ້າອັບໂຫຼດຮູບລົ້ມເຫຼວ ໃຫ້ຢຸດການບັນທຶກທັນທີ
+                if (isUploadFailed) {
+                    showCustomAlert("ອັບໂຫຼດຮູບພາບບໍ່ສຳເລັດ ກະລຸນາກວດສອບອິນເຕີເນັດ ຫຼື ລອງເລືອກຮູບໃໝ່ອີກຄັ້ງ", "ແຈ້ງເຕືອນ");
+                    return; // ຢຸດການເຮັດວຽກ
+                }
+
+                // ຖ້າຮູບເຂົ້າປົກກະຕິ ກໍບັນທຶກລົງ Firebase ເລີຍ
                 const newExpense = {
                     projectId: selectedProjectId,
                     date: dateVal,
