@@ -193,16 +193,37 @@
                     </div>
                 </div>
 
-        <!-- TAB 6: ການລົງທຶນ (ເພີ່ມໃໝ່) -->
+<!-- TAB 6: ການລົງທຶນ (ເພີ່ມໃໝ່) -->
             <div id="tab-invest_new" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ການລົງທຶນ</h2>
+                        <h2 class="text-2xl font-bold text-gray-800">ການລົງທຶນ (ສັງລວມ)</h2>
                         <p id="currentActiveProjectInvestNew" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-                    ກຳລັງພັດທະນາໜ້າການລົງທຶນ... (ສາມາດເພີ່ມຕາຕະລາງພາຍຫຼັງໄດ້)
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex justify-between items-end mb-4">
+                        <h3 class="text-lg font-bold text-black">ຕາຕະລາງສັງລວມເງິນລົງທຶນຂອງນັກລົງທຶນ</h3>
+                        <div class="text-black font-bold text-sm">ປະຈຳງວດ: <span id="investSummaryPeriod" class="font-normal">ລວມທັງໝົດ</span></div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse border border-black">
+                            <thead>
+                                <tr class="bg-gray-100 text-black text-sm font-bold">
+                                    <th class="p-2 border border-black text-center w-12">ລ/ດ</th>
+                                    <th class="p-2 border border-black text-center">ວັນ/ເດືອນ/ປີ (ລົງທຶນ)</th>
+                                    <th class="p-2 border border-black">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
+                                    <th class="p-2 border border-black text-right">ຈ/ນ ເງິນ (ລົງທຶນ)</th>
+                                    <th class="p-2 border border-black">ໝາຍເຫດ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="investSummaryTableBody" class="text-sm text-black">
+                                <!-- ຂໍ້ມູນຈະຖືກໂຫຼດຜ່ານ JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -1221,9 +1242,73 @@
             document.getElementById('investRound').value = maxRound + 1;
         }
 
-    </script>
-</body>
-</html>
+        function renderInvestSummary() {
+            const tbody = document.getElementById('investSummaryTableBody');
+            tbody.innerHTML = "";
+            
+            let filteredInvestments = selectedProjectId ? investmentsData.filter(inv => inv.projectId === selectedProjectId) : [];
+            // ລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່
+            filteredInvestments.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+            if (filteredInvestments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນການລົງທຶນ' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
+                return;
+            }
+
+            // ໝາຍເຫດ: ປັດຈຸບັນລະບົບຈະດຶງຂໍ້ມູນທັງໝົດມາໄວ້ໃນພາກທີ I ກ່ອນເນື່ອງຈາກຍັງບໍ່ມີເງື່ອນໄຂແຍກ
+            let group1 = filteredInvestments; // ກຸ່ມທີ່ສຳເລັດ
+            let group2 = []; // ກຸ່ມທີ່ບໍ່ທັນສຳເລັດ 
+            
+            let html = "";
+            
+            // ພາກທີ I
+            html += `<tr class="bg-gray-100 font-bold"><td colspan="5" class="p-2 border border-black">I. ນັກລົງທຶນ (ໄດ້ສຳເລັດການລົງທຶນ)</td></tr>`;
+            let total1 = 0;
+            group1.forEach((inv, index) => {
+                total1 += Number(inv.amount || 0);
+                html += `
+                    <tr>
+                        <td class="p-2 border border-black text-center">${index + 1}</td>
+                        <td class="p-2 border border-black text-center">${formatDateToDDMMYYYY(inv.date)}</td>
+                        <td class="p-2 border border-black">${inv.investorName}</td>
+                        <td class="p-2 border border-black text-right">${formatNumber(inv.amount)}</td>
+                        <td class="p-2 border border-black">${inv.note || ''}</td>
+                    </tr>
+                `;
+            });
+            html += `<tr class="font-bold">
+                        <td colspan="3" class="p-2 border border-black text-center">ລວມເງິນລົງຕົວຈິງ</td>
+                        <td class="p-2 border border-black text-right">${formatNumber(total1)}</td>
+                        <td class="p-2 border border-black"></td>
+                     </tr>`;
+
+            // ພາກທີ II
+            html += `<tr class="bg-gray-100 font-bold"><td colspan="5" class="p-2 border border-black">II. ນັກລົງທຶນ (ບໍ່ທັນສຳເລັດການລົງທຶນ)</td></tr>`;
+            let total2 = 0;
+            if (group2.length === 0) {
+                html += `<tr><td colspan="5" class="p-2 border border-black text-center text-gray-400">ບໍ່ມີຂໍ້ມູນໃນພາກນີ້</td></tr>`;
+            } else {
+                group2.forEach((inv, index) => {
+                    total2 += Number(inv.amount || 0);
+                    html += `
+                        <tr>
+                            <td class="p-2 border border-black text-center">${index + 1}</td>
+                            <td class="p-2 border border-black text-center">${formatDateToDDMMYYYY(inv.date)}</td>
+                            <td class="p-2 border border-black">${inv.investorName}</td>
+                            <td class="p-2 border border-black text-right">${formatNumber(inv.amount)}</td>
+                            <td class="p-2 border border-black">${inv.note || ''}</td>
+                        </tr>
+                    `;
+                });
+            }
+            html += `<tr class="font-bold">
+                        <td colspan="3" class="p-2 border border-black text-center">ລວມເງິນລົງຕົວຈິງ</td>
+                        <td class="p-2 border border-black text-right">${formatNumber(total2)}</td>
+                        <td class="p-2 border border-black"></td>
+                     </tr>`;
+
+            tbody.innerHTML = html;
+        }
 
     </script>
 </body>
