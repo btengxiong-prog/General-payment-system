@@ -947,24 +947,17 @@
                 let receipt1Html = exp.receipt1 ? `<img src="${exp.receipt1}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt1}')" title="ບິນເບື້ອງ">` : `-`;
                 let receipt2Html = exp.receipt2 ? `<img src="${exp.receipt2}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt2}')" title="ບິນໂອນ">` : `-`;
 
-                // ເພີ່ມປ້າຍບອກສະຖານະ ສົດ ຫຼື ໂອນ ໃຫ້ເບິ່ງງ່າຍຂຶ້ນ
-                let methodBadge = exp.method === 'ສົດ' 
-                    ? `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs ml-2 border border-green-300">ສົດ</span>` 
-                    : (exp.method === 'ໂອນ' 
-                        ? `<span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs ml-2 border border-blue-300">ໂອນ</span>` 
-                        : `<span class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded text-xs ml-2 border border-gray-300">ຂໍ້ມູນເກົ່າ (ໂອນ)</span>`);
-
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
                 tr.innerHTML = `
                     <td class="p-3 border text-center">${index + 1}</td>
                     <td class="p-3 border">${formattedDate}</td>
-                    <td class="p-3 border">${exp.desc} ${methodBadge}</td>
+                    <td class="p-3 border">${exp.desc}</td>
                     <td class="p-3 border">${formattedAmount}</td>
                     <td class="p-3 border">${formattedFee}</td>
                     <td class="p-3 border text-center">${receipt1Html}</td>
                     <td class="p-3 border text-center">${receipt2Html}</td>
-                    <td class="p-3 border">${exp.note}</td>
+                    <td class="p-3 border font-semibold text-gray-800">${exp.note}</td>
                     <td class="p-3 border text-center">
                         <input type="checkbox" class="expense-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${exp.id}">
                     </td>
@@ -1065,12 +1058,12 @@
                 filteredExpenses = filteredExpenses.filter(e => e.date && e.date.startsWith(selectedYear) && parseInt(e.date.split('-')[1]) <= monthsCount);
             }
 
-            // คำนวณແຍກ ສสด / ໂອນ
-            let receiveCash = filteredInvestments.filter(i => i.method === 'ສົດ').reduce((sum, i) => sum + Number(i.amount || 0), 0);
-            let receiveTransfer = filteredInvestments.filter(i => i.method === 'ໂອນ').reduce((sum, i) => sum + Number(i.amount || 0), 0);
+            // คำนวณແຍກ ສสด / ໂອນ ໂດຍອ່ານຈາກຄຳວ່າ "ສົດ" ໃນໝາຍເຫດ ຫຼື ຈາກ Method
+            let receiveCash = filteredInvestments.filter(i => i.method === 'ສົດ' || (i.note && i.note.includes('ສົດ'))).reduce((sum, i) => sum + Number(i.amount || 0), 0);
+            let receiveTransfer = filteredInvestments.filter(i => i.method !== 'ສົດ' && !(i.note && i.note.includes('ສົດ'))).reduce((sum, i) => sum + Number(i.amount || 0), 0);
             
-            let expenseCash = filteredExpenses.filter(e => e.method === 'ສົດ').reduce((sum, e) => sum + Number(e.amount || 0) + Number(e.fee || 0), 0);
-            let expenseTransfer = filteredExpenses.filter(e => e.method === 'ໂອນ' || !e.method).reduce((sum, e) => sum + Number(e.amount || 0) + Number(e.fee || 0), 0);
+            let expenseCash = filteredExpenses.filter(e => e.method === 'ສົດ' || (e.note && e.note.includes('ສົດ'))).reduce((sum, e) => sum + Number(e.amount || 0) + Number(e.fee || 0), 0);
+            let expenseTransfer = filteredExpenses.filter(e => e.method !== 'ສົດ' && !(e.note && e.note.includes('ສົດ'))).reduce((sum, e) => sum + Number(e.amount || 0) + Number(e.fee || 0), 0);
 
             let totalInvAmount = receiveCash + receiveTransfer;
             let totalExpAmount = expenseCash + expenseTransfer;
@@ -1144,6 +1137,71 @@
                 };
             });
         }
+
+        // --- ເລີ່ມຕົ້ນໂຄດບັນທຶກລາຍຈ່າຍໃໝ່ (ດຶງຄ່າຈາກໝາຍເຫດ) ---
+        const existingExpenseForm = document.getElementById('expenseForm');
+        if (existingExpenseForm) {
+            // ທຳລາຍ Event ເກົ່າທັງໝົດຖິ້ມອັດຕະໂນມັດ
+            const newExpForm = existingExpenseForm.cloneNode(true);
+            existingExpenseForm.parentNode.replaceChild(newExpForm, existingExpenseForm);
+
+            newExpForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const dateVal = document.getElementById('expenseDate').value;
+                const descVal = document.getElementById('expenseDesc').value;
+                const noteVal = document.getElementById('expenseNote').value || '-';
+                const rawAmount = document.getElementById('expenseAmount').value.replace(/,/g, '');
+                const rawFee = document.getElementById('expenseFee').value.replace(/,/g, '') || '0';
+
+                // ພິສູດວ່າຈ່າຍສົດຫຼືໂອນ ຈາກການພິມໃນ "ໝາຍເຫດ"
+                let methodVal = 'ໂອນ';
+                if (noteVal.includes('ສົດ')) {
+                    methodVal = 'ສົດ';
+                }
+
+                const fileInput1 = document.getElementById('expenseReceipt1');
+                const fileInput2 = document.getElementById('expenseReceipt2');
+                let file1 = fileInput1 && fileInput1.files ? fileInput1.files[0] : null;
+                let file2 = fileInput2 && fileInput2.files ? fileInput2.files[0] : null;
+
+                closeExpenseModal();
+                showCustomAlert("ກຳລັງບັນທຶກລາຍຈ່າຍ...", "ກຳລັງດຳເນີນການ");
+
+                let receipt1Url = '';
+                let receipt2Url = '';
+
+                if (file1) {
+                    const optFile1 = await compressImage(file1, 1200, 0.7);
+                    receipt1Url = await uploadToCloudinary(optFile1);
+                }
+                if (file2) {
+                    const optFile2 = await compressImage(file2, 1200, 0.7);
+                    receipt2Url = await uploadToCloudinary(optFile2);
+                }
+
+                const newExpense = {
+                    projectId: selectedProjectId,
+                    date: dateVal,
+                    desc: descVal,
+                    amount: rawAmount,
+                    fee: rawFee,
+                    method: methodVal, 
+                    receipt1: receipt1Url || '',
+                    receipt2: receipt2Url || '',
+                    note: noteVal // ບັນທຶກໝາຍເຫດທີ່ທ່ານພິມລົງໄປ
+                };
+
+                try {
+                    await db.collection("expenses").add(newExpense);
+                    showCustomAlert("ເພີ່ມລາຍຈ່າຍສຳເລັດ!");
+                } catch (error) {
+                    showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
+                }
+            });
+        }
+        // --- ສິ້ນສຸດໂຄດບັນທຶກລາຍຈ່າຍໃໝ່ ---
+
     </script>
 </body>
 </html>
