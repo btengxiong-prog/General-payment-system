@@ -759,32 +759,46 @@
 
         document.getElementById('investmentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // 1. ເກັບຄ່າທັງໝົດໄວ້ກ່ອນປິດຟອມ ເພາະ form.reset() ຈະລ້າງຄ່າທิ้ง
+            const dateVal = document.getElementById('investDate').value;
+            const investorNameVal = document.getElementById('investorSelect').value;
             const method = document.getElementById('investMethod').value;
             const receiver = method === 'ສົດ' ? document.getElementById('investReceiver').value : '';
             const rawAmount = document.getElementById('investAmount').value.replace(/,/g, '');
-            const fileInput = document.getElementById('investReceipt');
+            const roundVal = document.getElementById('investRound').value;
+            const noteVal = document.getElementById('investNote').value || '-';
             
-            // ປິດຟອມທັນທີເພື່ອຄວາມໄວ (User ບໍ່ຕ້ອງຖ້າ)
+            const fileInput = document.getElementById('investReceipt');
+            const hasFile = fileInput.files && fileInput.files[0];
+            const fileToUpload = hasFile ? fileInput.files[0] : null;
+
+            // 2. ປິດຟອມຫຼັງຈາກເກັບຄ່າແລ້ວ
             closeInvestmentModal();
             showCustomAlert("ກຳລັງບັນທຶກຂໍ້ມູນລົງລະບົບ...", "ກຳລັງດຳເນີນການ");
 
+            // 3. ອັບໂຫຼດຮູບຢູ່ເບື້ອງຫຼັງ
             let receiptUrl = '';
-            if (fileInput.files && fileInput.files[0]) {
-                // ບີບອັດ ແລະ ອາັບໂຫຼດຢູ່ເບື້ອງຫຼັງ (Background)
-                const optimizedFile = await compressImage(fileInput.files[0], 1200, 0.7);
-                receiptUrl = await uploadToCloudinary(optimizedFile);
+            if (fileToUpload) {
+                try {
+                    const optimizedFile = await compressImage(fileToUpload, 1200, 0.7);
+                    receiptUrl = await uploadToCloudinary(optimizedFile);
+                } catch (err) {
+                    console.error("Image upload error:", err);
+                }
             }
 
+            // 4. ບັນທຶກລົງ Firebase Firestore
             const newInvest = {
                 projectId: selectedProjectId,
-                date: document.getElementById('investDate').value,
-                investorName: document.getElementById('investorSelect').value,
+                date: dateVal,
+                investorName: investorNameVal,
                 amount: rawAmount,
                 method: method,
                 receiver: receiver,
-                round: document.getElementById('investRound').value,
+                round: roundVal,
                 receipt: receiptUrl || '',
-                note: document.getElementById('investNote').value || '-'
+                note: noteVal
             };
 
             try {
