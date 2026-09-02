@@ -1750,7 +1750,42 @@
                 }
             }
         });
+    // ດັກຈັບການກົດ Ctrl+V ທົ່ວທັງໜ້າຈໍ (window)
+        window.addEventListener('paste', function(e) {
+            // ປ່ຽນ 'invReceipt' ເປັນ ID ຂອງຊ່ອງອັບໂຫຼດຮູບໃນໂຄດ HTML ຂອງທ່ານ
+            const fileInput = document.getElementById('invReceipt'); 
+            
+            // ຖ້າປ໋ອບອັບເພີ່ມຂໍ້ມູນບໍ່ໄດ້ເປີດຢູ່ ຫຼື ບໍ່ມີກ່ອງນີ້ ໃຫ້ຂ້າມໄປ
+            if (!fileInput) return; 
 
+            if (e.clipboardData && e.clipboardData.items) {
+                const items = e.clipboardData.items;
+                for (let i = 0; i < items.length; i++) {
+                    
+                    if (items[i].type.indexOf("image") !== -1) {
+                        const file = items[i].getAsFile();
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        
+                        // ຍັດຮູບເຂົ້າໄປໃນ input
+                        fileInput.files = dataTransfer.files;
+                        
+                        // ເອີ້ນ Event ໃຫ້ລະບົບຮັບຮູ້ວ່າໄຟລ໌ມີການປ່ຽນແປງ
+                        fileInput.dispatchEvent(new Event('change'));
+                        
+                        // ສະແດງແຈ້ງເຕືອນໃຫ້ຮູ້ວ່າວາງສຳເລັດແລ້ວ!
+                        if(typeof showCustomAlert === 'function') {
+                            showCustomAlert("ວາງຮູບພາບສຳເລັດແລ້ວ!", "ສຳເລັດ");
+                        } else {
+                            alert("ວາງຮູບພາບສຳເລັດແລ້ວ!");
+                        }
+                        
+                        e.preventDefault(); // ປ້ອງກັນບໍ່ໃຫ້ລະບົບເອົາຮູບໄປເປີດໜ້າໃໝ່
+                        break;
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>
