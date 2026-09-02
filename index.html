@@ -256,27 +256,35 @@
                 </div>
             </div> <!-- ປິດ TAB 5 ບ່ອນນີ້ -->
 
-    <!-- TAB ແຈ້ງເຕືອນ: ການເຄື່ອນໄຫວ -->
+        <!-- TAB ແຈ້ງເຕືອນ: ການເຄື່ອນໄຫວ -->
             <div id="tab-notification" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">ປະຫວັດການເຄື່ອນໄຫວບັນຊີ (ຮັບ-ຈ່າຍ) ໃນ 24 ຊົ່ວໂມງ</h2>
+                
+                <!-- 1. ຢຶດຫົວຂໍ້ໃຫຍ່ (ໃຫ້ຕິດຂອບລຸ່ມຂອງເມນູຫຼັກ) -->
+                <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-800">ປະຫວັດການເຄື່ອນໄຫວບັນຊີ (ຮັບ-ຈ່າຍ) ໃນ 24 ຊົ່ວໂມງ</h2>
+                    </div>
                 </div>
                 
-                <div class="overflow-x-auto shadow-md rounded-lg bg-white">
+                <!-- 2. ກຳນົດຄວາມສູງໃຫ້ຕາຕະລາງ ແລະ ເປີດ Scroll -->
+                <div class="bg-white rounded-lg shadow overflow-auto max-h-[60vh]">
                     <table class="min-w-full text-sm text-left text-gray-500 border-collapse border">
-                        <thead class="bg-gray-100 text-gray-700 text-center">
-                            <tr>
-                                <th rowspan="2" class="border border-gray-300 px-4 py-2">ລ/ດ</th>
-                                <th rowspan="2" class="border border-gray-300 px-4 py-2">ວັນ/ເດືອນ/ປີ</th>
-                                <th rowspan="2" class="border border-gray-300 px-4 py-2">ເນື້ອໃນ (ຮັບ/ຈ່າຍ)</th>
-                                <th colspan="2" class="border border-gray-300 px-4 py-2">ຈ/ນ ເງິນ (ຮັບ/ຈ່າຍ)</th>
-                                <th rowspan="2" class="border border-gray-300 px-4 py-2">ໝາຍເຫດ</th>
+                        
+                        <!-- 3. ຢຶດຫົວຕາຕະລາງບໍ່ໃຫ້ເລື່ອນ -->
+                        <thead class="sticky top-0 z-20 shadow-sm text-center text-gray-700">
+                            <tr class="bg-gray-200">
+                                <th rowspan="2" class="border border-gray-300 px-4 py-2 align-middle bg-gray-200">ລ/ດ</th>
+                                <th rowspan="2" class="border border-gray-300 px-4 py-2 align-middle bg-gray-200">ວັນ/ເດືອນ/ປີ</th>
+                                <th rowspan="2" class="border border-gray-300 px-4 py-2 align-middle bg-gray-200">ເນື້ອໃນ (ຮັບ/ຈ່າຍ)</th>
+                                <th colspan="2" class="border border-gray-300 px-4 py-2 bg-gray-200">ຈ/ນ ເງິນ (ຮັບ/ຈ່າຍ)</th>
+                                <th rowspan="2" class="border border-gray-300 px-4 py-2 align-middle bg-gray-200">ໝາຍເຫດ</th>
                             </tr>
-                            <tr>
-                                <th class="border border-gray-300 px-4 py-2 bg-gray-50 text-green-600">ຮັບ</th>
-                                <th class="border border-gray-300 px-4 py-2 bg-gray-50 text-red-600">ຈ່າຍ</th>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 px-4 py-2 bg-gray-100 text-green-600">ຮັບ</th>
+                                <th class="border border-gray-300 px-4 py-2 bg-gray-100 text-red-600">ຈ່າຍ</th>
                             </tr>
                         </thead>
+                        
                         <tbody id="activityTableBody">
                             <!-- ຂໍ້ມູນຈະຖືກດຶງມາໃສ່ບ່ອນນີ້ -->
                             <tr><td colspan="6" class="py-4 text-center text-gray-500">ກະລຸນາເລືອກໂຄງການກ່ອນ</td></tr>
