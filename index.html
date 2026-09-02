@@ -1957,6 +1957,7 @@
 
             const now = new Date().getTime();
             const past24Hours = now - (24 * 60 * 60 * 1000);
+            const past48Hours = now - (48 * 60 * 60 * 1000); // ເພີ່ມຕົວແປ 48 ຊົ່ວໂມງ
             
             let hasRecentActivity = false;
             let activityLog = [];
@@ -1965,16 +1966,25 @@
             if (typeof investmentsData !== 'undefined') {
                 investmentsData.filter(inv => inv.projectId === selectedProjectId).forEach(inv => {
                     const timestamp = new Date(inv.date).getTime();
-                    if (timestamp >= past24Hours) hasRecentActivity = true;
-                    // ລຶບໝາຍຈຸດອອກກ່ອນແປງເປັນຕົວເລກ
-                    let cleanAmount = Number(String(inv.amount).replace(/,/g, '')) || 0;
-                    activityLog.push({ 
-                        date: inv.date, 
-                        desc: `ຮັບເງິນລົງທຶນຈາກ: ${inv.investorName}`, 
-                        in: cleanAmount, 
-                        out: 0, 
-                        note: inv.note || '' 
-                    });
+                    
+                    // ເງື່ອນໄຂ: ຖ້າຂໍ້ມູນໃໝ່ກວ່າ 48 ຊົ່ວໂມງ ຈຶ່ງເອົາມາສະແດງ
+                    if (timestamp >= past48Hours) {
+                        let isNew = false;
+                        if (timestamp >= past24Hours) {
+                            hasRecentActivity = true;
+                            isNew = true; // ໝາຍໄວ້ວ່າບໍ່ກາຍ 24 ຊົ່ວໂມງ
+                        }
+                        
+                        let cleanAmount = Number(String(inv.amount).replace(/,/g, '')) || 0;
+                        activityLog.push({ 
+                            date: inv.date, 
+                            desc: `ຮັບເງິນລົງທຶນຈາກ: ${inv.investorName}`, 
+                            in: cleanAmount, 
+                            out: 0, 
+                            note: inv.note || '-',
+                            isNew: isNew // ສົ່ງຄ່າໄປແຕ້ມລົງຕາຕະລາງ
+                        });
+                    }
                 });
             }
 
@@ -1982,20 +1992,30 @@
             if (typeof expensesData !== 'undefined') {
                 expensesData.filter(exp => exp.projectId === selectedProjectId).forEach(exp => {
                     const timestamp = new Date(exp.date).getTime();
-                    if (timestamp >= past24Hours) hasRecentActivity = true;
-                    // ແກ້ໄຂ: ໃຊ້ exp.desc (ບໍ່ແມ່ນ description) ແລະ ລວມຄ່າທຳນຽມ
-                    let cleanAmount = Number(String(exp.amount).replace(/,/g, '')) || 0;
-                    let cleanFee = Number(String(exp.fee).replace(/,/g, '')) || 0;
-                    activityLog.push({ 
-                        date: exp.date, 
-                        desc: `ຈ່າຍຄ່າ: ${exp.desc}`, 
-                        in: 0, 
-                        out: cleanAmount + cleanFee, 
-                        note: exp.note || '' 
-                    });
+                    
+                    // ເງື່ອນໄຂ: ຖ້າຂໍ້ມູນໃໝ່ກວ່າ 48 ຊົ່ວໂມງ ຈຶ່ງເອົາມາສະແດງ
+                    if (timestamp >= past48Hours) {
+                        let isNew = false;
+                        if (timestamp >= past24Hours) {
+                            hasRecentActivity = true;
+                            isNew = true; // ໝາຍໄວ້ວ່າບໍ່ກາຍ 24 ຊົ່ວໂມງ
+                        }
+                        
+                        let cleanAmount = Number(String(exp.amount).replace(/,/g, '')) || 0;
+                        let cleanFee = Number(String(exp.fee).replace(/,/g, '')) || 0;
+                        activityLog.push({ 
+                            date: exp.date, 
+                            desc: `ຈ່າຍຄ່າ: ${exp.desc}`, 
+                            in: 0, 
+                            out: cleanAmount + cleanFee, 
+                            note: exp.note || '-',
+                            isNew: isNew // ສົ່ງຄ່າໄປແຕ້ມລົງຕາຕະລາງ
+                        });
+                    }
                 });
             }
 
+            // ຈັດລຽງຈາກໃໝ່ໄປເກົ່າ
             activityLog.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             const notiBtn = document.getElementById('notiTabBtn');
@@ -2004,7 +2024,7 @@
                 notiBtn.className = "hover:text-blue-600 focus:text-blue-600 flex items-center transition duration-300 bg-red-100 text-red-600 px-3 py-1 rounded-full animate-pulse mr-2 font-bold";
                 notiDot.classList.remove('hidden');
             } else {
-                notiBtn.className = "hover:text-blue-600 focus:text-blue-600 flex items-center transition duration-300 px-3 py-1 mr-2";
+                notiBtn.className = "hover:text-blue-600 focus:text-blue-600 flex items-center transition duration-300 px-3 py-1 mr-2 font-semibold text-gray-700";
                 notiDot.classList.add('hidden');
             }
 
@@ -2013,13 +2033,22 @@
             tbody.innerHTML = '';
             
             if (activityLog.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="border border-gray-300 py-4 text-center text-gray-500">ຍັງບໍ່ມີຂໍ້ມູນການເຄື່ອນໄຫວໃນໂຄງການນີ້</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="border border-gray-300 py-6 text-center text-gray-500 font-medium">ຍັງບໍ່ມີການເຄື່ອນໄຫວໃດໆ ໃນຊ່ວງ 48 ຊົ່ວໂມງທີ່ຜ່ານມາ</td></tr>`;
             } else {
                 activityLog.forEach((item, index) => {
-                    // +++ ເພີ່ມເງື່ອນໄຂຍັບຍະຫວ່າງ (Indent) ບ່ອນນີ້ +++
-                    // ຖ້າເປັນລາຍຈ່າຍ (item.out > 0) ໃຫ້ຍັບເຂົ້າໄປດ້ວຍ pl-8, ຖ້າເປັນລາຍຮັບໃຫ້ເປັນຕົວໜາໜ້ອຍໜຶ່ງ
                     let indentClass = item.out > 0 ? "pl-8 text-gray-600" : "font-medium text-gray-900";
-                    let prefixIcon = item.out > 0 ? "- " : ""; // ເພີ່ມຂີດໜ້າໃຫ້ລາຍຈ່າຍ (ຖ້າບໍ່ມັກເອົາອອກໄດ້)
+                    let prefixIcon = item.out > 0 ? "- " : ""; 
+
+                    // +++ ຈັດການຫ້ອງໝາຍເຫດ +++
+                    let finalNote = item.note === '-' ? '' : item.note;
+                    if (item.isNew) {
+                        // ຖ້າພາຍໃນ 24 ຊົ່ວໂມງ ໃຫ້ຕິດປ້າຍສີແດງ
+                        let newBadge = `<span class="text-red-600 font-bold text-xs bg-red-100 px-2 py-1 rounded-full ml-1 animate-pulse">ເຄື່ອນໄຫວໃໝ່</span>`;
+                        finalNote = finalNote ? `${finalNote} ${newBadge}` : newBadge;
+                    } else {
+                        // ຖ້າກາຍ 24 ຫາ 48 ຊົ່ວໂມງ ໃຫ້ສະແດງແຕ່ໝາຍເຫດປົກກະຕິ
+                        finalNote = finalNote || '-';
+                    }
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-gray-50">
@@ -2028,7 +2057,7 @@
                             <td class="border border-gray-300 p-2 ${indentClass}">${prefixIcon}${item.desc}</td>
                             <td class="border border-gray-300 p-2 text-right text-green-600 font-bold">${item.in > 0 ? formatNumber(item.in) : '-'}</td>
                             <td class="border border-gray-300 p-2 text-right text-red-600 font-bold">${item.out > 0 ? formatNumber(item.out) : '-'}</td>
-                            <td class="border border-gray-300 p-2">${item.note}</td>
+                            <td class="border border-gray-300 p-2">${finalNote}</td>
                         </tr>
                     `;
                 });
