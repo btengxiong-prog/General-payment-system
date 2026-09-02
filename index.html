@@ -1718,34 +1718,50 @@
             tbody.innerHTML = html;
         }
 
-    // ຟັງຊັນສຳລັບການກົດ Ctrl+V ເພື່ອວາງຮູບພາບ
+// ຟັງຊັນ Paste ຮູບແບບອັດຕະໂນມັດ (ບໍ່ຕ້ອງກຳນົດ ID ມັນຈະຊອກຫາເອງ)
         document.addEventListener('paste', function(e) {
-            // ກວດສອບວ່າມີຂໍ້ມູນໃນ Clipboard ທີ່ກັອບປີ້ມາຫຼືບໍ່
+            let fileInput = null;
+
+            // 1. ຖ້າຜູ້ໃຊ້ຄລິກໃສ່ກ່ອງອັບໂຫຼດໂດຍກົງ (ແບບໃນຮູບທີ່ມີຂອບສີຟ້າ)
+            if (e.target && e.target.type === 'file') {
+                fileInput = e.target;
+            } 
+            // 2. ຖ້າບໍ່ໄດ້ຄລິກກ່ອງອັບໂຫຼດໂດຍກົງ ໃຫ້ລະບົບຊອກຫາກ່ອງອັບໂຫຼດທີ່ຢູ່ໃນໜ້າຈໍປ໋ອບອັບປັດຈຸບັນ
+            else {
+                // ຊອກຫາປ໋ອບອັບທີ່ກຳລັງເປີດຢູ່ (ບໍ່ມີ class hidden)
+                const visibleModal = document.querySelector('div[id$="Modal"]:not(.hidden)');
+                if (visibleModal) {
+                    fileInput = visibleModal.querySelector('input[type="file"]');
+                }
+            }
+
+            // ຖ້າບໍ່ພົບກ່ອງອັບໂຫຼດ ໃຫ້ຍົກເລີກການທຳງານ
+            if (!fileInput) return;
+
+            // ກວດສອບວ່າມີຮູບພາບຖືກກັອບປີ້ມາຫຼືບໍ່
             if (e.clipboardData && e.clipboardData.items) {
-                let items = e.clipboardData.items;
+                const items = e.clipboardData.items;
                 for (let i = 0; i < items.length; i++) {
-                    
-                    // ຖ້າຂໍ້ມູນທີ່ Paste ມາເປັນ "ຮູບພາບ"
                     if (items[i].type.indexOf("image") !== -1) {
-                        let file = items[i].getAsFile();
-                        
-                        // ໃຊ້ DataTransfer ເພື່ອຈຳລອງການ Browse ໄຟລ໌
+                        const file = items[i].getAsFile();
                         const dataTransfer = new DataTransfer();
                         dataTransfer.items.add(file);
                         
-                        // ອັບເດດ: ປ່ຽນ 'invReceipt' ເປັນ ID ຂອງ input ໄຟລ໌ໃນໂຄດຕົວຈິງຂອງທ່ານ
-                        let fileInput = document.getElementById('invReceipt'); 
+                        // ຍັດຮູບເຂົ້າໄປໃນກ່ອງອັບໂຫຼດ
+                        fileInput.files = dataTransfer.files;
                         
-                        if (fileInput) {
-                            fileInput.files = dataTransfer.files;
-                            
-                            // ຖ້າທ່ານມີຟັງຊັນ Preview ຮູບພາບ ໃຫ້ເອີ້ນ Event change ເພື່ອໃຫ້ມັນອັບເດດ
-                            fileInput.dispatchEvent(new Event('change'));
-                            
-                            // (ທາງເລືອກ) ແຈ້ງເຕືອນໃຫ້ຮູ້ວ່າວາງຮູບສຳເລັດ
-                            console.log("ວາງຮູບພາບສຳເລັດແລ້ວ!");
+                        // ອັບເດດໃຫ້ລະບົບຮູ້ວ່າມີໄຟລ໌ເຂົ້າມາແລ້ວ
+                        fileInput.dispatchEvent(new Event('change'));
+                        
+                        // ແຈ້ງເຕືອນສຳເລັດ
+                        if(typeof showCustomAlert === 'function') {
+                            showCustomAlert("ວາງຮູບພາບສຳເລັດແລ້ວ!", "ສຳເລັດ");
+                        } else {
+                            alert("ວາງຮູບພາບສຳເລັດແລ້ວ!");
                         }
-                        break; // ຢຸດ Loop ເມື່ອຈັດການຮູບສຳເລັດ
+                        
+                        e.preventDefault(); // ກັນບໍ່ໃຫ້ຮູບໄປເປີດໜ້າເວັບໃໝ່
+                        break;
                     }
                 }
             }
