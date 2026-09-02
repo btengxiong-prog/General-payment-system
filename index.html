@@ -802,7 +802,7 @@
                 let copyBtn = "";
                 if (isAdmin) {
                     // ສ້າງລິ້ງໂດຍໃຊ້ລະຫັດລັບ (secret) ແທນ id (p1)
-                    const shareUrl = `${window.location.origin}${window.location.pathname}?project=${proj.secret}`;
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?p=${proj.secret}`;
                     copyBtn = `<button onclick="navigator.clipboard.writeText('${shareUrl}'); showCustomAlert('ກັອບປີ້ລິ້ງສຳເລັດແລ້ວ!', 'ສຳເລັດ');" class="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-green-700">🔗 ກັອບປີ້ລິ້ງ</button>`;
                 }
 
@@ -1845,7 +1845,7 @@
     // ກວດສອບສິດ ແລະ ຈັດການການສະແດງຜົນຕາມລິ້ງທີ່ສົ່ງມາ
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const forcedProjectSecret = urlParams.get('project'); 
+            const forcedProjectSecret = urlParams.get('p') || urlParams.get('project');
 
             const loginScreen = document.getElementById('loginScreen');
             const appScreen = document.getElementById('appScreen');
