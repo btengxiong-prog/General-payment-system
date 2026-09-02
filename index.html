@@ -39,16 +39,16 @@
 
     <!-- MAIN APP -->
     <div id="appScreen" class="hidden">
-    <!-- Navigation Menu -->
-        <nav class="bg-white shadow-md">
+    <!-- Navigation Menu (ລັອກໃຫ້ຕິດຂອບເທິງສະເໝີ) -->
+        <nav class="bg-white shadow-md sticky top-0 z-50">
             <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center overflow-x-auto">
                 <div class="flex space-x-6 font-semibold text-gray-700 whitespace-nowrap">
                     <button onclick="switchTab('projects')" class="hover:text-blue-600 focus:text-blue-600">ໂຄງການທັງໝົດ</button>
                     <button onclick="switchTab('investors')" class="hover:text-blue-600 focus:text-blue-600">ນັກລົງທຶນ</button>
                     <button onclick="switchTab('investments')" class="hover:text-blue-600 focus:text-blue-600">ຈ/ນ ເງິນລົງທຶນ</button>
-                    <button onclick="switchTab('invest_new')" class="hover:text-blue-600 focus:text-blue-600">ການລົງທຶນ</button> <!-- ປຸ່ມເພີ່ມໃໝ່ -->
+                    <button onclick="switchTab('invest_new')" class="hover:text-blue-600 focus:text-blue-600">ການລົງທຶນ</button>
                     <button onclick="switchTab('expenses')" class="hover:text-blue-600 focus:text-blue-600">ລາຍຈ່າຍ</button>
-                    <button onclick="switchTab('refunds')" class="hover:text-blue-600 focus:text-blue-600">ເງິນທວນຄືນ</button> <!-- ປຸ່ມເພີ່ມໃໝ່ -->
+                    <button onclick="switchTab('refunds')" class="hover:text-blue-600 focus:text-blue-600">ເງິນທວນຄືນ</button>
                     <button onclick="switchTab('reports')" class="hover:text-blue-600 focus:text-blue-600">ລາຍງານ</button>
                 </div>
                 <div class="flex items-center space-x-4 pl-4">
@@ -1718,27 +1718,24 @@
             tbody.innerHTML = html;
         }
 
-// ຟັງຊັນ Paste ຮູບແບບອັດຕະໂນມັດ (ບໍ່ຕ້ອງກຳນົດ ID ມັນຈະຊອກຫາເອງ)
+    // ຟັງຊັນ Paste ຮູບແບບອັດຕະໂນມັດ (Universal Paste)
         document.addEventListener('paste', function(e) {
             let fileInput = null;
 
-            // 1. ຖ້າຜູ້ໃຊ້ຄລິກໃສ່ກ່ອງອັບໂຫຼດໂດຍກົງ (ແບບໃນຮູບທີ່ມີຂອບສີຟ້າ)
+            // 1. ຖ້າຜູ້ໃຊ້ຄລິກໃສ່ກ່ອງອັບໂຫຼດໂດຍກົງ
             if (e.target && e.target.type === 'file') {
                 fileInput = e.target;
             } 
             // 2. ຖ້າບໍ່ໄດ້ຄລິກກ່ອງອັບໂຫຼດໂດຍກົງ ໃຫ້ລະບົບຊອກຫາກ່ອງອັບໂຫຼດທີ່ຢູ່ໃນໜ້າຈໍປ໋ອບອັບປັດຈຸບັນ
             else {
-                // ຊອກຫາປ໋ອບອັບທີ່ກຳລັງເປີດຢູ່ (ບໍ່ມີ class hidden)
                 const visibleModal = document.querySelector('div[id$="Modal"]:not(.hidden)');
                 if (visibleModal) {
                     fileInput = visibleModal.querySelector('input[type="file"]');
                 }
             }
 
-            // ຖ້າບໍ່ພົບກ່ອງອັບໂຫຼດ ໃຫ້ຍົກເລີກການທຳງານ
             if (!fileInput) return;
 
-            // ກວດສອບວ່າມີຮູບພາບຖືກກັອບປີ້ມາຫຼືບໍ່
             if (e.clipboardData && e.clipboardData.items) {
                 const items = e.clipboardData.items;
                 for (let i = 0; i < items.length; i++) {
@@ -1747,20 +1744,16 @@
                         const dataTransfer = new DataTransfer();
                         dataTransfer.items.add(file);
                         
-                        // ຍັດຮູບເຂົ້າໄປໃນກ່ອງອັບໂຫຼດ
                         fileInput.files = dataTransfer.files;
-                        
-                        // ອັບເດດໃຫ້ລະບົບຮູ້ວ່າມີໄຟລ໌ເຂົ້າມາແລ້ວ
                         fileInput.dispatchEvent(new Event('change'));
                         
-                        // ແຈ້ງເຕືອນສຳເລັດ
                         if(typeof showCustomAlert === 'function') {
                             showCustomAlert("ວາງຮູບພາບສຳເລັດແລ້ວ!", "ສຳເລັດ");
                         } else {
                             alert("ວາງຮູບພາບສຳເລັດແລ້ວ!");
                         }
                         
-                        e.preventDefault(); // ກັນບໍ່ໃຫ້ຮູບໄປເປີດໜ້າເວັບໃໝ່
+                        e.preventDefault();
                         break;
                     }
                 }
