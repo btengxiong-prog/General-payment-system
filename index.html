@@ -2008,11 +2008,16 @@
                 tbody.innerHTML = `<tr><td colspan="6" class="border border-gray-300 py-4 text-center text-gray-500">ຍັງບໍ່ມີຂໍ້ມູນການເຄື່ອນໄຫວໃນໂຄງການນີ້</td></tr>`;
             } else {
                 activityLog.forEach((item, index) => {
+                    // +++ ເພີ່ມເງື່ອນໄຂຍັບຍະຫວ່າງ (Indent) ບ່ອນນີ້ +++
+                    // ຖ້າເປັນລາຍຈ່າຍ (item.out > 0) ໃຫ້ຍັບເຂົ້າໄປດ້ວຍ pl-8, ຖ້າເປັນລາຍຮັບໃຫ້ເປັນຕົວໜາໜ້ອຍໜຶ່ງ
+                    let indentClass = item.out > 0 ? "pl-8 text-gray-600" : "font-medium text-gray-900";
+                    let prefixIcon = item.out > 0 ? "- " : ""; // ເພີ່ມຂີດໜ້າໃຫ້ລາຍຈ່າຍ (ຖ້າບໍ່ມັກເອົາອອກໄດ້)
+
                     tbody.innerHTML += `
                         <tr class="hover:bg-gray-50">
                             <td class="border border-gray-300 p-2 text-center">${index + 1}</td>
                             <td class="border border-gray-300 p-2 text-center">${formatDateToDDMMYYYY(item.date)}</td>
-                            <td class="border border-gray-300 p-2">${item.desc}</td>
+                            <td class="border border-gray-300 p-2 ${indentClass}">${prefixIcon}${item.desc}</td>
                             <td class="border border-gray-300 p-2 text-right text-green-600 font-bold">${item.in > 0 ? formatNumber(item.in) : '-'}</td>
                             <td class="border border-gray-300 p-2 text-right text-red-600 font-bold">${item.out > 0 ? formatNumber(item.out) : '-'}</td>
                             <td class="border border-gray-300 p-2">${item.note}</td>
