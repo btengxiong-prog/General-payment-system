@@ -1718,6 +1718,39 @@
             tbody.innerHTML = html;
         }
 
+    // ຟັງຊັນສຳລັບການກົດ Ctrl+V ເພື່ອວາງຮູບພາບ
+        document.addEventListener('paste', function(e) {
+            // ກວດສອບວ່າມີຂໍ້ມູນໃນ Clipboard ທີ່ກັອບປີ້ມາຫຼືບໍ່
+            if (e.clipboardData && e.clipboardData.items) {
+                let items = e.clipboardData.items;
+                for (let i = 0; i < items.length; i++) {
+                    
+                    // ຖ້າຂໍ້ມູນທີ່ Paste ມາເປັນ "ຮູບພາບ"
+                    if (items[i].type.indexOf("image") !== -1) {
+                        let file = items[i].getAsFile();
+                        
+                        // ໃຊ້ DataTransfer ເພື່ອຈຳລອງການ Browse ໄຟລ໌
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        
+                        // ອັບເດດ: ປ່ຽນ 'invReceipt' ເປັນ ID ຂອງ input ໄຟລ໌ໃນໂຄດຕົວຈິງຂອງທ່ານ
+                        let fileInput = document.getElementById('invReceipt'); 
+                        
+                        if (fileInput) {
+                            fileInput.files = dataTransfer.files;
+                            
+                            // ຖ້າທ່ານມີຟັງຊັນ Preview ຮູບພາບ ໃຫ້ເອີ້ນ Event change ເພື່ອໃຫ້ມັນອັບເດດ
+                            fileInput.dispatchEvent(new Event('change'));
+                            
+                            // (ທາງເລືອກ) ແຈ້ງເຕືອນໃຫ້ຮູ້ວ່າວາງຮູບສຳເລັດ
+                            console.log("ວາງຮູບພາບສຳເລັດແລ້ວ!");
+                        }
+                        break; // ຢຸດ Loop ເມື່ອຈັດການຮູບສຳເລັດ
+                    }
+                }
+            }
+        });
+
     </script>
 </body>
 </html>
