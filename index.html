@@ -818,6 +818,17 @@
         }
 
         function selectProject(projId) {
+            // ກວດສອບວ່າລິ້ງນີ້ຖືກລັອກສິດໄວ້ສະເພາະໂຄງການອື່ນບໍ
+            if (window.lockedProjectId && window.lockedProjectId !== projId) {
+                // ຖ້າພະຍາຍາມກົດເບິ່ງໂຄງການອື່ນ ໃຫ້ຕີກັບ ແລະ ຫ້າມເບິ່ງ
+                showCustomAlert("ເຈົ້າບໍ່ມີສິດເຂົ້າຂໍ້ມູນໂຄງການນີ້!", "ACCESS DENIED");
+                
+                // ໃຫ້ຕິກເລືອກກັບຄືນມາໂຄງການທີ່ຖືກຕ້ອງຕາມສິດ
+                const radio = document.querySelector(`input[name="selectedProject"][value="${window.lockedProjectId}"]`);
+                if (radio) radio.checked = true;
+                return;
+            }
+
             selectedProjectId = projId;
             const proj = projectsData.find(p => p.id === projId);
             const projName = proj ? proj.name : 'ຍັງບໍ່ໄດ້ເລືອກ';
@@ -832,7 +843,7 @@
             renderInvestors();
             renderInvestments();
             renderExpenses();
-            renderInvestSummary(); // <-- ເພີ່ມແຖວນີ້ເຂົ້າໄປ ເພື່ອໃຫ້ອັບເດດຕາຕະລາງ TAB 6 ເວລາປ່ຽນໂຄງການ
+            renderInvestSummary(); 
             renderRefunds();
         }
 
@@ -1809,6 +1820,31 @@
                 }
             }
         });
+
+    // ກວດສອບລິ້ງຕອນເປີດເວັບ ເພື່ອກຳນົດສິດສະເພາະໂຄງການ (URL Parameter)
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const forcedProject = urlParams.get('project'); // ຕົວຢ່າງ: ?project=p1
+            
+            if (forcedProject) {
+                // ຖ້າໃນລິ້ງມີการກຳນົດ project ມາ ໃຫ້ບັງຄັບລັອກສິດໄວ້ເລີຍ
+                window.lockedProjectId = forcedProject;
+            }
+        });
+
+    // ຖ້າເປີດມາລະບົບມີการລັອກ Project ไว้ ໃຫ້ເລືອກໂຄງການນັ້ນໃຫ້ອັດຕະໂນມັດເລີຍ
+        setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const forcedProject = urlParams.get('project');
+            if (forcedProject) {
+                // ຖ້າເປັນ User ທົ່ວໄປ ຜ່ານລິ້ງ ໃຫ້ຂ້າມໜ້າ Login ໄປໜ້າ App ເລີຍກໍได้ (ຖ້າຕ້ອງການ)
+                // ຫຼື ຫຼັງຈາກ Login ສຳເລັດ ໃຫ້ສັ່ງເລືອກໂຄງການນັ້ນທັນທີ:
+                selectProject(forcedProject);
+                const radio = document.querySelector(`input[name="selectedProject"][value="${forcedProject}"]`);
+                if (radio) radio.checked = true;
+            }
+        }, 500);
+
     </script>
 </body>
 </html>
