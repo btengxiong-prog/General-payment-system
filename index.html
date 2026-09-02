@@ -673,15 +673,15 @@
                     document.getElementById('deleteExpenseBtn').classList.remove('hidden');
                     document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
                 } else {
-                    // USER ທົ່ວໄປ: ເຊື່ອງປຸ່ມເພີ່ມ/ລຶບ ອື່ນໆ
+                    // USER ທົ່ວໄປ: ເຊື່ອງປຸ່ມເພີ່ມ/ລຶບ ທັງໝົດທຸກໜ້າ
                     document.getElementById('addProjectBtn').classList.add('hidden');
                     document.getElementById('addInvestorBtn').classList.add('hidden');
                     document.getElementById('deleteInvestorBtn').classList.add('hidden');
                     document.getElementById('addInvestmentBtn').classList.add('hidden');
                     document.getElementById('deleteInvestmentBtn').classList.add('hidden');
                     
-                    // ອະນຸຍາດໃຫ້ USER ເຫັນປຸ່ມ "+ ເພີ່ມລາຍຈ່າຍ" ໄດ້ (ແຕ່ເຊື່ອງປຸ່ມລຶບ)
-                    document.getElementById('addExpenseBtn').classList.remove('hidden');
+                    // ເຊື່ອງປຸ່ມ "+ ເພີ່ມລາຍຈ່າຍ" ແລະ "ລຶບຂໍ້ມູນ" (ຕັດສິດການເພີ່ມ/ລຶບ 100%)
+                    document.getElementById('addExpenseBtn').classList.add('hidden');
                     document.getElementById('deleteExpenseBtn').classList.add('hidden');
                     
                     // ເຊື່ອງຫົວຕາຕະລາງ Checkbox ສຳລັບ USER
