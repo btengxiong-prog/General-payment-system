@@ -1845,6 +1845,19 @@
             }
         }, 500);
 
+    // ກວດສອບສິດການເຂົ້າເถິງລິ້ງ
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const forcedProject = urlParams.get('project');
+            
+            // ຖ້າເປັນລິ້ງລວມ (ບໍ່ມີ ?project=...) ໃຫ້ສະແດງສະເພາະໜ້າ Login ຂອງ Admin
+            if (!forcedProject) {
+                // ປົກກະຕິໜ້າ Login ຈະເປີດຢູ່ແລ້ວ 
+                // ແຕ່ຖ້າຢາກໃຫ້ໝັ້ນໃຈວ່າ User ທົ່ວໄປເຂົ້າລິ້ງລວມແລ້ວ ຫ້າມເຫັນຫຍັງເລີຍ 
+                // ໃຫ້ປະໄວ້ແບບນີ້ໄດ້ເລີຍ ເພາະລະບົບຕ້ອງພິມ Username/Password ຂອງ Admin ກ່ອນຈຶ່ງເຂົ້າໄດ້
+            }
+        });
+
     </script>
 </body>
 </html>
