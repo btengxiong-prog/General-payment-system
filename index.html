@@ -1605,7 +1605,7 @@
             }
         };
 
-        // ກົດປຸ່ມ "ລຶບ" ໃນ Popup
+    // ກົດປຸ່ມ "ລຶບ" ໃນ Popup
         document.getElementById('btnDeleteRefund').onclick = () => {
             // 1. ສຳເນົາຄ່າເກັບໄວ້ກ່ອນປິດ Popup
             const currentId = selectedActionRefundId;
@@ -1615,8 +1615,21 @@
             
             showCustomConfirm("ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ? (ຖ້າລຶບ ຂໍ້ມູນໃນໜ້າຕົ້ນທາງກໍຈະຫາຍໄປນຳ)", async () => {
                 try {
-                    // 2. ສັ່ງລຶບໂດຍໃຊ້ຄ່າທີ່ສຳເນົາໄວ້
+                    // 2. ສັ່ງລຶບອອກຈາກຖານຂໍ້ມູນ
                     await db.collection(currentSource).doc(currentId).delete();
+                    
+                    // 3. ລຶບຂໍ້ມູນນັ້ນອອກຈາກໜ້າຈໍທັນທີ (ອັບເດດ Array)
+                    if (currentSource === 'investments') {
+                        investmentsData = investmentsData.filter(i => i.id !== currentId);
+                    } else if (currentSource === 'expenses') {
+                        expensesData = expensesData.filter(e => e.id !== currentId);
+                    } else {
+                        manualRefundsData = manualRefundsData.filter(m => m.id !== currentId);
+                    }
+                    
+                    // 4. ສັ່ງໃຫ້ແຕ້ມຕາຕະລາງໃໝ່ທັນທີ ໂດຍບໍ່ມີລາຍການທີ່ຖືກລຶບແລ້ວ
+                    renderRefunds();
+                    
                     showCustomAlert("ລຶບລາຍການສຳເລັດ!");
                 } catch (error) {
                     showCustomAlert("ຜິດພາດ: " + error.message, "ຜິດພາດ");
