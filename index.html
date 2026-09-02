@@ -1845,16 +1845,55 @@
             }
         }, 500);
 
-    // ກວດສອບສິດການເຂົ້າເถິງລິ້ງ
+    // ກວດສອບສິດ ແລະ ຈັດການການສະແດງຜົນຕາມລິ້ງທີ່ສົ່ງມາ
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const forcedProject = urlParams.get('project');
+            const forcedProject = urlParams.get('project'); // ຕົວຢ່າງ: ?project=p1
             
-            // ຖ້າເປັນລິ້ງລວມ (ບໍ່ມີ ?project=...) ໃຫ້ສະແດງສະເພາະໜ້າ Login ຂອງ Admin
-            if (!forcedProject) {
-                // ປົກກະຕິໜ້າ Login ຈະເປີດຢູ່ແລ້ວ 
-                // ແຕ່ຖ້າຢາກໃຫ້ໝັ້ນໃຈວ່າ User ທົ່ວໄປເຂົ້າລິ້ງລວມແລ້ວ ຫ້າມເຫັນຫຍັງເລີຍ 
-                // ໃຫ້ປະໄວ້ແບບນີ້ໄດ້ເລີຍ ເພາະລະບົບຕ້ອງພິມ Username/Password ຂອງ Admin ກ່ອນຈຶ່ງເຂົ້າໄດ້
+            if (forcedProject) {
+                // 1. ຖົ່າມີການສົ່ງ project ມາໃນລິ້ງ (ສຳหรับນັກລົງທຶນ)
+                window.lockedProjectId = forcedProject;
+                
+                // ປິດໜ້າ Login ຂອງ Admin ຖິ້ມເລີຍ ບໍ່ໃຫ້ເຫັນ
+                const loginScreen = document.getElementById('loginScreen');
+                if (loginScreen) loginScreen.classList.add('hidden');
+                
+                // ເປີດໜ້າ App ໃຫ້ເຫັນ
+                const appScreen = document.getElementById('appScreen');
+                if (appScreen) appScreen.classList.remove('hidden');
+                
+                // ຕັ້ງຄ່າສະຖານະເປັນ User ທົ່ວໄປ (ເຊື່ອງປຸ່ມ Admin ຕ່າງໆ)
+                currentUser = { role: 'USER', name: 'ນັກລົງທຶນ' };
+                
+                // ເຊື່ອງປຸ່ມ Admin ທັງໝົດ
+                setTimeout(() => {
+                    if(document.getElementById('addProjectBtn')) document.getElementById('addProjectBtn').classList.add('hidden');
+                    if(document.getElementById('addInvestorBtn')) document.getElementById('addInvestorBtn').classList.add('hidden');
+                    if(document.getElementById('deleteInvestorBtn')) document.getElementById('deleteInvestorBtn').classList.add('hidden');
+                    if(document.getElementById('addInvestmentBtn')) document.getElementById('addInvestmentBtn').classList.add('hidden');
+                    if(document.getElementById('deleteInvestmentBtn')) document.getElementById('deleteInvestmentBtn').classList.add('hidden');
+                    if(document.getElementById('addExpenseBtn')) document.getElementById('addExpenseBtn').classList.add('hidden');
+                    if(document.getElementById('deleteExpenseBtn')) document.getElementById('deleteExpenseBtn').classList.add('hidden');
+                    if(document.getElementById('addRefundBtn')) document.getElementById('addRefundBtn').classList.add('hidden');
+                    document.querySelectorAll('.admin-col-th').forEach(el => el.classList.add('hidden'));
+
+                    // โຫຼດຂໍ້ມູນຈາກ Firebase ແລະ ລັອກເລືອກໂຄງການນັ້ນທັນທີ
+                    if (typeof loadDataFromFirebase === 'function') loadDataFromFirebase();
+                    if (typeof renderProjects === 'function') renderProjects();
+                    
+                    selectProject(forcedProject);
+                    const radio = document.querySelector(`input[name="selectedProject"][value="${forcedProject}"]`);
+                    if (radio) radio.checked = true;
+                }, 300);
+
+            } else {
+                // 2. ຖ້າເປັນລິ້ງລວມ (ບໍ່มี ?project=...) ຈະບັງຄັບໃຫ້ຄ້າງຢູ່ໜ້າ Login ເທົ່ານັ້ນ 
+                // ຢູເຊີທົ່ວໄປທີ່ບໍ່ມີລະຫັດ Admin ຈະບໍ່ສາມາດກົດເຂົ້າໄປເຫັນຂໍ້ມູນຫຍັງໄດ້ເລີຍ!
+                const loginScreen = document.getElementById('loginScreen');
+                if (loginScreen) loginScreen.classList.remove('hidden');
+                
+                const appScreen = document.getElementById('appScreen');
+                if (appScreen) appScreen.classList.add('hidden');
             }
         });
     </script>
