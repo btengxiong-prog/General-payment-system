@@ -738,7 +738,7 @@
                 document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name} (${currentUser.role})`;
 
                 if (currentUser.role === 'ADMIN') {
-                    // ADMIN: ເຫັນທຸກປຸ່ມທຸກຄຳສັ່ງ ແລະ ເຫັນຖັນ Checkbox ປົກກະຕິ
+                    // ADMIN: ເຫັນທຸກປຸ່ມທຸກຄຳສັ່ງ
                     document.getElementById('addProjectBtn').classList.remove('hidden');
                     document.getElementById('addInvestorBtn').classList.remove('hidden');
                     document.getElementById('deleteInvestorBtn').classList.remove('hidden');
@@ -746,6 +746,10 @@
                     document.getElementById('deleteInvestmentBtn').classList.remove('hidden');
                     document.getElementById('addExpenseBtn').classList.remove('hidden');
                     document.getElementById('deleteExpenseBtn').classList.remove('hidden');
+                    
+                    // ເປີດປຸ່ມ "+ ເພີ່ມລາຍການ" ໃນໜ້າເງິນທວນຄືນ ໃຫ້ ADMIN
+                    if(document.getElementById('addRefundBtn')) document.getElementById('addRefundBtn').classList.remove('hidden');
+                    
                     document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
                 } else {
                     // USER ທົ່ວໄປ: ເຊື່ອງປຸ່ມເພີ່ມ/ລຶບ ທັງໝົດທຸກໜ້າ
@@ -754,12 +758,12 @@
                     document.getElementById('deleteInvestorBtn').classList.add('hidden');
                     document.getElementById('addInvestmentBtn').classList.add('hidden');
                     document.getElementById('deleteInvestmentBtn').classList.add('hidden');
-                    
-                    // ເຊື່ອງປຸ່ມ "+ ເພີ່ມລາຍຈ່າຍ" ແລະ "ລຶບຂໍ້ມູນ" (ຕັດສິດການເພີ່ມ/ລຶບ 100%)
                     document.getElementById('addExpenseBtn').classList.add('hidden');
                     document.getElementById('deleteExpenseBtn').classList.add('hidden');
                     
-                    // ເຊື່ອງຫົວຕາຕະລາງ Checkbox ສຳລັບ USER
+                    // ເຊື່ອງປຸ່ມ "+ ເພີ່ມລາຍການ" ໃນໜ້າເງິນທວນຄືນ
+                    if(document.getElementById('addRefundBtn')) document.getElementById('addRefundBtn').classList.add('hidden');
+                    
                     document.querySelectorAll('.admin-col-th').forEach(el => el.classList.add('hidden'));
                 }
                 
