@@ -1499,41 +1499,57 @@
         }
 
         let manualRefundsData = []; 
-        let editingRefundId = null; // ເກັບ ID ເວລາຕ້ອງການແກ້ໄຂ
-        let selectedActionRefundId = null; // ເກັບ ID ເວລາກົດປຸ່ມຈັດການ
+        let editingRefundId = null; 
+        let editingRefundSource = null; // ໃຊ້ເກັບວ່າຂໍ້ມູນມາຈາກໜ້າໃດ
+        let selectedActionRefundId = null; 
+        let selectedActionRefundSource = null;
 
         function openRefundModal() {
             if (!selectedProjectId) { showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນ!", "ແຈ້ງເຕືອນ"); return; }
             editingRefundId = null; 
+            editingRefundSource = null;
             document.getElementById('refundForm').reset();
             document.getElementById('refundModal').classList.remove('hidden');
         }
+
         function closeRefundModal() {
             document.getElementById('refundModal').classList.add('hidden');
             editingRefundId = null;
+            editingRefundSource = null;
         }
 
-    // ບັນທຶກ ຫຼື ແກ້ໄຂ ຂໍ້ມູນ (ປ້ອນເອງ)
         document.getElementById('refundForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const incomeVal = document.getElementById('refIncome').value.replace(/,/g, '') || '0';
             const expenseVal = document.getElementById('refExpense').value.replace(/,/g, '') || '0';
-
-            const newEntry = {
-                projectId: selectedProjectId,
-                date: document.getElementById('refDate').value,
-                desc: document.getElementById('refDesc').value,
-                income: incomeVal,
-                expense: expenseVal,
-                note: document.getElementById('refNote').value || '-'
-            };
+            const dateVal = document.getElementById('refDate').value;
+            const descVal = document.getElementById('refDesc').value;
+            const noteVal = document.getElementById('refNote').value || '-';
 
             try {
                 if (editingRefundId) {
-                    await db.collection("manual_refunds").doc(editingRefundId).update(newEntry);
+                    if (editingRefundSource === 'investments') {
+                        // ຖ້າແກ້ໄຂເງິນຮັບ ໃຫ້ໄປອັບເດດຕາຕະລາງລົງທຶນ
+                        await db.collection("investments").doc(editingRefundId).update({
+                            date: dateVal, amount: incomeVal, note: noteVal
+                        });
+                    } else if (editingRefundSource === 'expenses') {
+                        // ຖ້າແກ້ໄຂເງິນຈ່າຍ ໃຫ້ໄປອັບເດດຕາຕະລາງລາຍຈ່າຍ
+                        await db.collection("expenses").doc(editingRefundId).update({
+                            date: dateVal, desc: descVal, amount: expenseVal, note: noteVal
+                        });
+                    } else {
+                        // ຖ້າແກ້ໄຂໂຕທີ່ປ້ອນເອງ
+                        await db.collection("manual_refunds").doc(editingRefundId).update({
+                            date: dateVal, desc: descVal, income: incomeVal, expense: expenseVal, note: noteVal
+                        });
+                    }
                     showCustomAlert("ແກ້ໄຂລາຍການສຳເລັດ!");
                 } else {
-                    await db.collection("manual_refunds").add(newEntry);
+                    await db.collection("manual_refunds").add({
+                        projectId: selectedProjectId,
+                        date: dateVal, desc: descVal, income: incomeVal, expense: expenseVal, note: noteVal
+                    });
                     showCustomAlert("ເພີ່ມລາຍການສຳເລັດ!");
                 }
                 closeRefundModal();
@@ -1542,29 +1558,45 @@
             }
         });
 
-        // ຟັງຊັນສຳລັບເປີດ Popup ເລືອກ ແກ້ໄຂ/ລຶບ
-        function openRefundActionModal(id) {
+    // ເປີດ Popup ເລືອກ ແກ້ໄຂ/ລຶບ (ສົ່ງແຫຼ່ງທີ່ມາໄປນຳ)
+        function openRefundActionModal(id, source) {
             selectedActionRefundId = id;
+            selectedActionRefundSource = source;
             document.getElementById('refundActionModal').classList.remove('hidden');
         }
 
         function closeRefundActionModal() {
             document.getElementById('refundActionModal').classList.add('hidden');
             selectedActionRefundId = null;
+            selectedActionRefundSource = null;
         }
 
         // ກົດປຸ່ມ "ແກ້ໄຂ" ໃນ Popup
         document.getElementById('btnEditRefund').onclick = () => {
             closeRefundActionModal();
-            const item = manualRefundsData.find(m => m.id === selectedActionRefundId);
+            let item = null;
+            
+            // ດຶງຂໍ້ມູນມາສະແດງໃນຟອມແກ້ໄຂ ຕາມແຫຼ່ງທີ່ມາ
+            if (selectedActionRefundSource === 'investments') {
+                const inv = investmentsData.find(i => i.id === selectedActionRefundId);
+                if(inv) item = { date: inv.date, desc: `ຮັບເງິນຈາກ ${inv.investorName}`, income: inv.amount, expense: 0, note: inv.note };
+            } else if (selectedActionRefundSource === 'expenses') {
+                const exp = expensesData.find(e => e.id === selectedActionRefundId);
+                if(exp) item = { date: exp.date, desc: exp.desc, income: 0, expense: Number(exp.amount||0) + Number(exp.fee||0), note: exp.note };
+            } else {
+                const man = manualRefundsData.find(m => m.id === selectedActionRefundId);
+                if(man) item = { date: man.date, desc: man.desc, income: man.income, expense: man.expense, note: man.note };
+            }
+
             if (item) {
-                document.getElementById('refDate').value = item.date;
-                document.getElementById('refDesc').value = item.desc;
-                document.getElementById('refIncome').value = formatNumber(item.income);
-                document.getElementById('refExpense').value = formatNumber(item.expense);
+                document.getElementById('refDate').value = item.date || '';
+                document.getElementById('refDesc').value = item.desc || '';
+                document.getElementById('refIncome').value = item.income > 0 ? formatNumber(item.income) : '';
+                document.getElementById('refExpense').value = item.expense > 0 ? formatNumber(item.expense) : '';
                 document.getElementById('refNote').value = item.note || '';
                 
-                editingRefundId = item.id;
+                editingRefundId = selectedActionRefundId;
+                editingRefundSource = selectedActionRefundSource;
                 document.getElementById('refundModal').classList.remove('hidden');
             }
         };
@@ -1572,9 +1604,10 @@
         // ກົດປຸ່ມ "ລຶບ" ໃນ Popup
         document.getElementById('btnDeleteRefund').onclick = () => {
             closeRefundActionModal();
-            showCustomConfirm("ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ?", async () => {
+            // ແຈ້ງເຕືອນໃຫ້ຮູ້ວ່າ ຖ້າລຶບ ມັນຈະຫາຍໄປຈາກໜ້າຕົ້ນທາງນຳ
+            showCustomConfirm("ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ? (ຖ້າລຶບ ຂໍ້ມູນໃນໜ້າຕົ້ນທາງກໍຈະຫາຍໄປນຳ)", async () => {
                 try {
-                    await db.collection("manual_refunds").doc(selectedActionRefundId).delete();
+                    await db.collection(selectedActionRefundSource).doc(selectedActionRefundId).delete();
                     showCustomAlert("ລຶບລາຍການສຳເລັດ!");
                 } catch (error) {
                     showCustomAlert("ຜິດພາດ: " + error.message, "ຜິດພາດ");
@@ -1598,19 +1631,19 @@
 
             let combinedData = [];
 
-            // 1. ດຶງຈາກ "ການລົງທຶນ" ສະເພາະ ເງິນສົດ (ຮັບ)
+            // 1. ດຶງຈາກ "ການລົງທຶນ" ແລ້ວແນບ source: 'investments' ໄປນຳ
             investmentsData.filter(i => i.projectId === selectedProjectId && i.method === 'ສົດ').forEach(i => {
-                combinedData.push({ type: 'auto', date: i.date, desc: `ຮັບເງິນຈາກ ${i.investorName}`, income: Number(i.amount || 0), expense: 0, note: i.note || '' });
+                combinedData.push({ source: 'investments', id: i.id, date: i.date, desc: `ຮັບເງິນຈາກ ${i.investorName}`, income: Number(i.amount || 0), expense: 0, note: i.note || '' });
             });
 
-            // 2. ດຶງຈາກ "ລາຍຈ່າຍ" ສະເພາະ ເງິນສົດ (ຈ່າຍ)
+            // 2. ດຶງຈາກ "ລາຍຈ່າຍ" ແລ້ວແນບ source: 'expenses' ໄປນຳ
             expensesData.filter(e => e.projectId === selectedProjectId && e.method === 'ສົດ').forEach(e => {
-                combinedData.push({ type: 'auto', date: e.date, desc: e.desc, income: 0, expense: Number(e.amount || 0) + Number(e.fee || 0), note: e.note || '' });
+                combinedData.push({ source: 'expenses', id: e.id, date: e.date, desc: e.desc, income: 0, expense: Number(e.amount || 0) + Number(e.fee || 0), note: e.note || '' });
             });
 
-            // 3. ດຶງຈາກທີ່ ADMIN ປ້ອນເອງ (ຮັບ/ຈ່າຍ)
+            // 3. ດຶງຈາກທີ່ ADMIN ປ້ອນເອງ ແລ້ວແນບ source: 'manual_refunds' ໄປນຳ
             manualRefundsData.filter(m => m.projectId === selectedProjectId).forEach(m => {
-                combinedData.push({ type: 'manual', id: m.id, date: m.date, desc: m.desc, income: Number(m.income || 0), expense: Number(m.expense || 0), note: m.note || '' });
+                combinedData.push({ source: 'manual_refunds', id: m.id, date: m.date, desc: m.desc, income: Number(m.income || 0), expense: Number(m.expense || 0), note: m.note || '' });
             });
 
             // ລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່
@@ -1624,17 +1657,12 @@
                 combinedData.forEach((item, index) => {
                     totalIncome += item.income; totalExpense += item.expense;
                     
-                    // 2. ກ່ອງສີແດງ 2: ຖ້າເປັນລາຍຈ່າຍ ໃຫ້ຍັບເຂົ້າໄປຂວາໜ້ອຍໜຶ່ງ (Indent) ດ້ວຍ class 'pl-8'
                     let indentClass = item.expense > 0 ? "pl-8 text-gray-700" : "font-medium";
 
-                    // 3. ກ່ອງສີແດງ 3: ປຸ່ມຈັດການ (ແກ້ໄຂ/ລຶບ)
                     let actionHtml = "";
                     if (isAdmin) {
-                        if (item.type === 'manual') {
-                            actionHtml = `<td class="p-2 border border-black text-center"><button onclick="openRefundActionModal('${item.id}')" class="text-blue-600 font-semibold hover:underline">⚙️ ຈັດການ</button></td>`;
-                        } else {
-                            actionHtml = `<td class="p-2 border border-black text-center text-xs text-gray-400">ອັດຕະໂນມັດ</td>`; // ລັອກລາຍການທີ່ດຶງມາຈາກໜ້າອື່ນ
-                        }
+                        // ປ່ຽນໃຫ້ທຸກແຖວເປັນປຸ່ມ "ແກ້ໄຂ" ທັງໝົດ
+                        actionHtml = `<td class="p-2 border border-black text-center"><button onclick="openRefundActionModal('${item.id}', '${item.source}')" class="text-blue-600 font-semibold hover:underline">ແກ້ໄຂ</button></td>`;
                     }
 
                     html += `
