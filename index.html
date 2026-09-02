@@ -74,22 +74,29 @@
                 </div>
             </div>
 
-            <!-- TAB 2: ນັກລົງທຶນ -->
+        <!-- TAB 2: ນັກລົງທຶນ -->
             <div id="tab-investors" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ຂໍ້ມູນນັກລົງທຶນ (ນິຕິບຸກຄົນ)</h2>
-                        <p id="currentActiveProjectInv" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button id="deleteInvestorBtn" onclick="deleteSelectedInvestors()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
-                        <button id="addInvestorBtn" onclick="openInvestorModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມນັກລົງທຶນ</button>
+                
+                <!-- 🌟 ເອົາມາຄອບສ່ວນຫົວ (ກ່ອງສີແດງ) ໄວ້ບ່ອນນີ້ -->
+                <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">ຂໍ້ມູນນັກລົງທຶນ (ນິຕິບຸກຄົນ)</h2>
+                            <p id="currentActiveProjectInv" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button id="deleteInvestorBtn" onclick="deleteSelectedInvestors()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
+                            <button id="addInvestorBtn" onclick="openInvestorModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມນັກລົງທຶນ</button>
+                        </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow overflow-x-auto">
+
+                <!-- 🌟 ສ່ວນຕາຕະລາງ ໃຫ້ໃສ່ max-h-[60vh] overflow-auto -->
+                <div class="bg-white rounded-lg shadow overflow-auto max-h-[60vh]">
                     <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-200 text-gray-700 text-sm">
+                        <!-- 🌟 ຫົວຕາຕະລາງ ໃຫ້ໃສ່ sticky top-0 z-20 bg-gray-200 -->
+                        <thead class="sticky top-0 z-20 bg-gray-200 shadow-sm">
+                            <tr class="text-gray-700 text-sm">
                                 <th class="p-3 border text-center">ລ/ດ</th>
                                 <th class="p-3 border">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
                                 <th class="p-3 border">ບ້ານ</th>
@@ -97,14 +104,13 @@
                                 <th class="p-3 border">ແຂວງ</th>
                                 <th class="p-3 border">ເບີໂທລະສັບ</th>
                                 <th class="p-3 border">ໝາຍເຫດ</th>
-                                <!-- ເພີ່ມ admin-col-th ໃສ່ບ່ອນນີ້ -->
                                 <th class="p-3 border text-center admin-col-th">
                                     <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
                                 </th>
                             </tr>
                         </thead>
                         <tbody id="investorTableBody" class="text-sm text-gray-700">
-                            <!-- ຂໍ້ມູນຈະຖືກໂຫຼດດ້ວຍ Script -->
+                            <!-- ຂໍ້ມູນ -->
                         </tbody>
                     </table>
                 </div>
