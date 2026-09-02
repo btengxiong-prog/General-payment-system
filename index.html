@@ -614,7 +614,7 @@
         let investmentsData = [];
         let expensesData = [];
 
-// ຟັງຊັນໂຫຼດຂໍ້ມູນຈາກ Firebase Cloud Database
+    // ຟັງຊັນໂຫຼດຂໍ້ມູນຈາກ Firebase Cloud Database
         function loadDataFromFirebase() {
             db.collection("investors").onSnapshot((snapshot) => {
                 investorsData = [];
@@ -626,18 +626,25 @@
                 investmentsData = [];
                 snapshot.forEach((doc) => { investmentsData.push({ id: doc.id, ...doc.data() }); });
                 renderInvestments();
-                renderInvestSummary(); // <-- ເພີ່ມແຖວນີ້ເຂົ້າໄປ ເພື່ອໃຫ້ຕາຕະລາງ TAB 6 ໂຫຼດຂໍ້ມູນ
+                renderInvestSummary(); 
+                
+                // +++ ເພີ່ມແຖວນີ້ +++
+                updateActivityAlertAndTable();
             });
 
             db.collection("expenses").onSnapshot((snapshot) => {
                 expensesData = [];
                 snapshot.forEach((doc) => { expensesData.push({ id: doc.id, ...doc.data() }); });
                 renderExpenses();
+                
+                // +++ ເພີ່ມແຖວນີ້ +++
+                updateActivityAlertAndTable();
             });
+            
             db.collection("manual_refunds").onSnapshot((snapshot) => {
                 manualRefundsData = [];
                 snapshot.forEach((doc) => { manualRefundsData.push({ id: doc.id, ...doc.data() }); });
-                renderRefunds(); // ອັບເດດຕາຕະລາງ
+                renderRefunds(); 
             });
         }
 
@@ -905,12 +912,8 @@
         }
 
         function selectProject(projId) {
-            // ກວດສອບວ່າລິ້ງນີ້ຖືກລັອກສິດໄວ້ສະເພາະໂຄງການອື່ນບໍ
             if (window.lockedProjectId && window.lockedProjectId !== projId) {
-                // ຖ້າພະຍາຍາມກົດເບິ່ງໂຄງການອື່ນ ໃຫ້ຕີກັບ ແລະ ຫ້າມເບິ່ງ
                 showCustomAlert("ເຈົ້າບໍ່ມີສິດເຂົ້າຂໍ້ມູນໂຄງການນີ້!", "ACCESS DENIED");
-                
-                // ໃຫ້ຕິກເລືອກກັບຄືນມາໂຄງການທີ່ຖືກຕ້ອງຕາມສິດ
                 const radio = document.querySelector(`input[name="selectedProject"][value="${window.lockedProjectId}"]`);
                 if (radio) radio.checked = true;
                 return;
@@ -932,6 +935,9 @@
             renderExpenses();
             renderInvestSummary(); 
             renderRefunds();
+
+            // +++ ເພີ່ມແຖວນີ້ລົງໄປ ໃຫ້ມັນດຶງຂໍ້ມູນການເຄື່ອນໄຫວ +++
+            updateActivityAlertAndTable();
         }
 
         function openInvestorModal() {
