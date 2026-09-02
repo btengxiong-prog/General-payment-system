@@ -569,10 +569,9 @@
 
         let currentUser = null;
         let projectsData = [
-            db.collection("projects").doc("p1").set({ name: "Qz-ຫ້ວຍຫານ" });
-            db.collection("projects").doc("p2").set({ name: "Qz-ນ້ຳປຸຍ" });
-            db.collection("projects").doc("p3").set({ name: "Qz-ໂພນແກ້ວ" });
-            alert("ກູ້ຄືນໂຄງການເກົ່າສຳເລັດ! ກະລຸນາ Refresh ໜ້າເວັບ");
+            { id: 'huayhan_8xK9mP2', name: 'Qz-ຫ້ວຍຫານ' },
+            { id: 'nampui_vN5cR1wT', name: 'Qz-ນ້ຳປຸຍ' },
+            { id: 'phonkaew_jY7hB4qM', name: 'Qz-ໂພນແກ້ວ' }
         ];
 
         let selectedProjectId = null;
