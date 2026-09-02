@@ -277,18 +277,72 @@
                 </div>
             </div> <!-- ປິດ TAB 6 ບ່ອນນີ້ -->
 
-            <!-- TAB 7: ເງິນທວນຄືນ (ເພີ່ມໃໝ່) -->
+        <!-- TAB 7: ເງິນທວນຄືນ -->
             <div id="tab-refunds" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-6">
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ເງິນທວນຄືນ</h2>
+                        <h2 class="text-2xl font-bold text-gray-800">ເງິນທວນຄືນ (ຮັບ-ຈ່າຍ ເງິນສົດ)</h2>
                         <p id="currentActiveProjectRefund" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
                     </div>
+                    <button id="addRefundBtn" onclick="openRefundModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍການ</button>
                 </div>
-                <div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-                    ກຳລັງພັດທະນາໜ້າເງິນທວນຄືນ... (ສາມາດເພີ່ມຕາຕະລາງພາຍຫຼັງໄດ້)
+
+                <div class="bg-white p-6 rounded-lg shadow overflow-x-auto">
+                    <table class="w-full text-left border-collapse border-2 border-black">
+                        <thead>
+                            <tr class="text-black font-bold text-sm bg-gray-100">
+                                <th rowspan="2" class="p-2 border border-black text-center w-12">ລ/ດ</th>
+                                <th rowspan="2" class="p-2 border border-black text-center">ວັນ/ເດືອນ/ປີ</th>
+                                <th rowspan="2" class="p-2 border border-black text-center">ເນື້ອໃນ (ຮັບ/ຈ່າຍ)</th>
+                                <th colspan="2" class="p-2 border border-black text-center">ຈ/ນ ເງິນ (ຮັບ/ຈ່າຍ)</th>
+                                <th rowspan="2" class="p-2 border border-black text-center">ໝາຍເຫດ</th>
+                            </tr>
+                            <tr class="text-black font-bold text-sm bg-gray-100">
+                                <th class="p-2 border border-black text-center w-32">ຮັບ</th>
+                                <th class="p-2 border border-black text-center w-32">ຈ່າຍ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="refundTableBody" class="text-sm text-black">
+                            <!-- ຂໍ້ມູນຈະຖືກໂຫຼດຜ່ານ JS -->
+                        </tbody>
+                    </table>
                 </div>
-            </div> <!-- ປິດ TAB 7 ບ່ອນນີ້ -->
+            </div>
+
+<!-- Modal ເພີ່ມເງິນທວນຄືນ (ADMIN ປ້ອນເອງ) -->
+    <div id="refundModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="text-xl font-bold text-blue-600 mb-4">ເພີ່ມລາຍການເງິນທວນຄືນ</h3>
+            <form id="refundForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ວັນ/ເດືອນ/ປີ</label>
+                    <input type="date" id="refDate" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ເນື້ອໃນລາຍການ</label>
+                    <input type="text" id="refDesc" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ປ້ອນເນື້ອໃນ">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">ຈຳນວນເງິນ (ຮັບ)</label>
+                        <input type="text" id="refIncome" oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">ຈຳນວນເງິນ (ຈ່າຍ)</label>
+                        <input type="text" id="refExpense" oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="0">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ໝາຍເຫດ</label>
+                    <input type="text" id="refNote" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeRefundModal()" class="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400">ຍົກເລີກ</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">ບັນທຶກ</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Modal ເພີ່ມນັກລົງທຶນ -->
     <div id="investorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
@@ -515,6 +569,11 @@
                 snapshot.forEach((doc) => { expensesData.push({ id: doc.id, ...doc.data() }); });
                 renderExpenses();
             });
+            db.collection("manual_refunds").onSnapshot((snapshot) => {
+                manualRefundsData = [];
+                snapshot.forEach((doc) => { manualRefundsData.push({ id: doc.id, ...doc.data() }); });
+                renderRefunds(); // ອັບເດດຕາຕະລາງ
+            });
         }
 
         const districtsData = {
@@ -740,6 +799,7 @@
             renderInvestments();
             renderExpenses();
             renderInvestSummary(); // <-- ເພີ່ມແຖວນີ້ເຂົ້າໄປ ເພື່ອໃຫ້ອັບເດດຕາຕະລາງ TAB 6 ເວລາປ່ຽນໂຄງການ
+            renderRefunds();
         }
 
         function openInvestorModal() {
@@ -1415,6 +1475,110 @@
                         <td class="p-2 border border-black"></td>
                      </tr>`;
 
+            tbody.innerHTML = html;
+        }
+
+    let manualRefundsData = []; // ຕົວແປເກັບຂໍ້ມູນທີ່ ADMIN ປ້ອນເອງ
+
+        // ເປີດ/ປິດ Modal 
+        function openRefundModal() {
+            if (!selectedProjectId) { showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນ!", "ແຈ້ງເຕືອນ"); return; }
+            document.getElementById('refundModal').classList.remove('hidden');
+        }
+        function closeRefundModal() {
+            document.getElementById('refundModal').classList.add('hidden');
+            document.getElementById('refundForm').reset();
+        }
+
+        // ບັນທຶກຂໍ້ມູນລົງ Firebase ສຳລັບການປ້ອນເອງ
+        document.getElementById('refundForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const incomeVal = document.getElementById('refIncome').value.replace(/,/g, '') || '0';
+            const expenseVal = document.getElementById('refExpense').value.replace(/,/g, '') || '0';
+
+            const newEntry = {
+                projectId: selectedProjectId,
+                date: document.getElementById('refDate').value,
+                desc: document.getElementById('refDesc').value,
+                income: incomeVal,
+                expense: expenseVal,
+                note: document.getElementById('refNote').value || '-'
+            };
+
+            try {
+                await db.collection("manual_refunds").add(newEntry);
+                closeRefundModal();
+                showCustomAlert("ເພີ່ມລາຍການສຳເລັດ!");
+            } catch (error) {
+                showCustomAlert("ຜິດພາດ: " + error.message, "ຜິດພາດ");
+            }
+        });
+
+        // ຟັງຊັນແຕ້ມຕາຕະລາງ ເງິນທວນຄືນ (ປະສົມ 3 ແຫຼ່ງຂໍ້ມູນ)
+        function renderRefunds() {
+            const tbody = document.getElementById('refundTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            if (!selectedProjectId) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ</td></tr>`;
+                return;
+            }
+
+            let combinedData = [];
+
+            // 1. ດຶງຈາກ "ການລົງທຶນ" ສະເພາະ ເງິນສົດ (ຮັບ)
+            investmentsData.filter(i => i.projectId === selectedProjectId && i.method === 'ສົດ').forEach(i => {
+                combinedData.push({ date: i.date, desc: `ຮັບເງິນຈາກ ${i.investorName}`, income: Number(i.amount || 0), expense: 0, note: i.note || '' });
+            });
+
+            // 2. ດຶງຈາກ "ລາຍຈ່າຍ" ສະເພາະ ເງິນສົດ (ຈ່າຍ)
+            expensesData.filter(e => e.projectId === selectedProjectId && e.method === 'ສົດ').forEach(e => {
+                combinedData.push({ date: e.date, desc: e.desc, income: 0, expense: Number(e.amount || 0) + Number(e.fee || 0), note: e.note || '' });
+            });
+
+            // 3. ດຶງຈາກທີ່ ADMIN ປ້ອນເອງ (ຮັບ/ຈ່າຍ)
+            manualRefundsData.filter(m => m.projectId === selectedProjectId).forEach(m => {
+                combinedData.push({ date: m.date, desc: m.desc, income: Number(m.income || 0), expense: Number(m.expense || 0), note: m.note || '' });
+            });
+
+            // ລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່
+            combinedData.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+            let totalIncome = 0; let totalExpense = 0; let html = "";
+
+            if (combinedData.length === 0) {
+                html = `<tr><td colspan="6" class="p-6 text-center text-gray-500">ບໍ່ມີລາຍການເຄື່ອນໄຫວເງິນສົດໃນໂຄງການນີ້</td></tr>`;
+            } else {
+                combinedData.forEach((item, index) => {
+                    totalIncome += item.income; totalExpense += item.expense;
+                    html += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-2 border border-black text-center">${index + 1}</td>
+                            <td class="p-2 border border-black text-center">${formatDateToDDMMYYYY(item.date)}</td>
+                            <td class="p-2 border border-black">${item.desc}</td>
+                            <td class="p-2 border border-black text-right text-green-600 font-semibold">${item.income > 0 ? formatNumber(item.income) : ''}</td>
+                            <td class="p-2 border border-black text-right text-red-600 font-semibold">${item.expense > 0 ? formatNumber(item.expense) : ''}</td>
+                            <td class="p-2 border border-black">${item.note}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            let balance = totalIncome - totalExpense;
+            html += `
+                <tr class="font-bold bg-gray-100">
+                    <td colspan="3" class="p-2 border border-black text-center">ລວມ</td>
+                    <td class="p-2 border border-black text-right text-green-600">${formatNumber(totalIncome)}</td>
+                    <td class="p-2 border border-black text-right text-red-600">${formatNumber(totalExpense)}</td>
+                    <td class="p-2 border border-black"></td>
+                </tr>
+                <tr class="font-bold text-lg bg-gray-200">
+                    <td colspan="3" class="p-2 border border-black text-center">ຍອດເຫຼືອ (ຮັບ-ຈ່າຍ)</td>
+                    <td colspan="2" class="p-2 border border-black text-center ${balance >= 0 ? 'text-blue-600' : 'text-red-600'}">${formatNumber(balance)}</td>
+                    <td class="p-2 border border-black"></td>
+                </tr>
+            `;
             tbody.innerHTML = html;
         }
 
