@@ -1846,7 +1846,6 @@
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const forcedProjectSecret = urlParams.get('project'); 
-            const isAdminSecret = urlParams.get('admin'); 
 
             const loginScreen = document.getElementById('loginScreen');
             const appScreen = document.getElementById('appScreen');
@@ -1856,7 +1855,7 @@
                 const matchedProject = projectsData.find(p => p.secret === forcedProjectSecret);
                 
                 if (matchedProject) {
-                    window.lockedProjectId = matchedProject.id; // ລັອກດ້ວຍ ID ແທ້ (p1) ຂໍ້ມູນເກົ່າຈະມາຄົບ!
+                    window.lockedProjectId = matchedProject.id; // ລັອກດ້ວຍ ID ແທ້ (p1)
                     if (loginScreen) loginScreen.classList.add('hidden');
                     if (appScreen) appScreen.classList.remove('hidden');
                     
@@ -1884,16 +1883,10 @@
                         </div>`;
                 }
 
-            } else if (isAdminSecret === 'true') {
-                // 2. ຖ້າເຂົ້າຜ່ານລິ້ງລັບ Admin (?admin=true)
+            } else {
+                // 2. ຖ້າເຂົ້າລິ້ງຫຼັກ (ບໍ່ມີ ?project=) ໃຫ້ເປີດໜ້າ Login ປົກກະຕິ ໃຫ້ ADMIN ເຂົ້າໄດ້
                 if (loginScreen) loginScreen.classList.remove('hidden');
                 if (appScreen) appScreen.classList.add('hidden');
-            } else {
-                // 3. ຖ້າເຂົ້າລິ້ງທົ່ວໄປ ບລັອກຖິ້ມ
-                document.body.innerHTML = `
-                    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f3f4f6;">
-                        <div style="text-align: center; color: #dc2626;"><h2>🚫 Access Denied</h2></div>
-                    </div>`;
             }
         });
 
