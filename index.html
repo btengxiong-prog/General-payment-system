@@ -1571,20 +1571,24 @@
             selectedActionRefundSource = null;
         }
 
-        // ກົດປຸ່ມ "ແກ້ໄຂ" ໃນ Popup
+    // ກົດປຸ່ມ "ແກ້ໄຂ" ໃນ Popup
         document.getElementById('btnEditRefund').onclick = () => {
-            closeRefundActionModal();
-            let item = null;
+            // 1. ສຳເນົາຄ່າເກັບໄວ້ກ່ອນປິດ Popup
+            const currentId = selectedActionRefundId;
+            const currentSource = selectedActionRefundSource;
             
-            // ດຶງຂໍ້ມູນມາສະແດງໃນຟອມແກ້ໄຂ ຕາມແຫຼ່ງທີ່ມາ
-            if (selectedActionRefundSource === 'investments') {
-                const inv = investmentsData.find(i => i.id === selectedActionRefundId);
+            closeRefundActionModal();
+            
+            let item = null;
+            // 2. ດຶງຂໍ້ມູນມາສະແດງໃນຟອມແກ້ໄຂ ຕາມແຫຼ່ງທີ່ມາ ໂດຍໃຊ້ຄ່າທີ່ສຳເນົາໄວ້
+            if (currentSource === 'investments') {
+                const inv = investmentsData.find(i => i.id === currentId);
                 if(inv) item = { date: inv.date, desc: `ຮັບເງິນຈາກ ${inv.investorName}`, income: inv.amount, expense: 0, note: inv.note };
-            } else if (selectedActionRefundSource === 'expenses') {
-                const exp = expensesData.find(e => e.id === selectedActionRefundId);
+            } else if (currentSource === 'expenses') {
+                const exp = expensesData.find(e => e.id === currentId);
                 if(exp) item = { date: exp.date, desc: exp.desc, income: 0, expense: Number(exp.amount||0) + Number(exp.fee||0), note: exp.note };
             } else {
-                const man = manualRefundsData.find(m => m.id === selectedActionRefundId);
+                const man = manualRefundsData.find(m => m.id === currentId);
                 if(man) item = { date: man.date, desc: man.desc, income: man.income, expense: man.expense, note: man.note };
             }
 
@@ -1595,19 +1599,24 @@
                 document.getElementById('refExpense').value = item.expense > 0 ? formatNumber(item.expense) : '';
                 document.getElementById('refNote').value = item.note || '';
                 
-                editingRefundId = selectedActionRefundId;
-                editingRefundSource = selectedActionRefundSource;
+                editingRefundId = currentId;
+                editingRefundSource = currentSource;
                 document.getElementById('refundModal').classList.remove('hidden');
             }
         };
 
         // ກົດປຸ່ມ "ລຶບ" ໃນ Popup
         document.getElementById('btnDeleteRefund').onclick = () => {
+            // 1. ສຳເນົາຄ່າເກັບໄວ້ກ່ອນປິດ Popup
+            const currentId = selectedActionRefundId;
+            const currentSource = selectedActionRefundSource;
+            
             closeRefundActionModal();
-            // ແຈ້ງເຕືອນໃຫ້ຮູ້ວ່າ ຖ້າລຶບ ມັນຈະຫາຍໄປຈາກໜ້າຕົ້ນທາງນຳ
+            
             showCustomConfirm("ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ? (ຖ້າລຶບ ຂໍ້ມູນໃນໜ້າຕົ້ນທາງກໍຈະຫາຍໄປນຳ)", async () => {
                 try {
-                    await db.collection(selectedActionRefundSource).doc(selectedActionRefundId).delete();
+                    // 2. ສັ່ງລຶບໂດຍໃຊ້ຄ່າທີ່ສຳເນົາໄວ້
+                    await db.collection(currentSource).doc(currentId).delete();
                     showCustomAlert("ລຶບລາຍການສຳເລັດ!");
                 } catch (error) {
                     showCustomAlert("ຜິດພາດ: " + error.message, "ຜິດພາດ");
