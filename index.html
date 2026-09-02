@@ -284,6 +284,7 @@
                         <h2 class="text-2xl font-bold text-gray-800">ເງິນທວນຄືນ (ຮັບ-ຈ່າຍ ເງິນສົດ)</h2>
                         <p id="currentActiveProjectRefund" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
                     </div>
+                    <!-- 1. ກ່ອງສີແດງ 1: ປຸ່ມເພີ່ມຂໍ້ມູນຂອງ ADMIN -->
                     <button id="addRefundBtn" onclick="openRefundModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍການ</button>
                 </div>
 
@@ -296,6 +297,8 @@
                                 <th rowspan="2" class="p-2 border border-black text-center">ເນື້ອໃນ (ຮັບ/ຈ່າຍ)</th>
                                 <th colspan="2" class="p-2 border border-black text-center">ຈ/ນ ເງິນ (ຮັບ/ຈ່າຍ)</th>
                                 <th rowspan="2" class="p-2 border border-black text-center">ໝາຍເຫດ</th>
+                                <!-- ເພີ່ມຖັນຈັດການ (ແກ້ໄຂ/ລຶບ) -->
+                                <th rowspan="2" class="p-2 border border-black text-center admin-col-th w-24">ຈັດການ</th>
                             </tr>
                             <tr class="text-black font-bold text-sm bg-gray-100">
                                 <th class="p-2 border border-black text-center w-32">ຮັບ</th>
@@ -306,6 +309,19 @@
                             <!-- ຂໍ້ມູນຈະຖືກໂຫຼດຜ່ານ JS -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Modal ເລືອກແກ້ໄຂ ຫຼື ລຶບ (ສຳລັບ TAB 7) -->
+            <div id="refundActionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+                <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl text-center">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">ເລືອກການຈັດການ</h3>
+                    <p class="text-sm text-gray-600 mb-6">ທ່ານຕ້ອງການແກ້ໄຂ ຫຼື ລຶບລາຍການທີ່ເລືອກນີ້?</p>
+                    <div class="flex justify-center space-x-3">
+                        <button onclick="closeRefundActionModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">ຍົກເລີກ</button>
+                        <button id="btnEditRefund" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">ແກ້ໄຂ</button>
+                        <button id="btnDeleteRefund" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບ</button>
+                    </div>
                 </div>
             </div>
 
@@ -1478,19 +1494,22 @@
             tbody.innerHTML = html;
         }
 
-    let manualRefundsData = []; // ຕົວແປເກັບຂໍ້ມູນທີ່ ADMIN ປ້ອນເອງ
+        let manualRefundsData = []; 
+        let editingRefundId = null; // ເກັບ ID ເວລາຕ້ອງການແກ້ໄຂ
+        let selectedActionRefundId = null; // ເກັບ ID ເວລາກົດປຸ່ມຈັດການ
 
-        // ເປີດ/ປິດ Modal 
         function openRefundModal() {
             if (!selectedProjectId) { showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນ!", "ແຈ້ງເຕືອນ"); return; }
+            editingRefundId = null; 
+            document.getElementById('refundForm').reset();
             document.getElementById('refundModal').classList.remove('hidden');
         }
         function closeRefundModal() {
             document.getElementById('refundModal').classList.add('hidden');
-            document.getElementById('refundForm').reset();
+            editingRefundId = null;
         }
 
-        // ບັນທຶກຂໍ້ມູນລົງ Firebase ສຳລັບການປ້ອນເອງ
+    // ບັນທຶກ ຫຼື ແກ້ໄຂ ຂໍ້ມູນ (ປ້ອນເອງ)
         document.getElementById('refundForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const incomeVal = document.getElementById('refIncome').value.replace(/,/g, '') || '0';
@@ -1506,22 +1525,70 @@
             };
 
             try {
-                await db.collection("manual_refunds").add(newEntry);
+                if (editingRefundId) {
+                    await db.collection("manual_refunds").doc(editingRefundId).update(newEntry);
+                    showCustomAlert("ແກ້ໄຂລາຍການສຳເລັດ!");
+                } else {
+                    await db.collection("manual_refunds").add(newEntry);
+                    showCustomAlert("ເພີ່ມລາຍການສຳເລັດ!");
+                }
                 closeRefundModal();
-                showCustomAlert("ເພີ່ມລາຍການສຳເລັດ!");
             } catch (error) {
                 showCustomAlert("ຜິດພາດ: " + error.message, "ຜິດພາດ");
             }
         });
 
-        // ຟັງຊັນແຕ້ມຕາຕະລາງ ເງິນທວນຄືນ (ປະສົມ 3 ແຫຼ່ງຂໍ້ມູນ)
+        // ຟັງຊັນສຳລັບເປີດ Popup ເລືອກ ແກ້ໄຂ/ລຶບ
+        function openRefundActionModal(id) {
+            selectedActionRefundId = id;
+            document.getElementById('refundActionModal').classList.remove('hidden');
+        }
+
+        function closeRefundActionModal() {
+            document.getElementById('refundActionModal').classList.add('hidden');
+            selectedActionRefundId = null;
+        }
+
+        // ກົດປຸ່ມ "ແກ້ໄຂ" ໃນ Popup
+        document.getElementById('btnEditRefund').onclick = () => {
+            closeRefundActionModal();
+            const item = manualRefundsData.find(m => m.id === selectedActionRefundId);
+            if (item) {
+                document.getElementById('refDate').value = item.date;
+                document.getElementById('refDesc').value = item.desc;
+                document.getElementById('refIncome').value = formatNumber(item.income);
+                document.getElementById('refExpense').value = formatNumber(item.expense);
+                document.getElementById('refNote').value = item.note || '';
+                
+                editingRefundId = item.id;
+                document.getElementById('refundModal').classList.remove('hidden');
+            }
+        };
+
+        // ກົດປຸ່ມ "ລຶບ" ໃນ Popup
+        document.getElementById('btnDeleteRefund').onclick = () => {
+            closeRefundActionModal();
+            showCustomConfirm("ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ?", async () => {
+                try {
+                    await db.collection("manual_refunds").doc(selectedActionRefundId).delete();
+                    showCustomAlert("ລຶບລາຍການສຳເລັດ!");
+                } catch (error) {
+                    showCustomAlert("ຜິດພາດ: " + error.message, "ຜິດພາດ");
+                }
+            });
+        };
+
+    // ຟັງຊັນແຕ້ມຕາຕະລາງເງິນທວນຄືນ
         function renderRefunds() {
             const tbody = document.getElementById('refundTableBody');
             if (!tbody) return;
             tbody.innerHTML = "";
 
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+            const colspan = isAdmin ? 7 : 6; 
+
             if (!selectedProjectId) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-500">ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ</td></tr>`;
                 return;
             }
 
@@ -1529,17 +1596,17 @@
 
             // 1. ດຶງຈາກ "ການລົງທຶນ" ສະເພາະ ເງິນສົດ (ຮັບ)
             investmentsData.filter(i => i.projectId === selectedProjectId && i.method === 'ສົດ').forEach(i => {
-                combinedData.push({ date: i.date, desc: `ຮັບເງິນຈາກ ${i.investorName}`, income: Number(i.amount || 0), expense: 0, note: i.note || '' });
+                combinedData.push({ type: 'auto', date: i.date, desc: `ຮັບເງິນຈາກ ${i.investorName}`, income: Number(i.amount || 0), expense: 0, note: i.note || '' });
             });
 
             // 2. ດຶງຈາກ "ລາຍຈ່າຍ" ສະເພາະ ເງິນສົດ (ຈ່າຍ)
             expensesData.filter(e => e.projectId === selectedProjectId && e.method === 'ສົດ').forEach(e => {
-                combinedData.push({ date: e.date, desc: e.desc, income: 0, expense: Number(e.amount || 0) + Number(e.fee || 0), note: e.note || '' });
+                combinedData.push({ type: 'auto', date: e.date, desc: e.desc, income: 0, expense: Number(e.amount || 0) + Number(e.fee || 0), note: e.note || '' });
             });
 
             // 3. ດຶງຈາກທີ່ ADMIN ປ້ອນເອງ (ຮັບ/ຈ່າຍ)
             manualRefundsData.filter(m => m.projectId === selectedProjectId).forEach(m => {
-                combinedData.push({ date: m.date, desc: m.desc, income: Number(m.income || 0), expense: Number(m.expense || 0), note: m.note || '' });
+                combinedData.push({ type: 'manual', id: m.id, date: m.date, desc: m.desc, income: Number(m.income || 0), expense: Number(m.expense || 0), note: m.note || '' });
             });
 
             // ລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່
@@ -1548,18 +1615,33 @@
             let totalIncome = 0; let totalExpense = 0; let html = "";
 
             if (combinedData.length === 0) {
-                html = `<tr><td colspan="6" class="p-6 text-center text-gray-500">ບໍ່ມີລາຍການເຄື່ອນໄຫວເງິນສົດໃນໂຄງການນີ້</td></tr>`;
+                html = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">ບໍ່ມີລາຍການເຄື່ອນໄຫວເງິນສົດໃນໂຄງການນີ້</td></tr>`;
             } else {
                 combinedData.forEach((item, index) => {
                     totalIncome += item.income; totalExpense += item.expense;
+                    
+                    // 2. ກ່ອງສີແດງ 2: ຖ້າເປັນລາຍຈ່າຍ ໃຫ້ຍັບເຂົ້າໄປຂວາໜ້ອຍໜຶ່ງ (Indent) ດ້ວຍ class 'pl-8'
+                    let indentClass = item.expense > 0 ? "pl-8 text-gray-700" : "font-medium";
+
+                    // 3. ກ່ອງສີແດງ 3: ປຸ່ມຈັດການ (ແກ້ໄຂ/ລຶບ)
+                    let actionHtml = "";
+                    if (isAdmin) {
+                        if (item.type === 'manual') {
+                            actionHtml = `<td class="p-2 border border-black text-center"><button onclick="openRefundActionModal('${item.id}')" class="text-blue-600 font-semibold hover:underline">⚙️ ຈັດການ</button></td>`;
+                        } else {
+                            actionHtml = `<td class="p-2 border border-black text-center text-xs text-gray-400">ອັດຕະໂນມັດ</td>`; // ລັອກລາຍການທີ່ດຶງມາຈາກໜ້າອື່ນ
+                        }
+                    }
+
                     html += `
                         <tr class="hover:bg-gray-50">
                             <td class="p-2 border border-black text-center">${index + 1}</td>
                             <td class="p-2 border border-black text-center">${formatDateToDDMMYYYY(item.date)}</td>
-                            <td class="p-2 border border-black">${item.desc}</td>
+                            <td class="p-2 border border-black ${indentClass}">- ${item.desc}</td>
                             <td class="p-2 border border-black text-right text-green-600 font-semibold">${item.income > 0 ? formatNumber(item.income) : ''}</td>
                             <td class="p-2 border border-black text-right text-red-600 font-semibold">${item.expense > 0 ? formatNumber(item.expense) : ''}</td>
                             <td class="p-2 border border-black">${item.note}</td>
+                            ${actionHtml}
                         </tr>
                     `;
                 });
@@ -1571,12 +1653,12 @@
                     <td colspan="3" class="p-2 border border-black text-center">ລວມ</td>
                     <td class="p-2 border border-black text-right text-green-600">${formatNumber(totalIncome)}</td>
                     <td class="p-2 border border-black text-right text-red-600">${formatNumber(totalExpense)}</td>
-                    <td class="p-2 border border-black"></td>
+                    <td colspan="${isAdmin ? 2 : 1}" class="p-2 border border-black"></td>
                 </tr>
                 <tr class="font-bold text-lg bg-gray-200">
                     <td colspan="3" class="p-2 border border-black text-center">ຍອດເຫຼືອ (ຮັບ-ຈ່າຍ)</td>
                     <td colspan="2" class="p-2 border border-black text-center ${balance >= 0 ? 'text-blue-600' : 'text-red-600'}">${formatNumber(balance)}</td>
-                    <td class="p-2 border border-black"></td>
+                    <td colspan="${isAdmin ? 2 : 1}" class="p-2 border border-black"></td>
                 </tr>
             `;
             tbody.innerHTML = html;
