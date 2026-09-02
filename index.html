@@ -1302,12 +1302,14 @@
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
+                
+                // +++ ຈຸດທີ່ປ່ຽນແປງ: ໃສ່ text-right ແລະ pr-4 ໃຫ້ກັບ 2 ຖັນຕົວເລກ +++
                 tr.innerHTML = `
                     <td class="p-3 border text-center">${index + 1}</td>
-                    <td class="p-3 border">${formattedDate}</td>
+                    <td class="p-3 border text-center">${formattedDate}</td>
                     <td class="p-3 border">${exp.desc}</td>
-                    <td class="p-3 border">${formattedAmount}</td>
-                    <td class="p-3 border">${formattedFee}</td>
+                    <td class="p-3 border text-right pr-4 font-semibold text-gray-800">${formattedAmount}</td>
+                    <td class="p-3 border text-right pr-4 text-gray-700">${formattedFee}</td>
                     <td class="p-3 border text-center">${receipt1Html}</td>
                     <td class="p-3 border text-center">${receipt2Html}</td>
                     <td class="p-3 border">${finalNoteHtml}</td>
@@ -1321,8 +1323,8 @@
             totalTr.className = "bg-gray-50 font-bold text-gray-800";
             totalTr.innerHTML = `
                 <td colspan="3" class="p-3 border text-right">ລວມລາຍຈ່າຍທັງໝົດ</td>
-                <td class="p-3 border text-blue-600">${formatNumber(totalAmount)}</td>
-                <td class="p-3 border text-blue-600">${formatNumber(totalFee)}</td>
+                <td class="p-3 border text-right pr-4 text-blue-700 text-base">${formatNumber(totalAmount)}</td>
+                <td class="p-3 border text-right pr-4 text-blue-700 text-base">${formatNumber(totalFee)}</td>
                 <td colspan="${emptyColspan}" class="p-3 border"></td>
             `;
             tbody.appendChild(totalTr);
