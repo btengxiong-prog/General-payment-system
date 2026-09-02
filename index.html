@@ -39,24 +39,30 @@
 
     <!-- MAIN APP -->
     <div id="appScreen" class="hidden">
-    <!-- Navigation Menu (ລັອກໃຫ້ຕິດຂອບເທິງສະເໝີ) -->
-        <nav class="bg-white shadow-md sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center overflow-x-auto">
-                <div class="flex space-x-6 font-semibold text-gray-700 whitespace-nowrap">
-                    <button onclick="switchTab('projects')" class="hover:text-blue-600 focus:text-blue-600">ໂຄງການທັງໝົດ</button>
-                    <button onclick="switchTab('investors')" class="hover:text-blue-600 focus:text-blue-600">ນັກລົງທຶນ</button>
-                    <button onclick="switchTab('investments')" class="hover:text-blue-600 focus:text-blue-600">ຈ/ນ ເງິນລົງທຶນ</button>
-                    <button onclick="switchTab('invest_new')" class="hover:text-blue-600 focus:text-blue-600">ການລົງທຶນ</button>
-                    <button onclick="switchTab('expenses')" class="hover:text-blue-600 focus:text-blue-600">ລາຍຈ່າຍ</button>
-                    <button onclick="switchTab('refunds')" class="hover:text-blue-600 focus:text-blue-600">ເງິນທວນຄືນ</button>
-                    <button onclick="switchTab('reports')" class="hover:text-blue-600 focus:text-blue-600">ລາຍງານ</button>
-                </div>
-                <div class="flex items-center space-x-4 pl-4">
-                    <span id="userInfo" class="text-sm font-medium text-gray-600"></span>
-                    <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">ອອກຈາກລະບົບ</button>
-                </div>
+<!-- Navigation Menu (ລັອກໃຫ້ຕິດຂອບເທິງສະເໝີ) -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center overflow-x-auto">
+            <div class="flex space-x-6 font-semibold text-gray-700 whitespace-nowrap">
+                <button onclick="switchTab('projects')" class="hover:text-blue-600 focus:text-blue-600">ໂຄງການທັງໝົດ</button>
+                <button onclick="switchTab('investors')" class="hover:text-blue-600 focus:text-blue-600">ນັກລົງທຶນ</button>
+                <button onclick="switchTab('investments')" class="hover:text-blue-600 focus:text-blue-600">ຈ/ນ ເງິນລົງທຶນ</button>
+                <button onclick="switchTab('invest_new')" class="hover:text-blue-600 focus:text-blue-600">ການລົງທຶນ</button>
+                <button onclick="switchTab('expenses')" class="hover:text-blue-600 focus:text-blue-600">ລາຍຈ່າຍ</button>
+                <button onclick="switchTab('refunds')" class="hover:text-blue-600 focus:text-blue-600">ເງິນທວນຄືນ</button>
+                <button onclick="switchTab('reports')" class="hover:text-blue-600 focus:text-blue-600">ລາຍງານ</button>
+                
+                <!-- +++ ປຸ່ມແຈ້ງເຕືອນການເຄື່ອນໄຫວ (ວາງໄວ້ຕໍ່ທ້າຍລາຍງານ) +++ -->
+                <button id="notiTabBtn" onclick="switchTab('notification')" class="hover:text-blue-600 focus:text-blue-600 flex items-center transition duration-300">
+                    ການເຄື່ອນໄຫວ <span id="notiDot" class="hidden ml-1">🔴</span>
+                </button>
+                
             </div>
-        </nav>
+            <div class="flex items-center space-x-4 pl-4">
+                <span id="userInfo" class="text-sm font-medium text-gray-600"></span>
+                <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">ອອກຈາກລະບົບ</button>
+            </div>
+        </div>
+    </nav>
 
         <!-- Content Area -->
         <div class="max-w-7xl mx-auto p-6">
@@ -249,6 +255,35 @@
                     </div>
                 </div>
             </div> <!-- ປິດ TAB 5 ບ່ອນນີ້ -->
+
+    <!-- TAB ແຈ້ງເຕືອນ: ການເຄື່ອນໄຫວ -->
+            <div id="tab-notification" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">ປະຫວັດການເຄື່ອນໄຫວບັນຊີ (ຮັບ-ຈ່າຍ) ໃນ 24 ຊົ່ວໂມງ</h2>
+                </div>
+                
+                <div class="overflow-x-auto shadow-md rounded-lg bg-white">
+                    <table class="min-w-full text-sm text-left text-gray-500 border-collapse border">
+                        <thead class="bg-gray-100 text-gray-700 text-center">
+                            <tr>
+                                <th rowspan="2" class="border border-gray-300 px-4 py-2">ລ/ດ</th>
+                                <th rowspan="2" class="border border-gray-300 px-4 py-2">ວັນ/ເດືອນ/ປີ</th>
+                                <th rowspan="2" class="border border-gray-300 px-4 py-2">ເນື້ອໃນ (ຮັບ/ຈ່າຍ)</th>
+                                <th colspan="2" class="border border-gray-300 px-4 py-2">ຈ/ນ ເງິນ (ຮັບ/ຈ່າຍ)</th>
+                                <th rowspan="2" class="border border-gray-300 px-4 py-2">ໝາຍເຫດ</th>
+                            </tr>
+                            <tr>
+                                <th class="border border-gray-300 px-4 py-2 bg-gray-50 text-green-600">ຮັບ</th>
+                                <th class="border border-gray-300 px-4 py-2 bg-gray-50 text-red-600">ຈ່າຍ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityTableBody">
+                            <!-- ຂໍ້ມູນຈະຖືກດຶງມາໃສ່ບ່ອນນີ້ -->
+                            <tr><td colspan="6" class="py-4 text-center text-gray-500">ກະລຸນາເລືອກໂຄງການກ່ອນ</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
         <!-- TAB 6: ການລົງທຶນ (ເພີ່ມໃໝ່) -->
             <div id="tab-invest_new" class="tab-content hidden">
@@ -1902,6 +1937,85 @@
                 if (radio) radio.checked = true;
             }
         }, 500);
+
+        function updateActivityAlertAndTable() {
+            if (!selectedProjectId) return;
+
+            const now = new Date().getTime();
+            const past24Hours = now - (24 * 60 * 60 * 1000);
+            
+            let hasRecentActivity = false;
+            let activityLog = [];
+
+            // 1. ດຶງຂໍ້ມູນ ເງິນລົງທຶນ (ຮັບ)
+            if (typeof investmentsData !== 'undefined') {
+                investmentsData.filter(inv => inv.projectId === selectedProjectId).forEach(inv => {
+                    const timestamp = new Date(inv.date).getTime();
+                    if (timestamp >= past24Hours) hasRecentActivity = true;
+                    // ລຶບໝາຍຈຸດອອກກ່ອນແປງເປັນຕົວເລກ
+                    let cleanAmount = Number(String(inv.amount).replace(/,/g, '')) || 0;
+                    activityLog.push({ 
+                        date: inv.date, 
+                        desc: `ຮັບເງິນລົງທຶນຈາກ: ${inv.investorName}`, 
+                        in: cleanAmount, 
+                        out: 0, 
+                        note: inv.note || '' 
+                    });
+                });
+            }
+
+            // 2. ດຶງຂໍ້ມູນ ລາຍຈ່າຍ (ຈ່າຍ)
+            if (typeof expensesData !== 'undefined') {
+                expensesData.filter(exp => exp.projectId === selectedProjectId).forEach(exp => {
+                    const timestamp = new Date(exp.date).getTime();
+                    if (timestamp >= past24Hours) hasRecentActivity = true;
+                    // ແກ້ໄຂ: ໃຊ້ exp.desc (ບໍ່ແມ່ນ description) ແລະ ລວມຄ່າທຳນຽມ
+                    let cleanAmount = Number(String(exp.amount).replace(/,/g, '')) || 0;
+                    let cleanFee = Number(String(exp.fee).replace(/,/g, '')) || 0;
+                    activityLog.push({ 
+                        date: exp.date, 
+                        desc: `ຈ່າຍຄ່າ: ${exp.desc}`, 
+                        in: 0, 
+                        out: cleanAmount + cleanFee, 
+                        note: exp.note || '' 
+                    });
+                });
+            }
+
+            activityLog.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const notiBtn = document.getElementById('notiTabBtn');
+            const notiDot = document.getElementById('notiDot');
+            if (hasRecentActivity) {
+                notiBtn.className = "hover:text-blue-600 focus:text-blue-600 flex items-center transition duration-300 bg-red-100 text-red-600 px-3 py-1 rounded-full animate-pulse mr-2 font-bold";
+                notiDot.classList.remove('hidden');
+            } else {
+                notiBtn.className = "hover:text-blue-600 focus:text-blue-600 flex items-center transition duration-300 px-3 py-1 mr-2";
+                notiDot.classList.add('hidden');
+            }
+
+            const tbody = document.getElementById('activityTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            if (activityLog.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="border border-gray-300 py-4 text-center text-gray-500">ຍັງບໍ່ມີຂໍ້ມູນການເຄື່ອນໄຫວໃນໂຄງການນີ້</td></tr>`;
+            } else {
+                activityLog.forEach((item, index) => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="border border-gray-300 p-2 text-center">${index + 1}</td>
+                            <td class="border border-gray-300 p-2 text-center">${formatDateToDDMMYYYY(item.date)}</td>
+                            <td class="border border-gray-300 p-2">${item.desc}</td>
+                            <td class="border border-gray-300 p-2 text-right text-green-600 font-bold">${item.in > 0 ? formatNumber(item.in) : '-'}</td>
+                            <td class="border border-gray-300 p-2 text-right text-red-600 font-bold">${item.out > 0 ? formatNumber(item.out) : '-'}</td>
+                            <td class="border border-gray-300 p-2">${item.note}</td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
     </script>
 </body>
 </html>
