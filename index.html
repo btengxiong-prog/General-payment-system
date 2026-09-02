@@ -746,40 +746,29 @@
             const p = document.getElementById('passwordInput').value.trim();
 
             if (USERS[u] && USERS[u].pass === p) {
+                
+                // +++ ເພີ່ມເງື່ອນໄຂ: ຖ້າບໍ່ແມ່ນ ADMIN ຫ້າມ Login ເຂົ້າຜ່ານໜ້ານີ້ເດັດຂາດ +++
+                if (USERS[u].role !== 'ADMIN') {
+                    showCustomAlert("ບັນຊີນີ້ບໍ່ອະນຸຍາດໃຫ້ເຂົ້າລະບົບຜ່ານລິ້ງຫຼັກ. ກະລຸນາເຂົ້າຜ່ານລິ້ງໂຄງການຂອງທ່ານ!", "ບໍ່ມີສິດເຂົ້າເຖິງ");
+                    return; // ຢຸດການເຮັດວຽກທັນທີ ບໍ່ໃຫ້ Login ຜ່ານ
+                }
+                
+                // ຖ້າເປັນ ADMIN ໃຫ້ເຂົ້າລະບົບໄດ້ປົກກະຕິ
                 currentUser = USERS[u];
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('appScreen').classList.remove('hidden');
                 document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name} (${currentUser.role})`;
 
-                if (currentUser.role === 'ADMIN') {
-                    // ADMIN: ເຫັນທຸກປຸ່ມທຸກຄຳສັ່ງ
-                    document.getElementById('addProjectBtn').classList.remove('hidden');
-                    document.getElementById('addInvestorBtn').classList.remove('hidden');
-                    document.getElementById('deleteInvestorBtn').classList.remove('hidden');
-                    document.getElementById('addInvestmentBtn').classList.remove('hidden');
-                    document.getElementById('deleteInvestmentBtn').classList.remove('hidden');
-                    document.getElementById('addExpenseBtn').classList.remove('hidden');
-                    document.getElementById('deleteExpenseBtn').classList.remove('hidden');
-                    
-                    // ເປີດປຸ່ມ "+ ເພີ່ມລາຍການ" ໃນໜ້າເງິນທວນຄືນ ໃຫ້ ADMIN
-                    if(document.getElementById('addRefundBtn')) document.getElementById('addRefundBtn').classList.remove('hidden');
-                    
-                    document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
-                } else {
-                    // USER ທົ່ວໄປ: ເຊື່ອງປຸ່ມເພີ່ມ/ລຶບ ທັງໝົດທຸກໜ້າ
-                    document.getElementById('addProjectBtn').classList.add('hidden');
-                    document.getElementById('addInvestorBtn').classList.add('hidden');
-                    document.getElementById('deleteInvestorBtn').classList.add('hidden');
-                    document.getElementById('addInvestmentBtn').classList.add('hidden');
-                    document.getElementById('deleteInvestmentBtn').classList.add('hidden');
-                    document.getElementById('addExpenseBtn').classList.add('hidden');
-                    document.getElementById('deleteExpenseBtn').classList.add('hidden');
-                    
-                    // ເຊື່ອງປຸ່ມ "+ ເພີ່ມລາຍການ" ໃນໜ້າເງິນທວນຄືນ
-                    if(document.getElementById('addRefundBtn')) document.getElementById('addRefundBtn').classList.add('hidden');
-                    
-                    document.querySelectorAll('.admin-col-th').forEach(el => el.classList.add('hidden'));
-                }
+                // ເປີດປຸ່ມທຸກຢ່າງໃຫ້ ADMIN
+                document.getElementById('addProjectBtn').classList.remove('hidden');
+                document.getElementById('addInvestorBtn').classList.remove('hidden');
+                document.getElementById('deleteInvestorBtn').classList.remove('hidden');
+                document.getElementById('addInvestmentBtn').classList.remove('hidden');
+                document.getElementById('deleteInvestmentBtn').classList.remove('hidden');
+                document.getElementById('addExpenseBtn').classList.remove('hidden');
+                document.getElementById('deleteExpenseBtn').classList.remove('hidden');
+                if(document.getElementById('addRefundBtn')) document.getElementById('addRefundBtn').classList.remove('hidden');
+                document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
                 
                 loadDataFromFirebase();
                 renderProjects();
@@ -801,19 +790,58 @@
             if (tabName === 'reports') handleReportTypeChange();
         }
 
+    // ຟັງຊັນສະແດງລາຍຊື່ໂຄງການ ພ້ອມ 3 ປຸ່ມຈັດການສຳລັບ ADMIN
         function renderProjects() {
             const ul = document.getElementById('projectList');
             ul.innerHTML = "";
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+
             projectsData.forEach(proj => {
                 const li = document.createElement('li');
                 li.className = "p-4 hover:bg-gray-50 flex justify-between items-center border-b last:border-b-0";
+                
+                // ສ້າງ 3 ປຸ່ມຈັດການ (ກັອບປີ້ລິ້ງ, ແກ້ໄຂ, ລຶບ) ສະເພາະ ADMIN
+                let actionButtons = "";
+                if (isAdmin) {
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?project=${proj.id}`;
+                    actionButtons = `
+                        <div class="flex space-x-2">
+                            <button onclick="copyProjectLink('${shareUrl}', '${proj.name}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 shadow-sm">🔗 ກັອບປີ້ລິ້ງ</button>
+                            <button onclick="editProject('${proj.id}')" class="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600 shadow-sm">✏️ ແກ້ໄຂ</button>
+                            <button onclick="deleteProject('${proj.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 shadow-sm">🗑️ ລຶບ</button>
+                        </div>
+                    `;
+                }
+
                 li.innerHTML = `
                     <div class="flex items-center space-x-3">
                         <input type="radio" name="selectedProject" value="${proj.id}" ${selectedProjectId === proj.id ? 'checked' : ''} onchange="selectProject('${proj.id}')" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
                         <span class="font-medium text-gray-800">${proj.name}</span>
                     </div>
+                    ${actionButtons}
                 `;
                 ul.appendChild(li);
+            });
+        }
+
+    // ຟັງຊັນສຳລັບກັອບປີ້ລິ້ງ
+        function copyProjectLink(url, projectName) {
+            navigator.clipboard.writeText(url).then(() => {
+                showCustomAlert(`ກັອບປີ້ລິ້ງຂອງໂຄງການ "${projectName}" ສຳເລັດແລ້ວ!\n\nສາມາດນຳໄປວາງສົ່ງໃຫ້ນັກລົງທຶນໄດ້ເລີຍ.`, "ສຳເລັດ");
+            }).catch(err => {
+                showCustomAlert("ບໍ່ສາມາດກັອບປີ້ລິ້ງໄດ້: " + err, "ຜິດພາດ");
+            });
+        }
+
+    // ຟັງຊັນສຳລັບແກ້ໄຂໂຄງການ (ກຽມໄວ້ສຳລັບເຊື່ອມຕໍ່ Firebase)
+        function editProject(projId) {
+            showCustomAlert("ກຳລັງພັດທະນາຟັງຊັນແກ້ໄຂໂຄງການ...", "ແຈ້ງເຕືອນ");
+        }
+
+        // ຟັງຊັນສຳລັບລຶບໂຄງການ (ກຽມໄວ້ສຳລັບເຊື່ອມຕໍ່ Firebase)
+        function deleteProject(projId) {
+            showCustomConfirm("ທ່ານຕ້ອງການລຶບໂຄງການນີ້ແທ້ບໍ? (ຂໍ້ມູນທີ່ກ່ຽວຂ້ອງອາດຈະຖືກລຶບໄປນຳ)", () => {
+                showCustomAlert("ກຳລັງພັດທະນາຟັງຊັນລຶບໂຄງການ...", "ແຈ້ງເຕືອນ");
             });
         }
 
@@ -1825,7 +1853,6 @@
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const forcedProject = urlParams.get('project'); 
-            const isAdminSecret = urlParams.get('admin'); // ເພີ່ມຕົວແປສຳລັບລິ້ງລັບ Admin
 
             const loginScreen = document.getElementById('loginScreen');
             const appScreen = document.getElementById('appScreen');
@@ -1854,23 +1881,10 @@
                     if (radio) radio.checked = true;
                 }, 300);
 
-            } else if (isAdminSecret === 'true') {
-                // 2. ຖ້າເຂົ້າຜ່ານ "ລິ້ງລັບຂອງ Admin" (?admin=true) ຈະເປີດໜ້າ Login ໃຫ້
+            } else {
+                // 2. ຖ້າເຂົ້າລິ້ງຫຼັກ ໃຫ້ສະແດງໜ້າ Login ປົກກະຕິ (ດຽວເຮົາຈະໄປສະກັດ User ຕອນລັອກອິນແທນ)
                 if (loginScreen) loginScreen.classList.remove('hidden');
                 if (appScreen) appScreen.classList.add('hidden');
-
-            } else {
-                // 3. ຖ້າເຂົ້າລິ້ງຫຼັກທົ່ວໄປ (ບໍ່ມີຫຍັງຕໍ່ທ້າຍ) ໃຫ້ບລັອກໜ້າຈໍຖິ້ມທັນທີ 100%
-                document.body.innerHTML = `
-                    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f3f4f6;">
-                        <div style="text-align: center; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
-                            <div style="font-size: 50px; margin-bottom: 20px;">🚫</div>
-                            <h2 style="color: #dc2626; font-size: 24px; font-weight: bold; margin-bottom: 10px; font-family: sans-serif;">Access Denied</h2>
-                            <p style="color: #4b5563; font-family: sans-serif; margin-bottom: 5px;">ທ່ານບໍ່ມີສິດເຂົ້າເຖິງໜ້ານີ້</p>
-                            <p style="color: #9ca3af; font-family: sans-serif; font-size: 14px;">ກະລຸນາໃຊ້ລິ້ງທີ່ໄດ້ຮັບຈາກຜູ້ດູແລລະບົບເທົ່ານັ້ນ.</p>
-                        </div>
-                    </div>
-                `;
             }
         });
 
