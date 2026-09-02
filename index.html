@@ -746,32 +746,63 @@
             const p = document.getElementById('passwordInput').value.trim();
 
             if (USERS[u] && USERS[u].pass === p) {
-                
-                // +++ ເພີ່ມເງື່ອນໄຂ: ຖ້າບໍ່ແມ່ນ ADMIN ຫ້າມ Login ເຂົ້າຜ່ານໜ້ານີ້ເດັດຂາດ +++
-                if (USERS[u].role !== 'ADMIN') {
-                    showCustomAlert("ບັນຊີນີ້ບໍ່ອະນຸຍາດໃຫ້ເຂົ້າລະບົບຜ່ານລິ້ງຫຼັກ. ກະລຸນາເຂົ້າຜ່ານລິ້ງໂຄງການຂອງທ່ານ!", "ບໍ່ມີສິດເຂົ້າເຖິງ");
-                    return; // ຢຸດການເຮັດວຽກທັນທີ ບໍ່ໃຫ້ Login ຜ່ານ
-                }
-                
-                // ຖ້າເປັນ ADMIN ໃຫ້ເຂົ້າລະບົບໄດ້ປົກກະຕິ
-                currentUser = USERS[u];
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('appScreen').classList.remove('hidden');
-                document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name} (${currentUser.role})`;
+                const userRole = USERS[u].role;
 
-                // ເປີດປຸ່ມທຸກຢ່າງໃຫ້ ADMIN
-                document.getElementById('addProjectBtn').classList.remove('hidden');
-                document.getElementById('addInvestorBtn').classList.remove('hidden');
-                document.getElementById('deleteInvestorBtn').classList.remove('hidden');
-                document.getElementById('addInvestmentBtn').classList.remove('hidden');
-                document.getElementById('deleteInvestmentBtn').classList.remove('hidden');
-                document.getElementById('addExpenseBtn').classList.remove('hidden');
-                document.getElementById('deleteExpenseBtn').classList.remove('hidden');
-                if(document.getElementById('addRefundBtn')) document.getElementById('addRefundBtn').classList.remove('hidden');
-                document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
-                
-                loadDataFromFirebase();
-                renderProjects();
+                if (userRole === 'ADMIN') {
+                    // 1. ສຳລັບ ADMIN: ໃຫ້ເຂົ້າລະບົບໄດ້ເລີຍ ເຫັນປຸ່ມທຸກຢ່າງ
+                    currentUser = USERS[u];
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('appScreen').classList.remove('hidden');
+                    document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name} (ADMIN)`;
+
+                    // ເປີດປຸ່ມ Admin ທັງໝົດ
+                    const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addRefundBtn'];
+                    adminBtns.forEach(btnId => { if(document.getElementById(btnId)) document.getElementById(btnId).classList.remove('hidden'); });
+                    document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
+                    
+                    loadDataFromFirebase();
+                    renderProjects();
+                } else {
+                    // 2. ສຳລັບ USER ທົ່ວໄປ: ຕ້ອງກວດສອບລິ້ງກ່ອນ
+                    if (!window.pendingProjectSecret) {
+                        // ຖ້າ User ທົ່ວໄປ ພະຍາຍາມ Login ຜ່ານລິ້ງຫຼັກ (ບໍ່ມີຊື່ໂຄງການ)
+                        showCustomAlert("ບັນຊີນີ້ບໍ່ອະນຸຍາດໃຫ້ເຂົ້າລະບົບຜ່ານລິ້ງຫຼັກ. ກະລຸນາເຂົ້າຜ່ານລິ້ງໂຄງການຂອງທ່ານ!", "ບໍ່ມີສິດເຂົ້າເຖິງ");
+                        return; // ຢຸດການເຮັດວຽກ ບໍ່ໃຫ້ເຂົ້າ
+                    }
+
+                    // ຊອກຫາວ່າລະຫັດໂຄງການໃນລິ້ງ ກົງກັບໂຄງການໃດໃນຖານຂໍ້ມູນ
+                    const matchedProject = projectsData.find(proj => proj.secret === window.pendingProjectSecret);
+                    
+                    if (matchedProject) {
+                        // ຖ້າລິ້ງຖືກຕ້ອງ: ອະນຸຍາດໃຫ້ Login ແລະ ລັອກໂຄງການໄວ້
+                        currentUser = USERS[u];
+                        window.lockedProjectId = matchedProject.id; 
+
+                        document.getElementById('loginScreen').classList.add('hidden');
+                        document.getElementById('appScreen').classList.remove('hidden');
+                        document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name}`;
+
+                        // ເຊື່ອງປຸ່ມ Admin ທັງໝົດ
+                        setTimeout(() => {
+                            const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addRefundBtn'];
+                            adminBtns.forEach(btnId => {
+                                const btn = document.getElementById(btnId);
+                                if (btn) btn.classList.add('hidden');
+                            });
+                            document.querySelectorAll('.admin-col-th').forEach(el => el.classList.add('hidden'));
+
+                            if (typeof loadDataFromFirebase === 'function') loadDataFromFirebase();
+                            
+                            // ເລືອກໂຄງການໃຫ້ອັດຕະໂນມັດ
+                            selectProject(matchedProject.id);
+                            const radio = document.querySelector(`input[name="selectedProject"][value="${matchedProject.id}"]`);
+                            if (radio) radio.checked = true;
+                        }, 300);
+                    } else {
+                        // ຖ້າລະຫັດໂຄງການໃນລິ້ງບໍ່ຖືກຕ້ອງ ຫຼື ຖືກມົ້ວມາ
+                        showCustomAlert("ລິ້ງໂຄງການນີ້ບໍ່ຖືກຕ້ອງ ຫຼື ບໍ່ມີໃນລະບົບ!", "ຜິດພາດ");
+                    }
+                }
             } else {
                 showCustomAlert("ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານ ບໍ່ຖືກຕ້ອງ!", "ຜິດພາດ");
             }
@@ -1842,52 +1873,21 @@
             }
         });
 
-    // ກວດສອບສິດ ແລະ ຈັດການການສະແດງຜົນຕາມລິ້ງທີ່ສົ່ງມາ
+    // ກວດສອບລິ້ງຕອນເປີດເວັບ ແຕ່ບັງຄັບໃຫ້ Login ກ່ອນ
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const forcedProjectSecret = urlParams.get('p') || urlParams.get('project');
-
-            const loginScreen = document.getElementById('loginScreen');
-            const appScreen = document.getElementById('appScreen');
+            const forcedProjectSecret = urlParams.get('project') || urlParams.get('p'); 
 
             if (forcedProjectSecret) {
-                // 1. ຊອກຫາວ່າລະຫັດລັບ (secret) ນີ້ ກົງກັບໂຄງການໃດ
-                const matchedProject = projectsData.find(p => p.secret === forcedProjectSecret);
-                
-                if (matchedProject) {
-                    window.lockedProjectId = matchedProject.id; // ລັອກດ້ວຍ ID ແທ້ (p1)
-                    if (loginScreen) loginScreen.classList.add('hidden');
-                    if (appScreen) appScreen.classList.remove('hidden');
-                    
-                    currentUser = { role: 'USER', name: 'ນັກລົງທຶນ' };
-                    
-                    setTimeout(() => {
-                        const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addRefundBtn'];
-                        adminBtns.forEach(btnId => {
-                            const btn = document.getElementById(btnId);
-                            if (btn) btn.classList.add('hidden');
-                        });
-                        document.querySelectorAll('.admin-col-th').forEach(el => el.classList.add('hidden'));
-
-                        if (typeof loadDataFromFirebase === 'function') loadDataFromFirebase();
-                        
-                        selectProject(matchedProject.id);
-                        const radio = document.querySelector(`input[name="selectedProject"][value="${matchedProject.id}"]`);
-                        if (radio) radio.checked = true;
-                    }, 300);
-                } else {
-                    // ຖ້າລະຫັດໂຄງການຜິດ
-                    document.body.innerHTML = `
-                        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f3f4f6;">
-                            <div style="text-align: center; color: #dc2626;"><h2>🚫 ລິ້ງໂຄງການບໍ່ຖືກຕ້ອງ</h2></div>
-                        </div>`;
-                }
-
-            } else {
-                // 2. ຖ້າເຂົ້າລິ້ງຫຼັກ (ບໍ່ມີ ?project=) ໃຫ້ເປີດໜ້າ Login ປົກກະຕິ ໃຫ້ ADMIN ເຂົ້າໄດ້
-                if (loginScreen) loginScreen.classList.remove('hidden');
-                if (appScreen) appScreen.classList.add('hidden');
+                // ເກັບລະຫັດໂຄງການໄວ້ກ່ອນ ແຕ່ຍັງບໍ່ໃຫ້ເຂົ້າແອັບ
+                window.pendingProjectSecret = forcedProjectSecret;
             }
+
+            // ບັງຄັບເປີດໜ້າ Login ສະເໝີ ບໍ່ວ່າຈະເຂົ້າລິ້ງໃດກໍຕາມ
+            const loginScreen = document.getElementById('loginScreen');
+            const appScreen = document.getElementById('appScreen');
+            if (loginScreen) loginScreen.classList.remove('hidden');
+            if (appScreen) appScreen.classList.add('hidden');
         });
 
     // ຖ້າເປີດມາລະບົບມີการລັອກ Project ไว้ ໃຫ້ເລືອກໂຄງການນັ້ນໃຫ້ອັດຕະໂນມັດເລີຍ
