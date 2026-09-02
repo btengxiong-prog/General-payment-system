@@ -790,7 +790,6 @@
             if (tabName === 'reports') handleReportTypeChange();
         }
 
-    // ຟັງຊັນສະແດງລາຍຊື່ໂຄງການ ພ້ອມ 3 ປຸ່ມຈັດການສຳລັບ ADMIN
         function renderProjects() {
             const ul = document.getElementById('projectList');
             ul.innerHTML = "";
@@ -800,25 +799,19 @@
                 const li = document.createElement('li');
                 li.className = "p-4 hover:bg-gray-50 flex justify-between items-center border-b last:border-b-0";
                 
-                // ສ້າງ 3 ປຸ່ມຈັດການ (ກັອບປີ້ລິ້ງ, ແກ້ໄຂ, ລຶບ) ສະເພາະ ADMIN
-                let actionButtons = "";
+                let copyBtn = "";
                 if (isAdmin) {
-                    const shareUrl = `${window.location.origin}${window.location.pathname}?project=${proj.id}`;
-                    actionButtons = `
-                        <div class="flex space-x-2">
-                            <button onclick="copyProjectLink('${shareUrl}', '${proj.name}')" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600 shadow-sm">🔗 ກັອບປີ້ລິ້ງ</button>
-                            <button onclick="editProject('${proj.id}')" class="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600 shadow-sm">✏️ ແກ້ໄຂ</button>
-                            <button onclick="deleteProject('${proj.id}')" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 shadow-sm">🗑️ ລຶບ</button>
-                        </div>
-                    `;
+                    // ສ້າງລິ້ງໂດຍໃຊ້ລະຫັດລັບ (secret) ແທນ id (p1)
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?project=${proj.secret}`;
+                    copyBtn = `<button onclick="navigator.clipboard.writeText('${shareUrl}'); showCustomAlert('ກັອບປີ້ລິ້ງສຳເລັດແລ້ວ!', 'ສຳເລັດ');" class="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-green-700">🔗 ກັອບປີ້ລິ້ງ</button>`;
                 }
 
                 li.innerHTML = `
                     <div class="flex items-center space-x-3">
-                        <input type="radio" name="selectedProject" value="${proj.id}" ${selectedProjectId === proj.id ? 'checked' : ''} onchange="selectProject('${proj.id}')" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-                        <span class="font-medium text-gray-800">${proj.name}</span>
+                        <input type="radio" name="selectedProject" value="${proj.id}" ${selectedProjectId === proj.id ? 'checked' : ''} onchange="selectProject('${proj.id}')" class="w-5 h-5 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                        <span class="font-bold text-gray-800 text-lg cursor-pointer" onclick="selectProject('${proj.id}')">${proj.name}</span>
                     </div>
-                    ${actionButtons}
+                    <div>${copyBtn}</div>
                 `;
                 ul.appendChild(li);
             });
@@ -1852,39 +1845,55 @@
     // ກວດສອບສິດ ແລະ ຈັດການການສະແດງຜົນຕາມລິ້ງທີ່ສົ່ງມາ
         window.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const forcedProject = urlParams.get('project'); 
+            const forcedProjectSecret = urlParams.get('project'); 
+            const isAdminSecret = urlParams.get('admin'); 
 
             const loginScreen = document.getElementById('loginScreen');
             const appScreen = document.getElementById('appScreen');
 
-            if (forcedProject) {
-                // 1. ຖ້າມີການສົ່ງ project ມາ (ສຳລັບນັກລົງທຶນ) ໃຫ້ເຂົ້າໜ້າໂຄງການອັດຕະໂນມັດ
-                window.lockedProjectId = forcedProject;
-                if (loginScreen) loginScreen.classList.add('hidden');
-                if (appScreen) appScreen.classList.remove('hidden');
+            if (forcedProjectSecret) {
+                // 1. ຊອກຫາວ່າລະຫັດລັບ (secret) ນີ້ ກົງກັບໂຄງການໃດ
+                const matchedProject = projectsData.find(p => p.secret === forcedProjectSecret);
                 
-                currentUser = { role: 'USER', name: 'ນັກລົງທຶນ' };
-                
-                // ເຊື່ອງປຸ່ມ Admin ທັງໝົດ
-                setTimeout(() => {
-                    const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addRefundBtn'];
-                    adminBtns.forEach(btnId => {
-                        const btn = document.getElementById(btnId);
-                        if (btn) btn.classList.add('hidden');
-                    });
-                    document.querySelectorAll('.admin-col-th').forEach(el => el.classList.add('hidden'));
-
-                    if (typeof loadDataFromFirebase === 'function') loadDataFromFirebase();
+                if (matchedProject) {
+                    window.lockedProjectId = matchedProject.id; // ລັອກດ້ວຍ ID ແທ້ (p1) ຂໍ້ມູນເກົ່າຈະມາຄົບ!
+                    if (loginScreen) loginScreen.classList.add('hidden');
+                    if (appScreen) appScreen.classList.remove('hidden');
                     
-                    selectProject(forcedProject);
-                    const radio = document.querySelector(`input[name="selectedProject"][value="${forcedProject}"]`);
-                    if (radio) radio.checked = true;
-                }, 300);
+                    currentUser = { role: 'USER', name: 'ນັກລົງທຶນ' };
+                    
+                    setTimeout(() => {
+                        const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addRefundBtn'];
+                        adminBtns.forEach(btnId => {
+                            const btn = document.getElementById(btnId);
+                            if (btn) btn.classList.add('hidden');
+                        });
+                        document.querySelectorAll('.admin-col-th').forEach(el => el.classList.add('hidden'));
 
-            } else {
-                // 2. ຖ້າເຂົ້າລິ້ງຫຼັກ ໃຫ້ສະແດງໜ້າ Login ປົກກະຕິ (ດຽວເຮົາຈະໄປສະກັດ User ຕອນລັອກອິນແທນ)
+                        if (typeof loadDataFromFirebase === 'function') loadDataFromFirebase();
+                        
+                        selectProject(matchedProject.id);
+                        const radio = document.querySelector(`input[name="selectedProject"][value="${matchedProject.id}"]`);
+                        if (radio) radio.checked = true;
+                    }, 300);
+                } else {
+                    // ຖ້າລະຫັດໂຄງການຜິດ
+                    document.body.innerHTML = `
+                        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f3f4f6;">
+                            <div style="text-align: center; color: #dc2626;"><h2>🚫 ລິ້ງໂຄງການບໍ່ຖືກຕ້ອງ</h2></div>
+                        </div>`;
+                }
+
+            } else if (isAdminSecret === 'true') {
+                // 2. ຖ້າເຂົ້າຜ່ານລິ້ງລັບ Admin (?admin=true)
                 if (loginScreen) loginScreen.classList.remove('hidden');
                 if (appScreen) appScreen.classList.add('hidden');
+            } else {
+                // 3. ຖ້າເຂົ້າລິ້ງທົ່ວໄປ ບລັອກຖິ້ມ
+                document.body.innerHTML = `
+                    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f3f4f6;">
+                        <div style="text-align: center; color: #dc2626;"><h2>🚫 Access Denied</h2></div>
+                    </div>`;
             }
         });
 
