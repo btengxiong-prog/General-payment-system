@@ -116,22 +116,25 @@
                 </div>
             </div>
 
-            <!-- TAB 3: ຈ/ນ ເງິນລົງທຶນ -->
+        <!-- TAB 3: ຈ/ນ ເງິນລົງທຶນ -->
             <div id="tab-investments" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ຈຳນວນເງິນລົງທຶນ ແລະ ຫຼັກຖານການຊຳລະ</h2>
-                        <p id="currentActiveProjectInvest" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button id="deleteInvestmentBtn" onclick="deleteSelectedInvestments()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
-                        <button id="addInvestmentBtn" onclick="openInvestmentModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍການລົງທຶນ</button>
+                <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">ຈຳນວນເງິນລົງທຶນ ແລະ ຫຼັກຖານການຊຳລະ</h2>
+                            <p id="currentActiveProjectInvest" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button id="deleteInvestmentBtn" onclick="deleteSelectedInvestments()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
+                            <button id="addInvestmentBtn" onclick="openInvestmentModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍການລົງທຶນ</button>
+                        </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow overflow-x-auto">
+
+                <div class="bg-white rounded-lg shadow overflow-auto max-h-[60vh]">
                     <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-200 text-gray-700 text-sm">
+                        <thead class="sticky top-0 z-20 bg-gray-200 shadow-sm">
+                            <tr class="text-gray-700 text-sm">
                                 <th class="p-3 border text-center">ລ/ດ</th>
                                 <th class="p-3 border">ວັນ/ເດືອນ/ປີ</th>
                                 <th class="p-3 border">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
@@ -140,7 +143,6 @@
                                 <th class="p-3 border text-center">ລົງທຶນຄັ້ງທີ່</th>
                                 <th class="p-3 border text-center">ຫຼັກຖານ</th>
                                 <th class="p-3 border">ໝາຍເຫດ</th>
-                                <!-- ເພີ່ມ admin-col-th ໃສ່ບ່ອນນີ້ -->
                                 <th class="p-3 border text-center admin-col-th">
                                     <input type="checkbox" id="selectAllInvest" onclick="toggleSelectAllInvest(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
                                 </th>
@@ -153,22 +155,25 @@
                 </div>
             </div>
 
-            <!-- TAB 4: ລາຍຈ່າຍ -->
+        <!-- TAB 4: ລາຍຈ່າຍ -->
             <div id="tab-expenses" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ບັນທຶກລາຍຈ່າຍໂຄງການ</h2>
-                        <p id="currentActiveProjectExpense" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button id="deleteExpenseBtn" onclick="deleteSelectedExpenses()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
-                        <button id="addExpenseBtn" onclick="openExpenseModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍຈ່າຍ</button>
+                <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">ບັນທຶກລາຍຈ່າຍໂຄງການ</h2>
+                            <p id="currentActiveProjectExpense" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button id="deleteExpenseBtn" onclick="deleteSelectedExpenses()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
+                            <button id="addExpenseBtn" onclick="openExpenseModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍຈ່າຍ</button>
+                        </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow overflow-x-auto">
+
+                <div class="bg-white rounded-lg shadow overflow-auto max-h-[60vh]">
                     <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-200 text-gray-700 text-sm">
+                        <thead class="sticky top-0 z-20 bg-gray-200 shadow-sm">
+                            <tr class="text-gray-700 text-sm">
                                 <th rowspan="2" class="p-3 border text-center align-middle">ລ/ດ</th>
                                 <th rowspan="2" class="p-3 border align-middle">ວັນ/ເດືອນ/ປີ</th>
                                 <th rowspan="2" class="p-3 border align-middle">ເນື້ອໃນ (ລາຍຈ່າຍ)</th>
@@ -176,7 +181,6 @@
                                 <th rowspan="2" class="p-3 border align-middle">ຄ່າທຳນຽມ</th>
                                 <th colspan="2" class="p-2 border text-center">ຫຼັກຖານ</th>
                                 <th rowspan="2" class="p-3 border align-middle">ໝາຍເຫດ</th>
-                                <!-- ເພີ່ມ admin-col-th ໃສ່ບ່ອນນີ້ -->
                                 <th rowspan="2" class="p-3 border text-center align-middle admin-col-th">
                                     <input type="checkbox" id="selectAllExpense" onclick="toggleSelectAllExpense(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
                                 </th>
@@ -193,7 +197,7 @@
                 </div>
             </div>
 
-<!-- TAB 5: ລາຍງານ -->
+        <!-- TAB 5: ລາຍງານ -->
             <div id="tab-reports" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-6">
                     <div>
@@ -246,67 +250,71 @@
                 </div>
             </div> <!-- ປິດ TAB 5 ບ່ອນນີ້ -->
 
-            <!-- TAB 6: ການລົງທຶນ (ເພີ່ມໃໝ່) -->
+        <!-- TAB 6: ການລົງທຶນ (ເພີ່ມໃໝ່) -->
             <div id="tab-invest_new" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ການລົງທຶນ (ສັງລວມ)</h2>
-                        <p id="currentActiveProjectInvestNew" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">ການລົງທຶນ (ສັງລວມ)</h2>
+                            <p id="currentActiveProjectInvestNew" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                        </div>
                     </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-lg shadow overflow-x-auto">
-                    <div class="flex justify-between font-bold text-black mb-2 text-lg items-center">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="flex justify-between font-bold text-black mb-4 text-lg items-center">
                         <div>ຕາຕະລາງສັງລວມເງິນລົງທຶນຂອງນັກລົງທຶນ</div>
                         <div class="flex items-center space-x-2 text-sm">
                             <label>ປະຈຳງວດ:</label>
-                            <!-- ສ້າງ Dropdown ໃຫ້ເລືອກຄັ້ງທີ່ລົງທຶນ -->
                             <select id="investRoundFilter" onchange="renderInvestSummary()" class="border border-black rounded p-1 font-normal bg-white focus:ring focus:ring-blue-300">
                                 <option value="all">ລວມທັງໝົດ</option>
                             </select>
                         </div>
                     </div>
-                    <table class="w-full text-left border-collapse border-2 border-black">
-                        <thead>
-                            <tr class="text-black font-bold text-sm">
-                                <th class="p-2 border border-black text-center w-12">ລ/ດ</th>
-                                <th class="p-2 border border-black text-center">ວັນ/ເດືອນ/ປີ (ລົງທຶນ)</th>
-                                <th class="p-2 border border-black text-center">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
-                                <th class="p-2 border border-black text-center">ຈ/ນ ເງິນ (ລົງທຶນ)</th>
-                                <th class="p-2 border border-black text-center">ໝາຍເຫດ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="investSummaryTableBody" class="text-sm text-black">
-                            <!-- ຂໍ້ມູນຈະຖືກໂຫຼດຜ່ານ JS -->
-                        </tbody>
-                    </table>
+                    
+                    <div class="overflow-auto max-h-[60vh]">
+                        <table class="w-full text-left border-collapse border-2 border-black">
+                            <thead class="sticky top-0 z-20 bg-gray-100 shadow-sm">
+                                <tr class="text-black font-bold text-sm">
+                                    <th class="p-2 border border-black text-center w-12">ລ/ດ</th>
+                                    <th class="p-2 border border-black text-center">ວັນ/ເດືອນ/ປີ (ລົງທຶນ)</th>
+                                    <th class="p-2 border border-black text-center">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
+                                    <th class="p-2 border border-black text-center">ຈ/ນ ເງິນ (ລົງທຶນ)</th>
+                                    <th class="p-2 border border-black text-center">ໝາຍເຫດ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="investSummaryTableBody" class="text-sm text-black">
+                                <!-- ຂໍ້ມູນຈະຖືກໂຫຼດຜ່ານ JS -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div> <!-- ປິດ TAB 6 ບ່ອນນີ້ -->
+            </div>
 
         <!-- TAB 7: ເງິນທວນຄືນ -->
             <div id="tab-refunds" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ເງິນທວນຄືນ (ຮັບ-ຈ່າຍ ເງິນສົດ)</h2>
-                        <p id="currentActiveProjectRefund" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">ເງິນທວນຄືນ (ຮັບ-ຈ່າຍ ເງິນສົດ)</h2>
+                            <p id="currentActiveProjectRefund" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                        </div>
+                        <button id="addRefundBtn" onclick="openRefundModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍການ</button>
                     </div>
-                    <!-- 1. ກ່ອງສີແດງ 1: ປຸ່ມເພີ່ມຂໍ້ມູນຂອງ ADMIN -->
-                    <button id="addRefundBtn" onclick="openRefundModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍການ</button>
                 </div>
 
-                <div class="bg-white p-6 rounded-lg shadow overflow-x-auto">
+                <div class="bg-white p-6 rounded-lg shadow overflow-auto max-h-[60vh]">
                     <table class="w-full text-left border-collapse border-2 border-black">
-                        <thead>
-                            <tr class="text-black font-bold text-sm bg-gray-100">
+                        <thead class="sticky top-0 z-20 bg-gray-100 shadow-sm">
+                            <tr class="text-black font-bold text-sm">
                                 <th rowspan="2" class="p-2 border border-black text-center w-12">ລ/ດ</th>
                                 <th rowspan="2" class="p-2 border border-black text-center">ວັນ/ເດືອນ/ປີ</th>
                                 <th rowspan="2" class="p-2 border border-black text-center">ເນື້ອໃນ (ຮັບ/ຈ່າຍ)</th>
                                 <th colspan="2" class="p-2 border border-black text-center">ຈ/ນ ເງິນ (ຮັບ/ຈ່າຍ)</th>
                                 <th rowspan="2" class="p-2 border border-black text-center">ໝາຍເຫດ</th>
-                                <!-- ເພີ່ມຖັນຈັດການ (ແກ້ໄຂ/ລຶບ) -->
                                 <th rowspan="2" class="p-2 border border-black text-center admin-col-th w-24">ຈັດການ</th>
                             </tr>
-                            <tr class="text-black font-bold text-sm bg-gray-100">
+                            <tr class="text-black font-bold text-sm">
                                 <th class="p-2 border border-black text-center w-32">ຮັບ</th>
                                 <th class="p-2 border border-black text-center w-32">ຈ່າຍ</th>
                             </tr>
