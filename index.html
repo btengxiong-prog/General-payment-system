@@ -187,7 +187,7 @@
                                 </th>
                             </tr>
                             <tr class="bg-gray-100 text-gray-700 text-xs">
-                                <th class="p-2 border text-center">ບິນເບື້ອງ</th>
+                                <th class="p-2 border text-center">ບິນເຄື່ອງ</th>
                                 <th class="p-2 border text-center">ບິນໂອນ</th>
                             </tr>
                         </thead>
@@ -542,7 +542,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-gray-700 font-medium mb-1">ຫຼັກຖານ: ບິນເບື້ອງ (ອັບໂຫຼດຮູບ)</label>
+                    <label class="block text-gray-700 font-medium mb-1">ຫຼັກຖານ: ບິນເຄື່ອງ (ອັບໂຫຼດຮູບ)</label>
                     <input type="file" id="expenseReceipt1" accept="image/*" class="w-full border rounded-lg p-2 text-sm bg-white focus:ring focus:ring-blue-300">
                 </div>
                 <div>
@@ -1365,7 +1365,7 @@
                 const formattedDate = formatDateToDDMMYYYY(exp.date);
                 const formattedAmount = formatNumber(exp.amount);
                 const formattedFee = formatNumber(exp.fee);
-                let receipt1Html = exp.receipt1 ? `<img src="${exp.receipt1}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt1}')" title="ບິນເບື້ອງ">` : `-`;
+                let receipt1Html = exp.receipt1 ? `<img src="${exp.receipt1}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt1}')" title="ບິນເຄື່ອງ">` : `-`;
                 let receipt2Html = exp.receipt2 ? `<img src="${exp.receipt2}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${exp.receipt2}')" title="ບິນໂອນ">` : `-`;
 
                 let displayMethod = exp.method === 'ສົດ' ? 'ສົດ' : 'ໂອນ';

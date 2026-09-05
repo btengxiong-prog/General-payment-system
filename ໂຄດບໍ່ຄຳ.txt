@@ -616,14 +616,15 @@ XY29962200
 
         let currentUser = null;
         
-        // ລາຍຊື່ໂຄງການພື້ນຖານ (ຖ້າບໍ່ມີໃນ Cloud)
         let baseProjects = [
             { id: 'p1', secret: 'p1_8xK9m', name: 'Qz-ຫ້ວຍຫານ' },
             { id: 'p2', secret: 'p2_vN5cR', name: 'Qz-ນ້ຳປຸຍ' },
             { id: 'p3', secret: 'p3_jY7hB', name: 'Qz-ໂພນແກ້ວ' }
         ];
         
-        let projectsData = [];
+        // +++ ແກ້ໄຂບ່ອນນີ້: ໃຫ້ projectsData ມີຄ່າເລີ່ມຕົ້ນສະເໝີ ເພື່ອປ້ອງກັນ User ລັອກອິນບໍ່ໄດ້ຕອນໂຫຼດໜ້າທຳອິດ +++
+        let projectsData = [...baseProjects]; 
+        
         let selectedProjectId = null;
         let investorsData = [];
         let investmentsData = [];
@@ -843,13 +844,21 @@ XY29962200
                         return;
                     }
 
+                    // 1. ຊອກຫາໃນອາເຣທີ່ມີຢູ່ແລ້ວກ່ອນ (ເພື່ອໃຫ້ຮອງຮັບ p1, p2, p3 ທີ່ຝັງໄວ້ໃນໂຄດ)
                     let matchedProject = projectsData.find(proj => proj.secret === window.pendingProjectSecret || proj.id === window.pendingProjectSecret);
                     
+                    // 2. ຖ້າບໍ່ພົບ ໃຫ້ລອງດຶງຈາກ Firebase ມາຢືນຢັນ (ແກ້ບັນຫາໂຄງການໃໝ່)
                     if (!matchedProject) {
                         try {
                             const snapshot = await db.collection("projects").where("secret", "==", window.pendingProjectSecret).get();
                             if (!snapshot.empty) {
                                 matchedProject = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+                            } else {
+                                // ຖ້າຫາແບບ secret ບໍ່ເຫັນ ລອງຫາຕາມ ID
+                                const docRef = await db.collection("projects").doc(window.pendingProjectSecret).get();
+                                if (docRef.exists) {
+                                    matchedProject = { id: docRef.id, ...docRef.data() };
+                                }
                             }
                         } catch (err) {
                             console.error("Error finding project in DB:", err);
@@ -936,7 +945,6 @@ XY29962200
             });
         }
 
-        // ຟັງຊັນລຶບໂຄງການ
         function deleteProject(projId) {
             if (!currentUser || currentUser.role !== 'ADMIN') {
                 showCustomAlert("ທ່ານບໍ່ມີສິດລຶບໂຄງການ!", "ຜິດພາດ");
@@ -1606,7 +1614,7 @@ XY29962200
                             date: '',
                             investorName: name,
                             amount: deficit,
-                            note: totalPaid === 0 ? 'ຍັງບໍ່ເຄີຍລົງທຶນ' : 'ຍັງຄ້າງຊຳລະອິກສ່ວນໜຶ່ງ'
+                            note: totalPaid === 0 ? 'ຍັງບໍ່ເຄີຍລົງທຶນ' : 'ຍັງຄ້າງຊຳລະອີກສ່ວນໜຶ່ງ'
                         });
                     }
                 });
@@ -1615,20 +1623,29 @@ XY29962200
                 const selectedRound = Number(filterSelect.value);
                 displayData = filteredInvestments.filter(inv => Number(inv.round || 1) === selectedRound);
                 
+                let groupedTotals = {};
+                displayData.forEach(inv => {
+                    groupedTotals[inv.investorName] = (groupedTotals[inv.investorName] || 0) + Number(inv.amount || 0);
+                });
+
                 let maxAmountForUnpaid = 0;
-                if (displayData.length > 0) {
-                    maxAmountForUnpaid = Math.max(...displayData.map(i => Number(i.amount || 0)));
+                if (Object.keys(groupedTotals).length > 0) {
+                    maxAmountForUnpaid = Math.max(...Object.values(groupedTotals));
                 }
 
-                const paidNames = displayData.map(i => i.investorName);
-                const unpaid = allNames.filter(name => !paidNames.includes(name));
+                allNames.forEach(name => {
+                    const totalPaidThisRound = groupedTotals[name] || 0;
+                    const deficit = maxAmountForUnpaid - totalPaidThisRound;
 
-                unpaidData = unpaid.map(name => ({
-                    date: '', 
-                    investorName: name,
-                    amount: maxAmountForUnpaid,
-                    note: 'ຍັງບໍ່ທັນຊຳລະໃນງວດນີ້'
-                }));
+                    if (deficit > 0) {
+                        unpaidData.push({
+                            date: '', 
+                            investorName: name,
+                            amount: deficit,
+                            note: totalPaidThisRound === 0 ? 'ຍັງບໍ່ທັນຊຳລະໃນງວດນີ້' : 'ຍັງຄ້າງຊຳລະອີກສ່ວນໜຶ່ງ'
+                        });
+                    }
+                });
             }
 
             displayData.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
