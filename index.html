@@ -610,7 +610,9 @@
             { id: 'p3', secret: 'p3_jY7hB', name: 'Qz-ໂພນແກ້ວ' }
         ];
         
-        let projectsData = [];
+        // +++ ແກ້ໄຂບ່ອນນີ້: ໃຫ້ projectsData ມີຄ່າເລີ່ມຕົ້ນສະເໝີ ເພື່ອປ້ອງກັນ User ລັອກອິນບໍ່ໄດ້ຕອນໂຫຼດໜ້າທຳອິດ +++
+        let projectsData = [...baseProjects]; 
+        
         let selectedProjectId = null;
         let investorsData = [];
         let investmentsData = [];
@@ -830,13 +832,21 @@
                         return;
                     }
 
+                    // 1. ຊອກຫາໃນອາເຣທີ່ມີຢູ່ແລ້ວກ່ອນ (ເພື່ອໃຫ້ຮອງຮັບ p1, p2, p3 ທີ່ຝັງໄວ້ໃນໂຄດ)
                     let matchedProject = projectsData.find(proj => proj.secret === window.pendingProjectSecret || proj.id === window.pendingProjectSecret);
                     
+                    // 2. ຖ້າບໍ່ພົບ ໃຫ້ລອງດຶງຈາກ Firebase ມາຢືນຢັນ (ແກ້ບັນຫາໂຄງການໃໝ່)
                     if (!matchedProject) {
                         try {
                             const snapshot = await db.collection("projects").where("secret", "==", window.pendingProjectSecret).get();
                             if (!snapshot.empty) {
                                 matchedProject = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+                            } else {
+                                // ຖ້າຫາແບບ secret ບໍ່ເຫັນ ລອງຫາຕາມ ID
+                                const docRef = await db.collection("projects").doc(window.pendingProjectSecret).get();
+                                if (docRef.exists) {
+                                    matchedProject = { id: docRef.id, ...docRef.data() };
+                                }
                             }
                         } catch (err) {
                             console.error("Error finding project in DB:", err);
@@ -1601,7 +1611,6 @@
                 const selectedRound = Number(filterSelect.value);
                 displayData = filteredInvestments.filter(inv => Number(inv.round || 1) === selectedRound);
                 
-                // +++ ແກ້ໄຂໃໝ່: ຄິດໄລ່ຍອດລວມຂອງແຕ່ລະຄົນໃນງວດນີ້ເພື່ອກວດຫາຄົນທີ່ຈ່າຍຍັງບໍ່ຄົບ +++
                 let groupedTotals = {};
                 displayData.forEach(inv => {
                     groupedTotals[inv.investorName] = (groupedTotals[inv.investorName] || 0) + Number(inv.amount || 0);
