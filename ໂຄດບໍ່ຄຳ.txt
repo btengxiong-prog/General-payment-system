@@ -50,22 +50,30 @@ XY29962200
 
     <!-- MAIN APP -->
     <div id="appScreen" class="hidden">
-        <!-- Navigation Menu -->
-        <nav class="bg-white shadow-md">
-            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                <div class="flex space-x-8 font-semibold text-gray-700">
-                    <button onclick="switchTab('projects')" class="hover:text-blue-600 focus:text-blue-600">ໂຄງການທັງໝົດ</button>
-                    <button onclick="switchTab('investors')" class="hover:text-blue-600 focus:text-blue-600">ນັກລົງທຶນ</button>
-                    <button onclick="switchTab('investments')" class="hover:text-blue-600 focus:text-blue-600">ຈ/ນ ເງິນລົງທຶນ</button>
-                    <button onclick="switchTab('expenses')" class="hover:text-blue-600 focus:text-blue-600">ລາຍຈ່າຍ</button>
-                    <button onclick="switchTab('reports')" class="hover:text-blue-600 focus:text-blue-600">ລາຍງານ</button>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <span id="userInfo" class="text-sm font-medium text-gray-600"></span>
-                    <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">ອອກຈາກລະບົບ</button>
-                </div>
+<!-- Navigation Menu (ລັອກໃຫ້ຕິດຂອບເທິງສະເໝີ) -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center overflow-x-auto">
+            <div class="flex space-x-6 font-semibold text-gray-700 whitespace-nowrap">
+                <button onclick="switchTab('projects')" class="hover:text-blue-600 focus:text-blue-600">ໂຄງການທັງໝົດ</button>
+                <button onclick="switchTab('investors')" class="hover:text-blue-600 focus:text-blue-600">ນັກລົງທຶນ</button>
+                <button onclick="switchTab('investments')" class="hover:text-blue-600 focus:text-blue-600">ຈ/ນ ເງິນລົງທຶນ</button>
+                <button onclick="switchTab('invest_new')" class="hover:text-blue-600 focus:text-blue-600">ການລົງທຶນ</button>
+                <button onclick="switchTab('expenses')" class="hover:text-blue-600 focus:text-blue-600">ລາຍຈ່າຍ</button>
+                <button onclick="switchTab('refunds')" class="hover:text-blue-600 focus:text-blue-600">ເງິນທວນຄືນ</button>
+                <button onclick="switchTab('reports')" class="hover:text-blue-600 focus:text-blue-600">ລາຍງານ</button>
+                
+                <!-- +++ ປຸ່ມແຈ້ງເຕືອນການເຄື່ອນໄຫວ (ວາງໄວ້ຕໍ່ທ້າຍລາຍງານ) +++ -->
+                <button id="notiTabBtn" onclick="switchTab('notification')" class="hover:text-blue-600 focus:text-blue-600 flex items-center transition duration-300">
+                    ການເຄື່ອນໄຫວ <span id="notiDot" class="hidden ml-1">🔴</span>
+                </button>
+                
             </div>
-        </nav>
+            <div class="flex items-center space-x-4 pl-4">
+                <span id="userInfo" class="text-sm font-medium text-gray-600"></span>
+                <button onclick="logout()" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">ອອກຈາກລະບົບ</button>
+            </div>
+        </div>
+    </nav>
 
         <!-- Content Area -->
         <div class="max-w-7xl mx-auto p-6">
@@ -83,22 +91,29 @@ XY29962200
                 </div>
             </div>
 
-            <!-- TAB 2: ນັກລົງທຶນ -->
+        <!-- TAB 2: ນັກລົງທຶນ -->
             <div id="tab-investors" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ຂໍ້ມູນນັກລົງທຶນ (ນິຕິບຸກຄົນ)</h2>
-                        <p id="currentActiveProjectInv" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button id="deleteInvestorBtn" onclick="deleteSelectedInvestors()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
-                        <button id="addInvestorBtn" onclick="openInvestorModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມນັກລົງທຶນ</button>
+                
+                <!-- 🌟 ເອົາມາຄອບສ່ວນຫົວ (ກ່ອງສີແດງ) ໄວ້ບ່ອນນີ້ -->
+                <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">ຂໍ້ມູນນັກລົງທຶນ (ນິຕິບຸກຄົນ)</h2>
+                            <p id="currentActiveProjectInv" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button id="deleteInvestorBtn" onclick="deleteSelectedInvestors()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
+                            <button id="addInvestorBtn" onclick="openInvestorModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມນັກລົງທຶນ</button>
+                        </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow overflow-x-auto">
+
+                <!-- 🌟 ສ່ວນຕາຕະລາງ ໃຫ້ໃສ່ max-h-[60vh] overflow-auto -->
+                <div class="bg-white rounded-lg shadow overflow-auto max-h-[60vh]">
                     <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-200 text-gray-700 text-sm">
+                        <!-- 🌟 ຫົວຕາຕະລາງ ໃຫ້ໃສ່ sticky top-0 z-20 bg-gray-200 -->
+                        <thead class="sticky top-0 z-20 bg-gray-200 shadow-sm">
+                            <tr class="text-gray-700 text-sm">
                                 <th class="p-3 border text-center">ລ/ດ</th>
                                 <th class="p-3 border">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
                                 <th class="p-3 border">ບ້ານ</th>
@@ -106,34 +121,37 @@ XY29962200
                                 <th class="p-3 border">ແຂວງ</th>
                                 <th class="p-3 border">ເບີໂທລະສັບ</th>
                                 <th class="p-3 border">ໝາຍເຫດ</th>
-                                <th class="p-3 border text-center">
+                                <th class="p-3 border text-center admin-col-th">
                                     <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
                                 </th>
                             </tr>
                         </thead>
                         <tbody id="investorTableBody" class="text-sm text-gray-700">
-                            <!-- ຂໍ້ມູນຈະຖືກໂຫຼດດ້ວຍ Script -->
+                            <!-- ຂໍ້ມູນ -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- TAB 3: ຈ/ນ ເງິນລົງທຶນ -->
+        <!-- TAB 3: ຈ/ນ ເງິນລົງທຶນ -->
             <div id="tab-investments" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ຈຳນວນເງິນລົງທຶນ ແລະ ຫຼັກຖານການຊຳລະ</h2>
-                        <p id="currentActiveProjectInvest" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button id="deleteInvestmentBtn" onclick="deleteSelectedInvestments()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
-                        <button id="addInvestmentBtn" onclick="openInvestmentModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍການລົງທຶນ</button>
+                <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">ຈຳນວນເງິນລົງທຶນ ແລະ ຫຼັກຖານການຊຳລະ</h2>
+                            <p id="currentActiveProjectInvest" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button id="deleteInvestmentBtn" onclick="deleteSelectedInvestments()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
+                            <button id="addInvestmentBtn" onclick="openInvestmentModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍການລົງທຶນ</button>
+                        </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow overflow-x-auto">
+
+                <div class="bg-white rounded-lg shadow overflow-auto max-h-[60vh]">
                     <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-200 text-gray-700 text-sm">
+                        <thead class="sticky top-0 z-20 bg-gray-200 shadow-sm">
+                            <tr class="text-gray-700 text-sm">
                                 <th class="p-3 border text-center">ລ/ດ</th>
                                 <th class="p-3 border">ວັນ/ເດືອນ/ປີ</th>
                                 <th class="p-3 border">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
@@ -142,7 +160,7 @@ XY29962200
                                 <th class="p-3 border text-center">ລົງທຶນຄັ້ງທີ່</th>
                                 <th class="p-3 border text-center">ຫຼັກຖານ</th>
                                 <th class="p-3 border">ໝາຍເຫດ</th>
-                                <th class="p-3 border text-center">
+                                <th class="p-3 border text-center admin-col-th">
                                     <input type="checkbox" id="selectAllInvest" onclick="toggleSelectAllInvest(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
                                 </th>
                             </tr>
@@ -154,22 +172,25 @@ XY29962200
                 </div>
             </div>
 
-            <!-- TAB 4: ລາຍຈ່າຍ -->
+        <!-- TAB 4: ລາຍຈ່າຍ -->
             <div id="tab-expenses" class="tab-content hidden">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ບັນທຶກລາຍຈ່າຍໂຄງການ</h2>
-                        <p id="currentActiveProjectExpense" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
-                    </div>
-                    <div class="flex space-x-3">
-                        <button id="deleteExpenseBtn" onclick="deleteSelectedExpenses()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
-                        <button id="addExpenseBtn" onclick="openExpenseModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍຈ່າຍ</button>
+                <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">ບັນທຶກລາຍຈ່າຍໂຄງການ</h2>
+                            <p id="currentActiveProjectExpense" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button id="deleteExpenseBtn" onclick="deleteSelectedExpenses()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
+                            <button id="addExpenseBtn" onclick="openExpenseModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍຈ່າຍ</button>
+                        </div>
                     </div>
                 </div>
-                <div class="bg-white rounded-lg shadow overflow-x-auto">
+
+                <div class="bg-white rounded-lg shadow overflow-auto max-h-[60vh]">
                     <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-200 text-gray-700 text-sm">
+                        <thead class="sticky top-0 z-20 bg-gray-200 shadow-sm">
+                            <tr class="text-gray-700 text-sm">
                                 <th rowspan="2" class="p-3 border text-center align-middle">ລ/ດ</th>
                                 <th rowspan="2" class="p-3 border align-middle">ວັນ/ເດືອນ/ປີ</th>
                                 <th rowspan="2" class="p-3 border align-middle">ເນື້ອໃນ (ລາຍຈ່າຍ)</th>
@@ -177,7 +198,7 @@ XY29962200
                                 <th rowspan="2" class="p-3 border align-middle">ຄ່າທຳນຽມ</th>
                                 <th colspan="2" class="p-2 border text-center">ຫຼັກຖານ</th>
                                 <th rowspan="2" class="p-3 border align-middle">ໝາຍເຫດ</th>
-                                <th rowspan="2" class="p-3 border text-center align-middle">
+                                <th rowspan="2" class="p-3 border text-center align-middle admin-col-th">
                                     <input type="checkbox" id="selectAllExpense" onclick="toggleSelectAllExpense(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
                                 </th>
                             </tr>
@@ -193,7 +214,7 @@ XY29962200
                 </div>
             </div>
 
-            <!-- TAB 5: ລາຍງານ -->
+        <!-- TAB 5: ລາຍງານ -->
             <div id="tab-reports" class="tab-content hidden">
                 <div class="flex justify-between items-center mb-6">
                     <div>
@@ -244,8 +265,166 @@ XY29962200
                         </table>
                     </div>
                 </div>
+            </div> <!-- ປິດ TAB 5 ບ່ອນນີ້ -->
+
+        <!-- TAB ແຈ້ງເຕືອນ: ການເຄື່ອນໄຫວ -->
+            <div id="tab-notification" class="tab-content hidden">
+                
+                <!-- 1. ຢຶດຫົວຂໍ້ໃຫຍ່ (ໃຫ້ຕິດຂອບລຸ່ມຂອງເມນູຫຼັກ) -->
+                <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-bold text-gray-800">ປະຫວັດການເຄື່ອນໄຫວບັນຊີ (ຮັບ-ຈ່າຍ) ໃນ 24 ຊົ່ວໂມງ</h2>
+                    </div>
+                </div>
+                
+                <!-- 2. ກຳນົດຄວາມສູງໃຫ້ຕາຕະລາງ ແລະ ເປີດ Scroll -->
+                <div class="bg-white rounded-lg shadow overflow-auto max-h-[60vh]">
+                    <table class="min-w-full text-sm text-left text-gray-500 border-collapse border">
+                        
+                        <!-- 3. ຢຶດຫົວຕາຕະລາງບໍ່ໃຫ້ເລື່ອນ -->
+                        <thead class="sticky top-0 z-20 shadow-sm text-center text-gray-700">
+                            <tr class="bg-gray-200">
+                                <th rowspan="2" class="border border-gray-300 px-4 py-2 align-middle bg-gray-200">ລ/ດ</th>
+                                <th rowspan="2" class="border border-gray-300 px-4 py-2 align-middle bg-gray-200">ວັນ/ເດືອນ/ປີ</th>
+                                <th rowspan="2" class="border border-gray-300 px-4 py-2 align-middle bg-gray-200">ເນື້ອໃນ (ຮັບ/ຈ່າຍ)</th>
+                                <th colspan="2" class="border border-gray-300 px-4 py-2 bg-gray-200">ຈ/ນ ເງິນ (ຮັບ/ຈ່າຍ)</th>
+                                <th rowspan="2" class="border border-gray-300 px-4 py-2 align-middle bg-gray-200">ໝາຍເຫດ</th>
+                            </tr>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 px-4 py-2 bg-gray-100 text-green-600">ຮັບ</th>
+                                <th class="border border-gray-300 px-4 py-2 bg-gray-100 text-red-600">ຈ່າຍ</th>
+                            </tr>
+                        </thead>
+                        
+                        <tbody id="activityTableBody">
+                            <!-- ຂໍ້ມູນຈະຖືກດຶງມາໃສ່ບ່ອນນີ້ -->
+                            <tr><td colspan="6" class="py-4 text-center text-gray-500">ກະລຸນາເລືອກໂຄງການກ່ອນ</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
+        <!-- TAB 6: ການລົງທຶນ (ເພີ່ມໃໝ່) -->
+            <div id="tab-invest_new" class="tab-content hidden">
+                <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">ການລົງທຶນ (ສັງລວມ)</h2>
+                            <p id="currentActiveProjectInvestNew" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <div class="flex justify-between font-bold text-black mb-4 text-lg items-center">
+                        <div>ຕາຕະລາງສັງລວມເງິນລົງທຶນຂອງນັກລົງທຶນ</div>
+                        <div class="flex items-center space-x-2 text-sm">
+                            <label>ປະຈຳງວດ:</label>
+                            <select id="investRoundFilter" onchange="renderInvestSummary()" class="border border-black rounded p-1 font-normal bg-white focus:ring focus:ring-blue-300">
+                                <option value="all">ລວມທັງໝົດ</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-auto max-h-[60vh]">
+                        <table class="w-full text-left border-collapse border-2 border-black">
+                            <thead class="sticky top-0 z-20 bg-gray-100 shadow-sm">
+                                <tr class="text-black font-bold text-sm">
+                                    <th class="p-2 border border-black text-center w-12">ລ/ດ</th>
+                                    <th class="p-2 border border-black text-center">ວັນ/ເດືອນ/ປີ (ລົງທຶນ)</th>
+                                    <th class="p-2 border border-black text-center">ຊື່ ແລະ ນາມສະກຸນ (ນັກລົງທຶນ)</th>
+                                    <th class="p-2 border border-black text-center">ຈ/ນ ເງິນ (ລົງທຶນ)</th>
+                                    <th class="p-2 border border-black text-center">ໝາຍເຫດ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="investSummaryTableBody" class="text-sm text-black">
+                                <!-- ຂໍ້ມູນຈະຖືກໂຫຼດຜ່ານ JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        <!-- TAB 7: ເງິນທວນຄືນ -->
+            <div id="tab-refunds" class="tab-content hidden">
+                <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">ເງິນທວນຄືນ (ຮັບ-ຈ່າຍ ເງິນສົດ)</h2>
+                            <p id="currentActiveProjectRefund" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                        </div>
+                        <button id="addRefundBtn" onclick="openRefundModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍການ</button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow overflow-auto max-h-[60vh]">
+                    <table class="w-full text-left border-collapse border-2 border-black">
+                        <thead class="sticky top-0 z-20 bg-gray-100 shadow-sm">
+                            <tr class="text-black font-bold text-sm">
+                                <th rowspan="2" class="p-2 border border-black text-center w-12">ລ/ດ</th>
+                                <th rowspan="2" class="p-2 border border-black text-center">ວັນ/ເດືອນ/ປີ</th>
+                                <th rowspan="2" class="p-2 border border-black text-center">ເນື້ອໃນ (ຮັບ/ຈ່າຍ)</th>
+                                <th colspan="2" class="p-2 border border-black text-center">ຈ/ນ ເງິນ (ຮັບ/ຈ່າຍ)</th>
+                                <th rowspan="2" class="p-2 border border-black text-center">ໝາຍເຫດ</th>
+                                <th rowspan="2" class="p-2 border border-black text-center admin-col-th w-24">ຈັດການ</th>
+                            </tr>
+                            <tr class="text-black font-bold text-sm">
+                                <th class="p-2 border border-black text-center w-32">ຮັບ</th>
+                                <th class="p-2 border border-black text-center w-32">ຈ່າຍ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="refundTableBody" class="text-sm text-black">
+                            <!-- ຂໍ້ມູນຈະຖືກໂຫຼດຜ່ານ JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Modal ເລືອກແກ້ໄຂ ຫຼື ລຶບ (ສຳລັບ TAB 7) -->
+            <div id="refundActionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+                <div class="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl text-center">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">ເລືອກການຈັດການ</h3>
+                    <p class="text-sm text-gray-600 mb-6">ທ່ານຕ້ອງການແກ້ໄຂ ຫຼື ລຶບລາຍການທີ່ເລືອກນີ້?</p>
+                    <div class="flex justify-center space-x-3">
+                        <button onclick="closeRefundActionModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg font-semibold hover:bg-gray-400">ຍົກເລີກ</button>
+                        <button id="btnEditRefund" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">ແກ້ໄຂ</button>
+                        <button id="btnDeleteRefund" class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບ</button>
+                    </div>
+                </div>
+            </div>
+
+<!-- Modal ເພີ່ມເງິນທວນຄືນ (ADMIN ປ້ອນເອງ) -->
+    <div id="refundModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="text-xl font-bold text-blue-600 mb-4">ເພີ່ມລາຍການເງິນທວນຄືນ</h3>
+            <form id="refundForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ວັນ/ເດືອນ/ປີ</label>
+                    <input type="date" id="refDate" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ເນື້ອໃນລາຍການ</label>
+                    <input type="text" id="refDesc" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ປ້ອນເນື້ອໃນ">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">ຈຳນວນເງິນ (ຮັບ)</label>
+                        <input type="text" id="refIncome" oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="0">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">ຈຳນວນເງິນ (ຈ່າຍ)</label>
+                        <input type="text" id="refExpense" oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="0">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ໝາຍເຫດ</label>
+                    <input type="text" id="refNote" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeRefundModal()" class="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400">ຍົກເລີກ</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">ບັນທຶກ</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -444,9 +623,9 @@ XY29962200
 
         let currentUser = null;
         let projectsData = [
-            { id: 'p1', name: 'Qz-ຫ້ວຍຫານ' },
-            { id: 'p2', name: 'Qz-ນ້ຳປຸຍ' },
-            { id: 'p3', name: 'Qz-ໂພນແກ້ວ' }
+            { id: 'p1', secret: 'p1_8xK9m', name: 'Qz-ຫ້ວຍຫານ' },
+            { id: 'p2', secret: 'p2_vN5cR', name: 'Qz-ນ້ຳປຸຍ' },
+            { id: 'p3', secret: 'p3_jY7hB', name: 'Qz-ໂພນແກ້ວ' }
         ];
 
         let selectedProjectId = null;
@@ -454,7 +633,7 @@ XY29962200
         let investmentsData = [];
         let expensesData = [];
 
-        // ຟັງຊັນໂຫຼດຂໍ້ມູນຈາກ Firebase Cloud Database
+    // ຟັງຊັນໂຫຼດຂໍ້ມູນຈາກ Firebase Cloud Database
         function loadDataFromFirebase() {
             db.collection("investors").onSnapshot((snapshot) => {
                 investorsData = [];
@@ -466,19 +645,31 @@ XY29962200
                 investmentsData = [];
                 snapshot.forEach((doc) => { investmentsData.push({ id: doc.id, ...doc.data() }); });
                 renderInvestments();
+                renderInvestSummary(); 
+                
+                // +++ ເພີ່ມແຖວນີ້ +++
+                updateActivityAlertAndTable();
             });
 
             db.collection("expenses").onSnapshot((snapshot) => {
                 expensesData = [];
                 snapshot.forEach((doc) => { expensesData.push({ id: doc.id, ...doc.data() }); });
                 renderExpenses();
+                
+                // +++ ເພີ່ມແຖວນີ້ +++
+                updateActivityAlertAndTable();
+            });
+            
+            db.collection("manual_refunds").onSnapshot((snapshot) => {
+                manualRefundsData = [];
+                snapshot.forEach((doc) => { manualRefundsData.push({ id: doc.id, ...doc.data() }); });
+                renderRefunds(); 
             });
         }
 
         const districtsData = {
-            "ແຂວງໄຊຍະບູລີ": ["ເມືອງໄຊຍະບູລີ", "ເມືອງຄອບ", "ເມືອງຊຽງຮ່ອນ", "ເມືອງພຽງ", "ເມືອງປາກລາຍ", "ເມືອງແກ່ນທ້າວ", "ເມືອງໍ່ເຕັນ", "ເມືອງທົ່ງມີໄຊ", "ເມືອງຊາທອງ", "ເມືອງຮົງສາ", "ເມືອງເງິນ"],
-            "ແຂວງຫຼວງພະບາງ": ["ເມືອງຫຼວງພະບາງ", "ເມືອງຊຽງເງິນ", "ເມືອງນານ", "ເມືອງປາກອູ", "ເມືອງຊື່ນ", "ເມືອງງอย", "ເມືອງປາກແຊງ", "ເມືອງໂຮນ"],
-            "ນະຄອນຫຼວງວຽງຈັນ": ["ເມືອງຈັນທະບູລີ", "ເມືອງສີໂຄດຕະບອງ", "ເມືອງໄຊເສດຖາ", "ເມືອງສີສັດຕະນາກ", "ເມືອງນາຊາຍທອງ", "ເມືອງໄຊທານີ", "ເມືອງຫາດຊາຍຜອງ"]
+            "ແຂວງໄຊຍະບູລີ": ["ເມືອງໄຊຍະບູລີ", "ເມືອງຄອບ", "ເມືອງຊຽງຮ່ອນ", "ເມືອງພຽງ", "ເມືອງປາກລາຍ", "ເມືອງແກ່ນທ້າວ", "ເມືອງບໍ່ເຕັນ", "ເມືອງທົ່ງມີໄຊ", "ເມືອງໄຊສະຖານ", "ເມືອງຫົງສາ", "ເມືອງເງິນ"],
+            "ແຂວງຫຼວງພະບາງ": ["ເມືອງຫຼວງພະບາງ", "ເມືອງຊຽງເງິນ", "ເມືອງນານ", "ເມືອງປາກອູ", "ເມືອງຊື່ນ", "ເມືອງງອຍ", "ເມືອງປາກແຊງ", "ເມືອງໂຮນ"],
         };
 
         // ຟັງຊັນສຳລັບບີບອັດຂະໜາດຮູບພາບ
@@ -615,31 +806,63 @@ XY29962200
             const p = document.getElementById('passwordInput').value.trim();
 
             if (USERS[u] && USERS[u].pass === p) {
-                currentUser = USERS[u];
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('appScreen').classList.remove('hidden');
-                document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name} (${currentUser.role})`;
+                const userRole = USERS[u].role;
 
-                if (currentUser.role === 'ADMIN') {
-                    document.getElementById('addProjectBtn').classList.remove('hidden');
-                    document.getElementById('addInvestorBtn').classList.remove('hidden');
-                    document.getElementById('deleteInvestorBtn').classList.remove('hidden');
-                    document.getElementById('addInvestmentBtn').classList.remove('hidden');
-                    document.getElementById('deleteInvestmentBtn').classList.remove('hidden');
-                    document.getElementById('addExpenseBtn').classList.remove('hidden');
-                    document.getElementById('deleteExpenseBtn').classList.remove('hidden');
+                if (userRole === 'ADMIN') {
+                    // 1. ສຳລັບ ADMIN: ໃຫ້ເຂົ້າລະບົບໄດ້ເລີຍ ເຫັນປຸ່ມທຸກຢ່າງ
+                    currentUser = USERS[u];
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('appScreen').classList.remove('hidden');
+                    document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name} (ADMIN)`;
+
+                    // ເປີດປຸ່ມ Admin ທັງໝົດ
+                    const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addRefundBtn'];
+                    adminBtns.forEach(btnId => { if(document.getElementById(btnId)) document.getElementById(btnId).classList.remove('hidden'); });
+                    document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
+                    
+                    loadDataFromFirebase();
+                    renderProjects();
                 } else {
-                    document.getElementById('addProjectBtn').classList.add('hidden');
-                    document.getElementById('addInvestorBtn').classList.add('hidden');
-                    document.getElementById('deleteInvestorBtn').classList.add('hidden');
-                    document.getElementById('addInvestmentBtn').classList.add('hidden');
-                    document.getElementById('deleteInvestmentBtn').classList.add('hidden');
-                    document.getElementById('addExpenseBtn').classList.add('hidden');
-                    document.getElementById('deleteExpenseBtn').classList.add('hidden');
+                    // 2. ສຳລັບ USER ທົ່ວໄປ: ຕ້ອງກວດສອບລິ້ງກ່ອນ
+                    if (!window.pendingProjectSecret) {
+                        // ຖ້າ User ທົ່ວໄປ ພະຍາຍາມ Login ຜ່ານລິ້ງຫຼັກ (ບໍ່ມີຊື່ໂຄງການ)
+                        showCustomAlert("ບັນຊີນີ້ບໍ່ອະນຸຍາດໃຫ້ເຂົ້າລະບົບຜ່ານລິ້ງຫຼັກ. ກະລຸນາເຂົ້າຜ່ານລິ້ງໂຄງການຂອງທ່ານ!", "ບໍ່ມີສິດເຂົ້າເຖິງ");
+                        return; // ຢຸດການເຮັດວຽກ ບໍ່ໃຫ້ເຂົ້າ
+                    }
+
+                    // ຊອກຫາວ່າລະຫັດໂຄງການໃນລິ້ງ ກົງກັບໂຄງການໃດໃນຖານຂໍ້ມູນ
+                    const matchedProject = projectsData.find(proj => proj.secret === window.pendingProjectSecret);
+                    
+                    if (matchedProject) {
+                        // ຖ້າລິ້ງຖືກຕ້ອງ: ອະນຸຍາດໃຫ້ Login ແລະ ລັອກໂຄງການໄວ້
+                        currentUser = USERS[u];
+                        window.lockedProjectId = matchedProject.id; 
+
+                        document.getElementById('loginScreen').classList.add('hidden');
+                        document.getElementById('appScreen').classList.remove('hidden');
+                        document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name}`;
+
+                        // ເຊື່ອງປຸ່ມ Admin ທັງໝົດ
+                        setTimeout(() => {
+                            const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addRefundBtn'];
+                            adminBtns.forEach(btnId => {
+                                const btn = document.getElementById(btnId);
+                                if (btn) btn.classList.add('hidden');
+                            });
+                            document.querySelectorAll('.admin-col-th').forEach(el => el.classList.add('hidden'));
+
+                            if (typeof loadDataFromFirebase === 'function') loadDataFromFirebase();
+                            
+                            // ເລືອກໂຄງການໃຫ້ອັດຕະໂນມັດ
+                            selectProject(matchedProject.id);
+                            const radio = document.querySelector(`input[name="selectedProject"][value="${matchedProject.id}"]`);
+                            if (radio) radio.checked = true;
+                        }, 300);
+                    } else {
+                        // ຖ້າລະຫັດໂຄງການໃນລິ້ງບໍ່ຖືກຕ້ອງ ຫຼື ຖືກມົ້ວມາ
+                        showCustomAlert("ລິ້ງໂຄງການນີ້ບໍ່ຖືກຕ້ອງ ຫຼື ບໍ່ມີໃນລະບົບ!", "ຜິດພາດ");
+                    }
                 }
-                
-                loadDataFromFirebase();
-                renderProjects();
             } else {
                 showCustomAlert("ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານ ບໍ່ຖືກຕ້ອງ!", "ຜິດພາດ");
             }
@@ -661,30 +884,78 @@ XY29962200
         function renderProjects() {
             const ul = document.getElementById('projectList');
             ul.innerHTML = "";
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+
             projectsData.forEach(proj => {
                 const li = document.createElement('li');
                 li.className = "p-4 hover:bg-gray-50 flex justify-between items-center border-b last:border-b-0";
+                
+                let copyBtn = "";
+                if (isAdmin) {
+                    // ສ້າງລິ້ງໂດຍໃຊ້ລະຫັດລັບ (secret) ແທນ id (p1)
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?p=${proj.secret}`;
+                    copyBtn = `<button onclick="navigator.clipboard.writeText('${shareUrl}'); showCustomAlert('ກັອບປີ້ລິ້ງສຳເລັດແລ້ວ!', 'ສຳເລັດ');" class="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-green-700">🔗 ກັອບປີ້ລິ້ງ</button>`;
+                }
+
                 li.innerHTML = `
                     <div class="flex items-center space-x-3">
-                        <input type="radio" name="selectedProject" value="${proj.id}" ${selectedProjectId === proj.id ? 'checked' : ''} onchange="selectProject('${proj.id}')" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
-                        <span class="font-medium text-gray-800">${proj.name}</span>
+                        <input type="radio" name="selectedProject" value="${proj.id}" ${selectedProjectId === proj.id ? 'checked' : ''} onchange="selectProject('${proj.id}')" class="w-5 h-5 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                        <span class="font-bold text-gray-800 text-lg cursor-pointer" onclick="selectProject('${proj.id}')">${proj.name}</span>
                     </div>
+                    <div>${copyBtn}</div>
                 `;
                 ul.appendChild(li);
             });
         }
 
+    // ຟັງຊັນສຳລັບກັອບປີ້ລິ້ງ
+        function copyProjectLink(url, projectName) {
+            navigator.clipboard.writeText(url).then(() => {
+                showCustomAlert(`ກັອບປີ້ລິ້ງຂອງໂຄງການ "${projectName}" ສຳເລັດແລ້ວ!\n\nສາມາດນຳໄປວາງສົ່ງໃຫ້ນັກລົງທຶນໄດ້ເລີຍ.`, "ສຳເລັດ");
+            }).catch(err => {
+                showCustomAlert("ບໍ່ສາມາດກັອບປີ້ລິ້ງໄດ້: " + err, "ຜິດພາດ");
+            });
+        }
+
+    // ຟັງຊັນສຳລັບແກ້ໄຂໂຄງການ (ກຽມໄວ້ສຳລັບເຊື່ອມຕໍ່ Firebase)
+        function editProject(projId) {
+            showCustomAlert("ກຳລັງພັດທະນາຟັງຊັນແກ້ໄຂໂຄງການ...", "ແຈ້ງເຕືອນ");
+        }
+
+        // ຟັງຊັນສຳລັບລຶບໂຄງການ (ກຽມໄວ້ສຳລັບເຊື່ອມຕໍ່ Firebase)
+        function deleteProject(projId) {
+            showCustomConfirm("ທ່ານຕ້ອງການລຶບໂຄງການນີ້ແທ້ບໍ? (ຂໍ້ມູນທີ່ກ່ຽວຂ້ອງອາດຈະຖືກລຶບໄປນຳ)", () => {
+                showCustomAlert("ກຳລັງພັດທະນາຟັງຊັນລຶບໂຄງການ...", "ແຈ້ງເຕືອນ");
+            });
+        }
+
         function selectProject(projId) {
+            if (window.lockedProjectId && window.lockedProjectId !== projId) {
+                showCustomAlert("ເຈົ້າບໍ່ມີສິດເຂົ້າຂໍ້ມູນໂຄງການນີ້!", "ACCESS DENIED");
+                const radio = document.querySelector(`input[name="selectedProject"][value="${window.lockedProjectId}"]`);
+                if (radio) radio.checked = true;
+                return;
+            }
+
             selectedProjectId = projId;
             const proj = projectsData.find(p => p.id === projId);
             const projName = proj ? proj.name : 'ຍັງບໍ່ໄດ້ເລືອກ';
+            
             document.getElementById('currentActiveProjectInv').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
             document.getElementById('currentActiveProjectInvest').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
             document.getElementById('currentActiveProjectExpense').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
+            if(document.getElementById('currentActiveProjectInvestNew')) document.getElementById('currentActiveProjectInvestNew').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
+            if(document.getElementById('currentActiveProjectRefund')) document.getElementById('currentActiveProjectRefund').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
+            
             updateReportActiveProject();
             renderInvestors();
             renderInvestments();
             renderExpenses();
+            renderInvestSummary(); 
+            renderRefunds();
+
+            // +++ ເພີ່ມແຖວນີ້ລົງໄປ ໃຫ້ມັນດຶງຂໍ້ມູນການເຄື່ອນໄຫວ +++
+            updateActivityAlertAndTable();
         }
 
         function openInvestorModal() {
@@ -726,14 +997,21 @@ XY29962200
             const tbody = document.getElementById('investorTableBody');
             tbody.innerHTML = "";
             let filteredInvestors = selectedProjectId ? investorsData.filter(inv => inv.projectId === selectedProjectId) : [];
-            document.getElementById('selectAll').checked = false;
+            const selectAllCb = document.getElementById('selectAll');
+            if (selectAllCb) selectAllCb.checked = false;
+
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+            const colspan = isAdmin ? 8 : 7;
 
             if (filteredInvestors.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນນັກລົງທຶນໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນນັກລົງທຶນໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
                 return;
             }
 
             filteredInvestors.forEach((inv, index) => {
+                // ຖ້າເປັນ USER ຈະບໍ່ມີ <td> ຂອງ checkbox ເລີຍ (ຕັດອອກສົມບູນ)
+                const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="inv-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}"></td>` : '';
+                
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
                 tr.innerHTML = `
@@ -744,9 +1022,7 @@ XY29962200
                     <td class="p-3 border">${inv.province}</td>
                     <td class="p-3 border">${inv.phone}</td>
                     <td class="p-3 border">${inv.note}</td>
-                    <td class="p-3 border text-center">
-                        <input type="checkbox" class="inv-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}">
-                    </td>
+                    ${checkboxHtml}
                 `;
                 tbody.appendChild(tr);
             });
@@ -861,14 +1137,15 @@ XY29962200
             const tbody = document.getElementById('investmentTableBody');
             tbody.innerHTML = "";
             let filteredInvestments = selectedProjectId ? investmentsData.filter(inv => inv.projectId === selectedProjectId) : [];
-            
-            // ເພີ່ມການລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່ (ນ້ອຍໄປໃຫຍ່)
             filteredInvestments.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+            const selectAllCb = document.getElementById('selectAllInvest');
+            if (selectAllCb) selectAllCb.checked = false;
 
-            document.getElementById('selectAllInvest').checked = false;
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+            const colspan = isAdmin ? 9 : 8;
 
             if (filteredInvestments.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນລາຍການລົງທຶນໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນລາຍການລົງທຶນໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
                 return;
             }
 
@@ -882,6 +1159,8 @@ XY29962200
                 const formattedAmount = formatNumber(inv.amount);
                 let receiptHtml = inv.receipt ? `<img src="${inv.receipt}" class="w-10 h-10 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${inv.receipt}')" title="ເບິ່ງຮູບໃຫຍ່">` : `<span class="text-gray-400 text-xs">ບໍ່ມີຫຼັກຖານ</span>`;
 
+                const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="invest-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}"></td>` : '';
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
                 tr.innerHTML = `
@@ -893,9 +1172,7 @@ XY29962200
                     <td class="p-3 border text-center">${inv.round}</td>
                     <td class="p-3 border text-center">${receiptHtml}</td>
                     <td class="p-3 border">${noteText}</td>
-                    <td class="p-3 border text-center">
-                        <input type="checkbox" class="invest-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inv.id}">
-                    </td>
+                    ${checkboxHtml}
                 `;
                 tbody.appendChild(tr);
             });
@@ -1002,14 +1279,16 @@ XY29962200
             const tbody = document.getElementById('expenseTableBody');
             tbody.innerHTML = "";
             let filteredExpenses = selectedProjectId ? expensesData.filter(exp => exp.projectId === selectedProjectId) : [];
-            
-            // ເພີ່ມການລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່ (ນ້ອຍໄປໃຫຍ່)
             filteredExpenses.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+            const selectAllCb = document.getElementById('selectAllExpense');
+            if (selectAllCb) selectAllCb.checked = false;
 
-            document.getElementById('selectAllExpense').checked = false;
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+            const colspan = isAdmin ? 9 : 8;
+            const emptyColspan = isAdmin ? 4 : 3;
 
             if (filteredExpenses.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນລາຍຈ່າຍໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນລາຍຈ່າຍໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
                 return;
             }
 
@@ -1029,31 +1308,34 @@ XY29962200
                 let displayNote = (exp.note && exp.note !== '-') ? exp.note : '';
                 let finalNoteHtml = `<span class="${methodColor} font-bold">[${displayMethod}]</span> ${displayNote}`;
 
+                const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="expense-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${exp.id}"></td>` : '';
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
+                
+                // +++ ຈຸດທີ່ປ່ຽນແປງ: ໃສ່ text-right ແລະ pr-4 ໃຫ້ກັບ 2 ຖັນຕົວເລກ +++
                 tr.innerHTML = `
                     <td class="p-3 border text-center">${index + 1}</td>
-                    <td class="p-3 border">${formattedDate}</td>
+                    <td class="p-3 border text-center">${formattedDate}</td>
                     <td class="p-3 border">${exp.desc}</td>
-                    <td class="p-3 border">${formattedAmount}</td>
-                    <td class="p-3 border">${formattedFee}</td>
+                    <td class="p-3 border text-right pr-4 text-gray-700">${formattedAmount}</td>
+                    <td class="p-3 border text-right pr-4 text-gray-700">${formattedFee}</td>
                     <td class="p-3 border text-center">${receipt1Html}</td>
                     <td class="p-3 border text-center">${receipt2Html}</td>
                     <td class="p-3 border">${finalNoteHtml}</td>
-                    <td class="p-3 border text-center">
-                        <input type="checkbox" class="expense-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${exp.id}">
-                    </td>
+                    ${checkboxHtml}
                 `;
                 tbody.appendChild(tr);
             });
 
+            // ແຖວສະຫຼຸບຍອດລວມ
             const totalTr = document.createElement('tr');
             totalTr.className = "bg-gray-50 font-bold text-gray-800";
             totalTr.innerHTML = `
                 <td colspan="3" class="p-3 border text-right">ລວມລາຍຈ່າຍທັງໝົດ</td>
-                <td class="p-3 border text-blue-600">${formatNumber(totalAmount)}</td>
-                <td class="p-3 border text-blue-600">${formatNumber(totalFee)}</td>
-                <td colspan="4" class="p-3 border"></td>
+                <td class="p-3 border text-right pr-4 text-blue-700 text-base">${formatNumber(totalAmount)}</td>
+                <td class="p-3 border text-right pr-4 text-blue-700 text-base">${formatNumber(totalFee)}</td>
+                <td colspan="${emptyColspan}" class="p-3 border"></td>
             `;
             tbody.appendChild(totalTr);
         }
@@ -1199,9 +1481,600 @@ XY29962200
             document.getElementById('investRound').value = maxRound + 1;
         }
 
-    </script>
-</body>
-</html>
+        function renderInvestSummary() {
+            const tbody = document.getElementById('investSummaryTableBody');
+            const filterSelect = document.getElementById('investRoundFilter');
+            
+            if (!tbody || !filterSelect) return;
+            tbody.innerHTML = "";
+            
+            let filteredInvestments = selectedProjectId ? investmentsData.filter(inv => inv.projectId === selectedProjectId) : [];
+            let projectInvestors = selectedProjectId ? investorsData.filter(inv => inv.projectId === selectedProjectId) : [];
+
+            // ສ້າງລາຍຊື່ນັກລົງທຶນທັງໝົດ (ລວມຈາກລາຍຊື່ຫຼັກ ແລະ ຈາກທີ່ເຄີຍຈ່າຍຈິງ ເພື່ອປ້ອງກັນລາຍຊື່ຕົກຫຼົ່ນ)
+            const allNamesSet = new Set(projectInvestors.map(i => i.name));
+            filteredInvestments.forEach(i => allNamesSet.add(i.investorName));
+            const allNames = Array.from(allNamesSet);
+
+            // 1. ສ້າງຕົວເລືອກ "ລົງທຶນຄັ້ງທີ່" ໃຫ້ Dropdown ອັດຕະໂນມັດ
+            const rounds = [...new Set(filteredInvestments.map(i => Number(i.round || 1)))].sort((a,b) => a - b);
+            const currentSelection = filterSelect.value;
+            
+            filterSelect.innerHTML = `<option value="all">ລວມທັງໝົດ</option>`;
+            rounds.forEach(r => {
+                filterSelect.innerHTML += `<option value="${r}">ຄັ້ງທີ່ ${r}</option>`;
+            });
+            
+            filterSelect.value = currentSelection;
+            if (!filterSelect.value) filterSelect.value = 'all';
+
+            let displayData = [];
+            let unpaidData = [];
+
+            if (filterSelect.value === 'all') {
+                // ==========================================
+                // ກໍລະນີເລືອກ "ລວມທັງໝົດ" (ລົບສ່ວນຕ່າງອັດຕະໂນມັດ)
+                // ==========================================
+                const grouped = {};
+                filteredInvestments.forEach(inv => {
+                    if (!grouped[inv.investorName]) {
+                        grouped[inv.investorName] = {
+                            date: inv.date,
+                            investorName: inv.investorName,
+                            amount: 0,
+                            note: 'ລວມທຸກຄັ້ງ'
+                        };
+                    }
+                    grouped[inv.investorName].amount += Number(inv.amount || 0);
+                    if (new Date(inv.date) > new Date(grouped[inv.investorName].date)) {
+                        grouped[inv.investorName].date = inv.date;
+                    }
+                });
+                displayData = Object.values(grouped);
+
+                // ຊອກຫາຍອດລວມທີ່ສູງທີ່ສຸດ (MAX) 
+                let maxTotalAmount = 0;
+                if (displayData.length > 0) {
+                    maxTotalAmount = Math.max(...displayData.map(i => Number(i.amount)));
+                }
+
+                // ກວດສອບນັກລົງທຶນທຸກຄົນວ່າໃຜຈ່າຍບໍ່ຮອດ MAX 
+                allNames.forEach(name => {
+                    const paidInfo = grouped[name];
+                    const totalPaid = paidInfo ? Number(paidInfo.amount) : 0;
+                    const deficit = maxTotalAmount - totalPaid; // MAX ລົບ ຍອດຈ່າຍຈິງ
+
+                    // ຖ້າຍອດຄ້າງໃຫຍ່ກວ່າ 0 ແມ່ນໃຫ້ຍົກໄປສະແດງໃນພາກທີ II
+                    if (deficit > 0) {
+                        unpaidData.push({
+                            date: '', // ບໍ່ຕ້ອງສະແດງວັນທີ
+                            investorName: name,
+                            amount: deficit,
+                            note: totalPaid === 0 ? 'ຍັງບໍ່ເຄີຍລົງທຶນ' : 'ຍັງຄ້າງຊຳລະອິກສ່ວນໜຶ່ງ'
+                        });
+                    }
+                });
+
+            } else {
+                // ==========================================
+                // ກໍລະນີເລືອກງວດໃດໜຶ່ງ (ເຊັ່ນ: ຄັ້ງທີ່ 3)
+                // ==========================================
+                const selectedRound = Number(filterSelect.value);
+                displayData = filteredInvestments.filter(inv => Number(inv.round || 1) === selectedRound);
+                
+                let maxAmountForUnpaid = 0;
+                if (displayData.length > 0) {
+                    maxAmountForUnpaid = Math.max(...displayData.map(i => Number(i.amount || 0)));
+                }
+
+                const paidNames = displayData.map(i => i.investorName);
+                const unpaid = allNames.filter(name => !paidNames.includes(name));
+
+                unpaidData = unpaid.map(name => ({
+                    date: '', 
+                    investorName: name,
+                    amount: maxAmountForUnpaid,
+                    note: 'ຍັງບໍ່ທັນຊຳລະໃນງວດນີ້'
+                }));
+            }
+
+            // ລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່ (ສະເພາະກຸ່ມທີ່ຈ່າຍແລ້ວໃນພາກ I)
+            displayData.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+            let html = "";
+            
+            // --- ພາກທີ I (ສຳເລັດ) ---
+            html += `<tr class="font-bold bg-gray-50"><td colspan="5" class="p-2 border border-black">I. ນັກລົງທຶນ (ໄດ້ສຳເລັດການລົງທຶນ)</td></tr>`;
+            let total1 = 0;
+            if (displayData.length === 0) {
+                html += `<tr><td class="p-2 border border-black text-center text-gray-400" colspan="5">ບໍ່ມີລາຍການ</td></tr>`;
+            } else {
+                displayData.forEach((inv, index) => {
+                    total1 += Number(inv.amount || 0);
+                    html += `
+                        <tr>
+                            <td class="p-2 border border-black text-center">${index + 1}</td>
+                            <td class="p-2 border border-black text-center">${formatDateToDDMMYYYY(inv.date)}</td>
+                            <td class="p-2 border border-black">${inv.investorName}</td>
+                            <td class="p-2 border border-black text-right">${formatNumber(inv.amount)}</td>
+                            <td class="p-2 border border-black">${inv.note || ''}</td>
+                        </tr>
+                    `;
+                });
+            }
+            html += `<tr class="font-bold">
+                        <td colspan="3" class="p-2 border border-black text-center">ລວມເງິນລົງຕົວຈິງ</td>
+                        <td class="p-2 border border-black text-right">${formatNumber(total1)}</td>
+                        <td class="p-2 border border-black"></td>
+                     </tr>`;
+
+            // --- ພາກທີ II (ບໍ່ທັນສຳເລັດ / ຄ້າງຊຳລະ) ---
+            html += `<tr class="font-bold bg-gray-50"><td colspan="5" class="p-2 border border-black">II. ນັກລົງທຶນ (ບໍ່ທັນສຳເລັດການລົງທຶນ)</td></tr>`;
+            let total2 = 0;
+            if (unpaidData.length === 0) {
+                html += `<tr><td class="p-2 border border-black text-center text-gray-400" colspan="5">ບໍ່ມີລາຍການ</td></tr>`;
+            } else {
+                unpaidData.forEach((inv, index) => {
+                    total2 += Number(inv.amount || 0);
+                    html += `
+                        <tr class="text-red-600">
+                            <td class="p-2 border border-black text-center">${index + 1}</td>
+                            <td class="p-2 border border-black text-center">${inv.date}</td>
+                            <td class="p-2 border border-black">${inv.investorName}</td>
+                            <td class="p-2 border border-black text-right">${formatNumber(inv.amount)}</td>
+                            <td class="p-2 border border-black">${inv.note || ''}</td>
+                        </tr>
+                    `;
+                });
+            }
+            html += `<tr class="font-bold text-red-600">
+                        <td colspan="3" class="p-2 border border-black text-center">ລວມເງິນລົງຕົວຈິງ (ຄາດຄະເນ)</td>
+                        <td class="p-2 border border-black text-right">${formatNumber(total2)}</td>
+                        <td class="p-2 border border-black"></td>
+                     </tr>`;
+
+            tbody.innerHTML = html;
+        }
+
+        let manualRefundsData = []; 
+        let editingRefundId = null; 
+        let editingRefundSource = null; // ໃຊ້ເກັບວ່າຂໍ້ມູນມາຈາກໜ້າໃດ
+        let selectedActionRefundId = null; 
+        let selectedActionRefundSource = null;
+
+        function openRefundModal() {
+            if (!selectedProjectId) { showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນ!", "ແຈ້ງເຕືອນ"); return; }
+            editingRefundId = null; 
+            editingRefundSource = null;
+            document.getElementById('refundForm').reset();
+            document.getElementById('refundModal').classList.remove('hidden');
+        }
+
+        function closeRefundModal() {
+            document.getElementById('refundModal').classList.add('hidden');
+            editingRefundId = null;
+            editingRefundSource = null;
+        }
+
+        document.getElementById('refundForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const incomeVal = document.getElementById('refIncome').value.replace(/,/g, '') || '0';
+            const expenseVal = document.getElementById('refExpense').value.replace(/,/g, '') || '0';
+            const dateVal = document.getElementById('refDate').value;
+            const descVal = document.getElementById('refDesc').value;
+            const noteVal = document.getElementById('refNote').value || '-';
+
+            try {
+                if (editingRefundId) {
+                    if (editingRefundSource === 'investments') {
+                        // ຖ້າແກ້ໄຂເງິນຮັບ ໃຫ້ໄປອັບເດດຕາຕະລາງລົງທຶນ
+                        await db.collection("investments").doc(editingRefundId).update({
+                            date: dateVal, amount: incomeVal, note: noteVal
+                        });
+                    } else if (editingRefundSource === 'expenses') {
+                        // ຖ້າແກ້ໄຂເງິນຈ່າຍ ໃຫ້ໄປອັບເດດຕາຕະລາງລາຍຈ່າຍ
+                        await db.collection("expenses").doc(editingRefundId).update({
+                            date: dateVal, desc: descVal, amount: expenseVal, note: noteVal
+                        });
+                    } else {
+                        // ຖ້າແກ້ໄຂໂຕທີ່ປ້ອນເອງ
+                        await db.collection("manual_refunds").doc(editingRefundId).update({
+                            date: dateVal, desc: descVal, income: incomeVal, expense: expenseVal, note: noteVal
+                        });
+                    }
+                    showCustomAlert("ແກ້ໄຂລາຍການສຳເລັດ!");
+                } else {
+                    await db.collection("manual_refunds").add({
+                        projectId: selectedProjectId,
+                        date: dateVal, desc: descVal, income: incomeVal, expense: expenseVal, note: noteVal
+                    });
+                    showCustomAlert("ເພີ່ມລາຍການສຳເລັດ!");
+                }
+                closeRefundModal();
+            } catch (error) {
+                showCustomAlert("ຜິດພາດ: " + error.message, "ຜິດພາດ");
+            }
+        });
+
+    // ເປີດ Popup ເລືອກ ແກ້ໄຂ/ລຶບ (ສົ່ງແຫຼ່ງທີ່ມາໄປນຳ)
+        function openRefundActionModal(id, source) {
+            selectedActionRefundId = id;
+            selectedActionRefundSource = source;
+            document.getElementById('refundActionModal').classList.remove('hidden');
+        }
+
+        function closeRefundActionModal() {
+            document.getElementById('refundActionModal').classList.add('hidden');
+            selectedActionRefundId = null;
+            selectedActionRefundSource = null;
+        }
+
+    // ກົດປຸ່ມ "ແກ້ໄຂ" ໃນ Popup
+        document.getElementById('btnEditRefund').onclick = () => {
+            // 1. ສຳເນົາຄ່າເກັບໄວ້ກ່ອນປິດ Popup
+            const currentId = selectedActionRefundId;
+            const currentSource = selectedActionRefundSource;
+            
+            closeRefundActionModal();
+            
+            let item = null;
+            // 2. ດຶງຂໍ້ມູນມາສະແດງໃນຟອມແກ້ໄຂ ຕາມແຫຼ່ງທີ່ມາ ໂດຍໃຊ້ຄ່າທີ່ສຳເນົາໄວ້
+            if (currentSource === 'investments') {
+                const inv = investmentsData.find(i => i.id === currentId);
+                if(inv) item = { date: inv.date, desc: `ຮັບເງິນຈາກ ${inv.investorName}`, income: inv.amount, expense: 0, note: inv.note };
+            } else if (currentSource === 'expenses') {
+                const exp = expensesData.find(e => e.id === currentId);
+                if(exp) item = { date: exp.date, desc: exp.desc, income: 0, expense: Number(exp.amount||0) + Number(exp.fee||0), note: exp.note };
+            } else {
+                const man = manualRefundsData.find(m => m.id === currentId);
+                if(man) item = { date: man.date, desc: man.desc, income: man.income, expense: man.expense, note: man.note };
+            }
+
+            if (item) {
+                document.getElementById('refDate').value = item.date || '';
+                document.getElementById('refDesc').value = item.desc || '';
+                document.getElementById('refIncome').value = item.income > 0 ? formatNumber(item.income) : '';
+                document.getElementById('refExpense').value = item.expense > 0 ? formatNumber(item.expense) : '';
+                document.getElementById('refNote').value = item.note || '';
+                
+                editingRefundId = currentId;
+                editingRefundSource = currentSource;
+                document.getElementById('refundModal').classList.remove('hidden');
+            }
+        };
+
+    // ກົດປຸ່ມ "ລຶບ" ໃນ Popup
+        document.getElementById('btnDeleteRefund').onclick = () => {
+            // 1. ສຳເນົາຄ່າເກັບໄວ້ກ່ອນປິດ Popup
+            const currentId = selectedActionRefundId;
+            const currentSource = selectedActionRefundSource;
+            
+            closeRefundActionModal();
+            
+            showCustomConfirm("ທ່ານຕ້ອງການລຶບລາຍການນີ້ແທ້ບໍ? (ຖ້າລຶບ ຂໍ້ມູນໃນໜ້າຕົ້ນທາງກໍຈະຫາຍໄປນຳ)", async () => {
+                try {
+                    // 2. ສັ່ງລຶບອອກຈາກຖານຂໍ້ມູນ
+                    await db.collection(currentSource).doc(currentId).delete();
+                    
+                    // 3. ລຶບຂໍ້ມູນນັ້ນອອກຈາກໜ້າຈໍທັນທີ (ອັບເດດ Array)
+                    if (currentSource === 'investments') {
+                        investmentsData = investmentsData.filter(i => i.id !== currentId);
+                    } else if (currentSource === 'expenses') {
+                        expensesData = expensesData.filter(e => e.id !== currentId);
+                    } else {
+                        manualRefundsData = manualRefundsData.filter(m => m.id !== currentId);
+                    }
+                    
+                    // 4. ສັ່ງໃຫ້ແຕ້ມຕາຕະລາງໃໝ່ທັນທີ ໂດຍບໍ່ມີລາຍການທີ່ຖືກລຶບແລ້ວ
+                    renderRefunds();
+                    
+                    showCustomAlert("ລຶບລາຍການສຳເລັດ!");
+                } catch (error) {
+                    showCustomAlert("ຜິດພາດ: " + error.message, "ຜິດພາດ");
+                }
+            });
+        };
+
+    // ຟັງຊັນແຕ້ມຕາຕະລາງເງິນທວນຄືນ
+        function renderRefunds() {
+            const tbody = document.getElementById('refundTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+            const colspan = isAdmin ? 7 : 6; 
+
+            if (!selectedProjectId) {
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ</td></tr>`;
+                return;
+            }
+
+            let combinedData = [];
+
+            // 1. ດຶງຈາກ "ການລົງທຶນ" ແລ້ວແນບ source: 'investments' ໄປນຳ
+            investmentsData.filter(i => i.projectId === selectedProjectId && i.method === 'ສົດ').forEach(i => {
+                combinedData.push({ source: 'investments', id: i.id, date: i.date, desc: `ຮັບເງິນຈາກ ${i.investorName}`, income: Number(i.amount || 0), expense: 0, note: i.note || '' });
+            });
+
+            // 2. ດຶງຈາກ "ລາຍຈ່າຍ" ແລ້ວແນບ source: 'expenses' ໄປນຳ
+            expensesData.filter(e => e.projectId === selectedProjectId && e.method === 'ສົດ').forEach(e => {
+                combinedData.push({ source: 'expenses', id: e.id, date: e.date, desc: e.desc, income: 0, expense: Number(e.amount || 0) + Number(e.fee || 0), note: e.note || '' });
+            });
+
+            // 3. ດຶງຈາກທີ່ ADMIN ປ້ອນເອງ ແລ້ວແນບ source: 'manual_refunds' ໄປນຳ
+            manualRefundsData.filter(m => m.projectId === selectedProjectId).forEach(m => {
+                combinedData.push({ source: 'manual_refunds', id: m.id, date: m.date, desc: m.desc, income: Number(m.income || 0), expense: Number(m.expense || 0), note: m.note || '' });
+            });
+
+            // ລຽງລຳດັບວັນທີ ຈາກເກົ່າຫາໃໝ່
+            combinedData.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+            let totalIncome = 0; let totalExpense = 0; let html = "";
+
+            if (combinedData.length === 0) {
+                html = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">ບໍ່ມີລາຍການເຄື່ອນໄຫວເງິນສົດໃນໂຄງການນີ້</td></tr>`;
+            } else {
+                combinedData.forEach((item, index) => {
+                    totalIncome += item.income; totalExpense += item.expense;
+                    
+                    let indentClass = item.expense > 0 ? "pl-8 text-gray-700" : "font-medium";
+
+                    let actionHtml = "";
+                    if (isAdmin) {
+                        // ປ່ຽນໃຫ້ທຸກແຖວເປັນປຸ່ມ "ແກ້ໄຂ" ທັງໝົດ
+                        actionHtml = `<td class="p-2 border border-black text-center"><button onclick="openRefundActionModal('${item.id}', '${item.source}')" class="text-blue-600 font-semibold hover:underline">ແກ້ໄຂ</button></td>`;
+                    }
+
+                    html += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="p-2 border border-black text-center">${index + 1}</td>
+                            <td class="p-2 border border-black text-center">${formatDateToDDMMYYYY(item.date)}</td>
+                            <td class="p-2 border border-black ${indentClass}">- ${item.desc}</td>
+                            <td class="p-2 border border-black text-right text-green-600 font-semibold">${item.income > 0 ? formatNumber(item.income) : ''}</td>
+                            <td class="p-2 border border-black text-right text-red-600 font-semibold">${item.expense > 0 ? formatNumber(item.expense) : ''}</td>
+                            <td class="p-2 border border-black">${item.note}</td>
+                            ${actionHtml}
+                        </tr>
+                    `;
+                });
+            }
+
+            let balance = totalIncome - totalExpense;
+            html += `
+                <tr class="font-bold bg-gray-100">
+                    <td colspan="3" class="p-2 border border-black text-center">ລວມ</td>
+                    <td class="p-2 border border-black text-right text-green-600">${formatNumber(totalIncome)}</td>
+                    <td class="p-2 border border-black text-right text-red-600">${formatNumber(totalExpense)}</td>
+                    <td colspan="${isAdmin ? 2 : 1}" class="p-2 border border-black"></td>
+                </tr>
+                <tr class="font-bold text-lg bg-gray-200">
+                    <td colspan="3" class="p-2 border border-black text-center">ຍອດເຫຼືອ (ຮັບ-ຈ່າຍ)</td>
+                    <td colspan="2" class="p-2 border border-black text-center ${balance >= 0 ? 'text-blue-600' : 'text-red-600'}">${formatNumber(balance)}</td>
+                    <td colspan="${isAdmin ? 2 : 1}" class="p-2 border border-black"></td>
+                </tr>
+            `;
+            tbody.innerHTML = html;
+        }
+
+    // ຟັງຊັນ Paste ຮູບແບບອັດຕະໂນມັດ (Universal Paste)
+        document.addEventListener('paste', function(e) {
+            let fileInput = null;
+
+            // 1. ຖ້າຜູ້ໃຊ້ຄລິກໃສ່ກ່ອງອັບໂຫຼດໂດຍກົງ
+            if (e.target && e.target.type === 'file') {
+                fileInput = e.target;
+            } 
+            // 2. ຖ້າບໍ່ໄດ້ຄລິກກ່ອງອັບໂຫຼດໂດຍກົງ ໃຫ້ລະບົບຊອກຫາກ່ອງອັບໂຫຼດທີ່ຢູ່ໃນໜ້າຈໍປ໋ອບອັບປັດຈຸບັນ
+            else {
+                const visibleModal = document.querySelector('div[id$="Modal"]:not(.hidden)');
+                if (visibleModal) {
+                    fileInput = visibleModal.querySelector('input[type="file"]');
+                }
+            }
+
+            if (!fileInput) return;
+
+            if (e.clipboardData && e.clipboardData.items) {
+                const items = e.clipboardData.items;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf("image") !== -1) {
+                        const file = items[i].getAsFile();
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        
+                        fileInput.files = dataTransfer.files;
+                        fileInput.dispatchEvent(new Event('change'));
+                        
+                        if(typeof showCustomAlert === 'function') {
+                            showCustomAlert("ວາງຮູບພາບສຳເລັດແລ້ວ!", "ສຳເລັດ");
+                        } else {
+                            alert("ວາງຮູບພາບສຳເລັດແລ້ວ!");
+                        }
+                        
+                        e.preventDefault();
+                        break;
+                    }
+                }
+            }
+        });
+    // ດັກຈັບການກົດ Ctrl+V ທົ່ວທັງໜ້າຈໍ (window)
+        window.addEventListener('paste', function(e) {
+            // ປ່ຽນ 'invReceipt' ເປັນ ID ຂອງຊ່ອງອັບໂຫຼດຮູບໃນໂຄດ HTML ຂອງທ່ານ
+            const fileInput = document.getElementById('invReceipt'); 
+            
+            // ຖ້າປ໋ອບອັບເພີ່ມຂໍ້ມູນບໍ່ໄດ້ເປີດຢູ່ ຫຼື ບໍ່ມີກ່ອງນີ້ ໃຫ້ຂ້າມໄປ
+            if (!fileInput) return; 
+
+            if (e.clipboardData && e.clipboardData.items) {
+                const items = e.clipboardData.items;
+                for (let i = 0; i < items.length; i++) {
+                    
+                    if (items[i].type.indexOf("image") !== -1) {
+                        const file = items[i].getAsFile();
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        
+                        // ຍັດຮູບເຂົ້າໄປໃນ input
+                        fileInput.files = dataTransfer.files;
+                        
+                        // ເອີ້ນ Event ໃຫ້ລະບົບຮັບຮູ້ວ່າໄຟລ໌ມີການປ່ຽນແປງ
+                        fileInput.dispatchEvent(new Event('change'));
+                        
+                        // ສະແດງແຈ້ງເຕືອນໃຫ້ຮູ້ວ່າວາງສຳເລັດແລ້ວ!
+                        if(typeof showCustomAlert === 'function') {
+                            showCustomAlert("ວາງຮູບພາບສຳເລັດແລ້ວ!", "ສຳເລັດ");
+                        } else {
+                            alert("ວາງຮູບພາບສຳເລັດແລ້ວ!");
+                        }
+                        
+                        e.preventDefault(); // ປ້ອງກັນບໍ່ໃຫ້ລະບົບເອົາຮູບໄປເປີດໜ້າໃໝ່
+                        break;
+                    }
+                }
+            }
+        });
+
+    // ກວດສອບລິ້ງຕອນເປີດເວັບ ແຕ່ບັງຄັບໃຫ້ Login ກ່ອນ
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const forcedProjectSecret = urlParams.get('project') || urlParams.get('p'); 
+
+            if (forcedProjectSecret) {
+                // ເກັບລະຫັດໂຄງການໄວ້ກ່ອນ ແຕ່ຍັງບໍ່ໃຫ້ເຂົ້າແອັບ
+                window.pendingProjectSecret = forcedProjectSecret;
+            }
+
+            // ບັງຄັບເປີດໜ້າ Login ສະເໝີ ບໍ່ວ່າຈະເຂົ້າລິ້ງໃດກໍຕາມ
+            const loginScreen = document.getElementById('loginScreen');
+            const appScreen = document.getElementById('appScreen');
+            if (loginScreen) loginScreen.classList.remove('hidden');
+            if (appScreen) appScreen.classList.add('hidden');
+        });
+
+    // ຖ້າເປີດມາລະບົບມີการລັອກ Project ไว้ ໃຫ້ເລືອກໂຄງການນັ້ນໃຫ້ອັດຕະໂນມັດເລີຍ
+        setTimeout(() => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const forcedProject = urlParams.get('project');
+            if (forcedProject) {
+                // ຖ້າເປັນ User ທົ່ວໄປ ຜ່ານລິ້ງ ໃຫ້ຂ້າມໜ້າ Login ໄປໜ້າ App ເລີຍກໍได้ (ຖ້າຕ້ອງການ)
+                // ຫຼື ຫຼັງຈາກ Login ສຳເລັດ ໃຫ້ສັ່ງເລືອກໂຄງການນັ້ນທັນທີ:
+                selectProject(forcedProject);
+                const radio = document.querySelector(`input[name="selectedProject"][value="${forcedProject}"]`);
+                if (radio) radio.checked = true;
+            }
+        }, 500);
+
+        function updateActivityAlertAndTable() {
+            if (!selectedProjectId) return;
+
+            const now = new Date().getTime();
+            const past24Hours = now - (24 * 60 * 60 * 1000);
+            const past48Hours = now - (48 * 60 * 60 * 1000); // ເພີ່ມຕົວແປ 48 ຊົ່ວໂມງ
+            
+            let hasRecentActivity = false;
+            let activityLog = [];
+
+            // 1. ດຶງຂໍ້ມູນ ເງິນລົງທຶນ (ຮັບ)
+            if (typeof investmentsData !== 'undefined') {
+                investmentsData.filter(inv => inv.projectId === selectedProjectId).forEach(inv => {
+                    const timestamp = new Date(inv.date).getTime();
+                    
+                    // ເງື່ອນໄຂ: ຖ້າຂໍ້ມູນໃໝ່ກວ່າ 48 ຊົ່ວໂມງ ຈຶ່ງເອົາມາສະແດງ
+                    if (timestamp >= past48Hours) {
+                        let isNew = false;
+                        if (timestamp >= past24Hours) {
+                            hasRecentActivity = true;
+                            isNew = true; // ໝາຍໄວ້ວ່າບໍ່ກາຍ 24 ຊົ່ວໂມງ
+                        }
+                        
+                        let cleanAmount = Number(String(inv.amount).replace(/,/g, '')) || 0;
+                        activityLog.push({ 
+                            date: inv.date, 
+                            desc: `ຮັບເງິນລົງທຶນຈາກ: ${inv.investorName}`, 
+                            in: cleanAmount, 
+                            out: 0, 
+                            note: inv.note || '-',
+                            isNew: isNew // ສົ່ງຄ່າໄປແຕ້ມລົງຕາຕະລາງ
+                        });
+                    }
+                });
+            }
+
+            // 2. ດຶງຂໍ້ມູນ ລາຍຈ່າຍ (ຈ່າຍ)
+            if (typeof expensesData !== 'undefined') {
+                expensesData.filter(exp => exp.projectId === selectedProjectId).forEach(exp => {
+                    const timestamp = new Date(exp.date).getTime();
+                    
+                    // ເງື່ອນໄຂ: ຖ້າຂໍ້ມູນໃໝ່ກວ່າ 48 ຊົ່ວໂມງ ຈຶ່ງເອົາມາສະແດງ
+                    if (timestamp >= past48Hours) {
+                        let isNew = false;
+                        if (timestamp >= past24Hours) {
+                            hasRecentActivity = true;
+                            isNew = true; // ໝາຍໄວ້ວ່າບໍ່ກາຍ 24 ຊົ່ວໂມງ
+                        }
+                        
+                        let cleanAmount = Number(String(exp.amount).replace(/,/g, '')) || 0;
+                        let cleanFee = Number(String(exp.fee).replace(/,/g, '')) || 0;
+                        activityLog.push({ 
+                            date: exp.date, 
+                            desc: `ຈ່າຍຄ່າ: ${exp.desc}`, 
+                            in: 0, 
+                            out: cleanAmount + cleanFee, 
+                            note: exp.note || '-',
+                            isNew: isNew // ສົ່ງຄ່າໄປແຕ້ມລົງຕາຕະລາງ
+                        });
+                    }
+                });
+            }
+
+            // ຈັດລຽງຈາກໃໝ່ໄປເກົ່າ
+            activityLog.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const notiBtn = document.getElementById('notiTabBtn');
+            const notiDot = document.getElementById('notiDot');
+            if (hasRecentActivity) {
+                notiBtn.className = "hover:text-blue-600 focus:text-blue-600 flex items-center transition duration-300 bg-red-100 text-red-600 px-3 py-1 rounded-full animate-pulse mr-2 font-bold";
+                notiDot.classList.remove('hidden');
+            } else {
+                notiBtn.className = "hover:text-blue-600 focus:text-blue-600 flex items-center transition duration-300 px-3 py-1 mr-2 font-semibold text-gray-700";
+                notiDot.classList.add('hidden');
+            }
+
+            const tbody = document.getElementById('activityTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            if (activityLog.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="border border-gray-300 py-6 text-center text-gray-500 font-medium">ຍັງບໍ່ມີການເຄື່ອນໄຫວໃດໆ ໃນຊ່ວງ 48 ຊົ່ວໂມງທີ່ຜ່ານມາ</td></tr>`;
+            } else {
+                activityLog.forEach((item, index) => {
+                    let indentClass = item.out > 0 ? "pl-8 text-gray-600" : "font-medium text-gray-900";
+                    let prefixIcon = item.out > 0 ? "- " : ""; 
+
+                    // +++ ຈັດການຫ້ອງໝາຍເຫດ +++
+                    let finalNote = item.note === '-' ? '' : item.note;
+                    if (item.isNew) {
+                        // ຖ້າພາຍໃນ 24 ຊົ່ວໂມງ ໃຫ້ຕິດປ້າຍສີແດງ
+                        let newBadge = `<span class="text-red-600 font-bold text-xs bg-red-100 px-2 py-1 rounded-full ml-1 animate-pulse">ເຄື່ອນໄຫວໃໝ່</span>`;
+                        finalNote = finalNote ? `${finalNote} ${newBadge}` : newBadge;
+                    } else {
+                        // ຖ້າກາຍ 24 ຫາ 48 ຊົ່ວໂມງ ໃຫ້ສະແດງແຕ່ໝາຍເຫດປົກກະຕິ
+                        finalNote = finalNote || '-';
+                    }
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-50">
+                            <td class="border border-gray-300 p-2 text-center">${index + 1}</td>
+                            <td class="border border-gray-300 p-2 text-center">${formatDateToDDMMYYYY(item.date)}</td>
+                            <td class="border border-gray-300 p-2 ${indentClass}">${prefixIcon}${item.desc}</td>
+                            <td class="border border-gray-300 p-2 text-right text-green-600 font-bold">${item.in > 0 ? formatNumber(item.in) : '-'}</td>
+                            <td class="border border-gray-300 p-2 text-right text-red-600 font-bold">${item.out > 0 ? formatNumber(item.out) : '-'}</td>
+                            <td class="border border-gray-300 p-2">${finalNote}</td>
+                        </tr>
+                    `;
+                });
+            }
+        }
 
     </script>
 </body>
