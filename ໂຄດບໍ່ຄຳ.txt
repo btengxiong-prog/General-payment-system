@@ -615,35 +615,51 @@ XY29962200
         const db = firebase.firestore();
 
         let currentUser = null;
-        let projectsData = [
+        
+        // ລາຍຊື່ໂຄງການພື້ນຖານ (ຖ້າບໍ່ມີໃນ Cloud)
+        let baseProjects = [
             { id: 'p1', secret: 'p1_8xK9m', name: 'Qz-ຫ້ວຍຫານ' },
             { id: 'p2', secret: 'p2_vN5cR', name: 'Qz-ນ້ຳປຸຍ' },
             { id: 'p3', secret: 'p3_jY7hB', name: 'Qz-ໂພນແກ້ວ' }
         ];
-
+        
+        let projectsData = [];
         let selectedProjectId = null;
         let investorsData = [];
         let investmentsData = [];
         let expensesData = [];
 
         function loadDataFromFirebase() {
+            // ດຶງຂໍ້ມູນໂຄງການ ໂດຍລວມເອົາ baseProjects ກັບຂໍ້ມູນຈາກ Cloud ແບບບໍ່ຊ້ຳກັນ
             db.collection("projects").onSnapshot((snapshot) => {
+                let tempProjects = [...baseProjects]; // ເລີ່ມຈາກໂຄງການພື້ນຖານສະເໝີ
+
                 if (!snapshot.empty) {
-                    let cloudProjects = [];
-                    snapshot.forEach((doc) => { cloudProjects.push({ id: doc.id, ...doc.data() }); });
-                    
-                    // ປະສານຂໍ້ມູນໂຄງການເລີ່ມຕົ້ນ (p1, p2, p3) ກັບ Cloud ໂດຍບໍ່ໃຫ້ຕົກຫຼົ່ນ
-                    let defaultIds = projectsData.map(p => p.id);
-                    cloudProjects.forEach(cp => {
-                        if (!defaultIds.includes(cp.id)) {
-                            projectsData.push(cp);
+                    snapshot.forEach((doc) => { 
+                        let data = doc.data();
+                        
+                        // ຖ້າໂຄງການໃນ Cloud ບໍ່ມີ secret ໃຫ້ສ້າງອັດຕະໂນມັດ
+                        if (!data.secret) {
+                            const count = tempProjects.length + 1;
+                            data.secret = 'p' + count + '_' + Math.random().toString(36).substring(2, 7);
+                            db.collection("projects").doc(doc.id).update({ secret: data.secret });
+                        }
+
+                        // ກວດສອບບໍ່ໃຫ້ຊ້ຳກັນ
+                        let existingIndex = tempProjects.findIndex(p => p.id === doc.id);
+                        if (existingIndex !== -1) {
+                            tempProjects[existingIndex] = { id: doc.id, ...data };
                         } else {
-                            let idx = projectsData.findIndex(p => p.id === cp.id);
-                            if(idx !== -1) projectsData[idx] = cp;
+                            tempProjects.push({ id: doc.id, ...data });
                         }
                     });
                 }
+                
+                projectsData = tempProjects; // ອັບເດດອາເຣຫຼັກ
                 renderProjects();
+                
+                // ກວດສອບລິ້ງຫຼັງຈາກໂຫຼດຂໍ້ມູນໂຄງການສຳເລັດແລ້ວ
+                checkPendingProjectLogin();
             });
 
             db.collection("investors").onSnapshot((snapshot) => {
@@ -806,7 +822,7 @@ XY29962200
             }
         }
 
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const u = document.getElementById('usernameInput').value.trim();
             const p = document.getElementById('passwordInput').value.trim();
@@ -825,14 +841,26 @@ XY29962200
                     document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
                     
                     loadDataFromFirebase();
-                    renderProjects();
                 } else {
                     if (!window.pendingProjectSecret) {
                         showCustomAlert("ບັນຊີນີ້ບໍ່ອະນຸຍາດໃຫ້ເຂົ້າລະບົບຜ່ານລິ້ງຫຼັກ. ກະລຸນາເຂົ້າຜ່ານລິ້ງໂຄງການຂອງທ່ານ!", "ບໍ່ມີສິດເຂົ້າເຖິງ");
                         return;
                     }
 
-                    const matchedProject = projectsData.find(proj => proj.secret === window.pendingProjectSecret);
+                    // ຄົ້ນຫາໃນ Array ຫຼັກກ່ອນ
+                    let matchedProject = projectsData.find(proj => proj.secret === window.pendingProjectSecret || proj.id === window.pendingProjectSecret);
+                    
+                    // ຖ້າບໍ່ພົບใน Local Array ให้ດຶງຈາກ Firebase ໂດຍກົງເພື່ອຢືນຢັນ (ກໍລະນີໂຫຼດໜ້າຈໍໃໝ່)
+                    if (!matchedProject) {
+                        try {
+                            const snapshot = await db.collection("projects").where("secret", "==", window.pendingProjectSecret).get();
+                            if (!snapshot.empty) {
+                                matchedProject = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+                            }
+                        } catch (err) {
+                            console.error("Error finding project in DB:", err);
+                        }
+                    }
                     
                     if (matchedProject) {
                         currentUser = USERS[u];
@@ -893,9 +921,8 @@ XY29962200
                 li.className = "p-4 hover:bg-gray-50 flex justify-between items-center border-b last:border-b-0";
                 
                 let copyBtn = "";
-                // Admin ສາມາດເຫັນປຸ່ມກັອບປີ້ລິ້ງທຸກໂຄງການ
                 if (isAdmin) {
-                    const shareUrl = `${window.location.origin}${window.location.pathname}?p=${proj.secret}`;
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?p=${proj.secret || proj.id}`;
                     copyBtn = `<button onclick="navigator.clipboard.writeText('${shareUrl}'); showCustomAlert('ກັອບປີ້ລິ້ງສຳເລັດແລ້ວ!', 'ສຳເລັດ');" class="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-green-700">🔗 ກັອບປີ້ລິ້ງ</button>`;
                 }
 
@@ -924,7 +951,10 @@ XY29962200
             const name = document.getElementById('projNameInput').value.trim();
             if (!name) return;
 
-            const randomSecret = 'p_' + Math.random().toString(36).substring(2, 9);
+            // ສ້າງ Secret Key ໃຫ້ສັ້ນ ແລະ ຄ້າຍຄືໝູ່
+            const count = projectsData.length + 1;
+            const randomSecret = 'p' + count + '_' + Math.random().toString(36).substring(2, 7);
+            
             const newProj = {
                 name: name,
                 secret: randomSecret
@@ -934,6 +964,8 @@ XY29962200
                 const docRef = await db.collection("projects").add(newProj);
                 closeProjectModal();
                 showCustomAlert("ເພີ່ມໂຄງການໃໝ່ສຳເລັດແລ້ວ!", "ສຳເລັດ");
+                
+                // ລຶບຄຳສັ່ງ projectsData.push ອອກ ເພາະ onSnapshot ຈະເປັນຕົວຈັບຂໍ້ມູນ ແລະ ອັບເດດໃຫ້ເອງ
                 selectProject(docRef.id);
             } catch (error) {
                 showCustomAlert("ບໍ່ສາມາດເພີ່ມໂຄງການໄດ້: " + error.message, "ຜິດພາດ");
@@ -1854,13 +1886,17 @@ XY29962200
             }
         });
 
-        window.addEventListener('DOMContentLoaded', () => {
+        function checkPendingProjectLogin() {
             const urlParams = new URLSearchParams(window.location.search);
             const forcedProjectSecret = urlParams.get('project') || urlParams.get('p'); 
 
             if (forcedProjectSecret) {
                 window.pendingProjectSecret = forcedProjectSecret;
             }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkPendingProjectLogin();
 
             const loginScreen = document.getElementById('loginScreen');
             const appScreen = document.getElementById('appScreen');
@@ -1870,11 +1906,14 @@ XY29962200
 
         setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);
-            const forcedProject = urlParams.get('project');
-            if (forcedProject) {
-                selectProject(forcedProject);
-                const radio = document.querySelector(`input[name="selectedProject"][value="${forcedProject}"]`);
-                if (radio) radio.checked = true;
+            const forcedProject = urlParams.get('project') || urlParams.get('p');
+            if (forcedProject && projectsData.length > 0) {
+                const matched = projectsData.find(p => p.secret === forcedProject || p.id === forcedProject);
+                if (matched) {
+                    selectProject(matched.id);
+                    const radio = document.querySelector(`input[name="selectedProject"][value="${matched.id}"]`);
+                    if (radio) radio.checked = true;
+                }
             }
         }, 500);
 
@@ -1993,7 +2032,7 @@ https://btengxiong-prog.github.io/General-payment-system/
 https://btengxiong-prog.github.io/General-payment-system/?p=p1_8xK9m
 https://btengxiong-prog.github.io/General-payment-system/?p=p2_vN5cR
 https://btengxiong-prog.github.io/General-payment-system/?p=p3_jY7hB
-https://btengxiong-prog.github.io/General-payment-system/?p=p5_a9327
+https://btengxiong-prog.github.io/General-payment-system/?p=p1788571602868_52dhi
 
 GOLD-ADMIN
 GA@29962200
