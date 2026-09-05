@@ -604,7 +604,6 @@
 
         let currentUser = null;
         
-        // ລາຍຊື່ໂຄງການພື້ນຖານ (ຖ້າບໍ່ມີໃນ Cloud)
         let baseProjects = [
             { id: 'p1', secret: 'p1_8xK9m', name: 'Qz-ຫ້ວຍຫານ' },
             { id: 'p2', secret: 'p2_vN5cR', name: 'Qz-ນ້ຳປຸຍ' },
@@ -924,7 +923,6 @@
             });
         }
 
-        // ຟັງຊັນລຶບໂຄງການ
         function deleteProject(projId) {
             if (!currentUser || currentUser.role !== 'ADMIN') {
                 showCustomAlert("ທ່ານບໍ່ມີສິດລຶບໂຄງການ!", "ຜິດພາດ");
@@ -1594,7 +1592,7 @@
                             date: '',
                             investorName: name,
                             amount: deficit,
-                            note: totalPaid === 0 ? 'ຍັງບໍ່ເຄີຍລົງທຶນ' : 'ຍັງຄ້າງຊຳລະອິກສ່ວນໜຶ່ງ'
+                            note: totalPaid === 0 ? 'ຍັງບໍ່ເຄີຍລົງທຶນ' : 'ຍັງຄ້າງຊຳລະອີກສ່ວນໜຶ່ງ'
                         });
                     }
                 });
@@ -1603,20 +1601,30 @@
                 const selectedRound = Number(filterSelect.value);
                 displayData = filteredInvestments.filter(inv => Number(inv.round || 1) === selectedRound);
                 
+                // +++ ແກ້ໄຂໃໝ່: ຄິດໄລ່ຍອດລວມຂອງແຕ່ລະຄົນໃນງວດນີ້ເພື່ອກວດຫາຄົນທີ່ຈ່າຍຍັງບໍ່ຄົບ +++
+                let groupedTotals = {};
+                displayData.forEach(inv => {
+                    groupedTotals[inv.investorName] = (groupedTotals[inv.investorName] || 0) + Number(inv.amount || 0);
+                });
+
                 let maxAmountForUnpaid = 0;
-                if (displayData.length > 0) {
-                    maxAmountForUnpaid = Math.max(...displayData.map(i => Number(i.amount || 0)));
+                if (Object.keys(groupedTotals).length > 0) {
+                    maxAmountForUnpaid = Math.max(...Object.values(groupedTotals));
                 }
 
-                const paidNames = displayData.map(i => i.investorName);
-                const unpaid = allNames.filter(name => !paidNames.includes(name));
+                allNames.forEach(name => {
+                    const totalPaidThisRound = groupedTotals[name] || 0;
+                    const deficit = maxAmountForUnpaid - totalPaidThisRound;
 
-                unpaidData = unpaid.map(name => ({
-                    date: '', 
-                    investorName: name,
-                    amount: maxAmountForUnpaid,
-                    note: 'ຍັງບໍ່ທັນຊຳລະໃນງວດນີ້'
-                }));
+                    if (deficit > 0) {
+                        unpaidData.push({
+                            date: '', 
+                            investorName: name,
+                            amount: deficit,
+                            note: totalPaidThisRound === 0 ? 'ຍັງບໍ່ທັນຊຳລະໃນງວດນີ້' : 'ຍັງຄ້າງຊຳລະອີກສ່ວນໜຶ່ງ'
+                        });
+                    }
+                });
             }
 
             displayData.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));

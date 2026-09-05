@@ -2,7 +2,7 @@ https://btengxiong-prog.github.io/General-payment-system/
 https://btengxiong-prog.github.io/General-payment-system/?p=p1_8xK9m
 https://btengxiong-prog.github.io/General-payment-system/?p=p2_vN5cR
 https://btengxiong-prog.github.io/General-payment-system/?p=p3_jY7hB
-https://btengxiong-prog.github.io/General-payment-system/?p=p5_a9327
+https://btengxiong-prog.github.io/General-payment-system/?p=p4_ogzd1
 
 GOLD-ADMIN
 GA@29962200
@@ -630,22 +630,19 @@ XY29962200
         let expensesData = [];
 
         function loadDataFromFirebase() {
-            // ດຶງຂໍ້ມູນໂຄງການ ໂດຍລວມເອົາ baseProjects ກັບຂໍ້ມູນຈາກ Cloud ແບບບໍ່ຊ້ຳກັນ
             db.collection("projects").onSnapshot((snapshot) => {
-                let tempProjects = [...baseProjects]; // ເລີ່ມຈາກໂຄງການພື້ນຖານສະເໝີ
+                let tempProjects = [...baseProjects]; 
 
                 if (!snapshot.empty) {
                     snapshot.forEach((doc) => { 
                         let data = doc.data();
                         
-                        // ຖ້າໂຄງການໃນ Cloud ບໍ່ມີ secret ໃຫ້ສ້າງອັດຕະໂນມັດ
                         if (!data.secret) {
                             const count = tempProjects.length + 1;
                             data.secret = 'p' + count + '_' + Math.random().toString(36).substring(2, 7);
                             db.collection("projects").doc(doc.id).update({ secret: data.secret });
                         }
 
-                        // ກວດສອບບໍ່ໃຫ້ຊ້ຳກັນ
                         let existingIndex = tempProjects.findIndex(p => p.id === doc.id);
                         if (existingIndex !== -1) {
                             tempProjects[existingIndex] = { id: doc.id, ...data };
@@ -655,10 +652,9 @@ XY29962200
                     });
                 }
                 
-                projectsData = tempProjects; // ອັບເດດອາເຣຫຼັກ
+                projectsData = tempProjects; 
                 renderProjects();
                 
-                // ກວດສອບລິ້ງຫຼັງຈາກໂຫຼດຂໍ້ມູນໂຄງການສຳເລັດແລ້ວ
                 checkPendingProjectLogin();
             });
 
@@ -847,10 +843,8 @@ XY29962200
                         return;
                     }
 
-                    // ຄົ້ນຫາໃນ Array ຫຼັກກ່ອນ
                     let matchedProject = projectsData.find(proj => proj.secret === window.pendingProjectSecret || proj.id === window.pendingProjectSecret);
                     
-                    // ຖ້າບໍ່ພົບใน Local Array ให้ດຶງຈາກ Firebase ໂດຍກົງເພື່ອຢືນຢັນ (ກໍລະນີໂຫຼດໜ້າຈໍໃໝ່)
                     if (!matchedProject) {
                         try {
                             const snapshot = await db.collection("projects").where("secret", "==", window.pendingProjectSecret).get();
@@ -920,10 +914,15 @@ XY29962200
                 const li = document.createElement('li');
                 li.className = "p-4 hover:bg-gray-50 flex justify-between items-center border-b last:border-b-0";
                 
-                let copyBtn = "";
+                let actionBtns = "";
                 if (isAdmin) {
                     const shareUrl = `${window.location.origin}${window.location.pathname}?p=${proj.secret || proj.id}`;
-                    copyBtn = `<button onclick="navigator.clipboard.writeText('${shareUrl}'); showCustomAlert('ກັອບປີ້ລິ້ງສຳເລັດແລ້ວ!', 'ສຳເລັດ');" class="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-green-700">🔗 ກັອບປີ້ລິ້ງ</button>`;
+                    actionBtns = `
+                        <div class="flex items-center space-x-2">
+                            <button onclick="navigator.clipboard.writeText('${shareUrl}'); showCustomAlert('ກັອບປີ້ລິ້ງສຳເລັດແລ້ວ!', 'ສຳເລັດ');" class="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-green-700">🔗 ກັອບປີ້ລິ້ງ</button>
+                            <button onclick="deleteProject('${proj.id}')" class="bg-red-500 text-white px-3 py-1.5 rounded-lg text-sm font-semibold hover:bg-red-600">🗑️ ລຶບ</button>
+                        </div>
+                    `;
                 }
 
                 li.innerHTML = `
@@ -931,9 +930,52 @@ XY29962200
                         <input type="radio" name="selectedProject" value="${proj.id}" ${selectedProjectId === proj.id ? 'checked' : ''} onchange="selectProject('${proj.id}')" class="w-5 h-5 text-blue-600 focus:ring-blue-500 cursor-pointer">
                         <span class="font-bold text-gray-800 text-lg cursor-pointer" onclick="selectProject('${proj.id}')">${proj.name}</span>
                     </div>
-                    <div>${copyBtn}</div>
+                    <div>${actionBtns}</div>
                 `;
                 ul.appendChild(li);
+            });
+        }
+
+        // ຟັງຊັນລຶບໂຄງການ
+        function deleteProject(projId) {
+            if (!currentUser || currentUser.role !== 'ADMIN') {
+                showCustomAlert("ທ່ານບໍ່ມີສິດລຶບໂຄງການ!", "ຜິດພາດ");
+                return;
+            }
+
+            if (['p1', 'p2', 'p3'].includes(projId)) {
+                showCustomAlert("ບໍ່ສາມາດລຶບໂຄງການພື້ນຖານຂອງລະບົບໄດ້!", "ແຈ້ງເຕືອນ");
+                return;
+            }
+
+            showCustomConfirm("ທ່ານຕ້ອງການລຶບໂຄງການນີ້ແທ້ບໍ? (ການລຶບນີ້ຈະລຶບພຽງແຕ່ຊື່ໂຄງການອອກຈາກລາຍຊື່ເທົ່ານັ້ນ)", async () => {
+                try {
+                    await db.collection("projects").doc(projId).delete();
+                    
+                    projectsData = projectsData.filter(p => p.id !== projId);
+                    
+                    if (selectedProjectId === projId) {
+                        selectedProjectId = null;
+                        document.getElementById('currentActiveProjectInv').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
+                        document.getElementById('currentActiveProjectInvest').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
+                        document.getElementById('currentActiveProjectExpense').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
+                        if(document.getElementById('currentActiveProjectInvestNew')) document.getElementById('currentActiveProjectInvestNew').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
+                        if(document.getElementById('currentActiveProjectRefund')) document.getElementById('currentActiveProjectRefund').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
+                        
+                        updateReportActiveProject();
+                        renderInvestors();
+                        renderInvestments();
+                        renderExpenses();
+                        renderInvestSummary(); 
+                        renderRefunds();
+                        updateActivityAlertAndTable();
+                    }
+                    
+                    renderProjects();
+                    showCustomAlert("ລຶບໂຄງການສຳເລັດແລ້ວ!", "ສຳເລັດ");
+                } catch (error) {
+                    showCustomAlert("ບໍ່ສາມາດລຶບໂຄງການໄດ້: " + error.message, "ຜິດພາດ");
+                }
             });
         }
 
@@ -951,7 +993,6 @@ XY29962200
             const name = document.getElementById('projNameInput').value.trim();
             if (!name) return;
 
-            // ສ້າງ Secret Key ໃຫ້ສັ້ນ ແລະ ຄ້າຍຄືໝູ່
             const count = projectsData.length + 1;
             const randomSecret = 'p' + count + '_' + Math.random().toString(36).substring(2, 7);
             
@@ -965,7 +1006,6 @@ XY29962200
                 closeProjectModal();
                 showCustomAlert("ເພີ່ມໂຄງການໃໝ່ສຳເລັດແລ້ວ!", "ສຳເລັດ");
                 
-                // ລຶບຄຳສັ່ງ projectsData.push ອອກ ເພາະ onSnapshot ຈະເປັນຕົວຈັບຂໍ້ມູນ ແລະ ອັບເດດໃຫ້ເອງ
                 selectProject(docRef.id);
             } catch (error) {
                 showCustomAlert("ບໍ່ສາມາດເພີ່ມໂຄງການໄດ້: " + error.message, "ຜິດພາດ");
@@ -2032,8 +2072,8 @@ https://btengxiong-prog.github.io/General-payment-system/
 https://btengxiong-prog.github.io/General-payment-system/?p=p1_8xK9m
 https://btengxiong-prog.github.io/General-payment-system/?p=p2_vN5cR
 https://btengxiong-prog.github.io/General-payment-system/?p=p3_jY7hB
-https://btengxiong-prog.github.io/General-payment-system/?p=p1788571602868_52dhi
-
+https://btengxiong-prog.github.io/General-payment-system/?p=p4_ogzd1
+----------------------------------------------------------------
 GOLD-ADMIN
 GA@29962200
 
