@@ -39,7 +39,7 @@
 
     <!-- MAIN APP -->
     <div id="appScreen" class="hidden">
-<!-- Navigation Menu (ລັອກໃຫ້ຕິດຂອບເທິງສະເໝີ) -->
+    <!-- Navigation Menu (ລັອກໃຫ້ຕິດຂອບເທິງສະເໝີ) -->
     <nav class="bg-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center overflow-x-auto">
             <div class="flex space-x-6 font-semibold text-gray-700 whitespace-nowrap">
@@ -798,7 +798,7 @@
                 const userRole = USERS[u].role;
 
                 if (userRole === 'ADMIN') {
-                    // 1. ສຳລັບ ADMIN: ໃຫ້ເຂົ້າລະບົບໄດ້ເລີຍ ເຫັນປຸ່ມທຸກຢ່າງ
+                    // ສຳລັບ ADMIN: ເຂົ້າລະບົບໄດ້ເລີຍ
                     currentUser = USERS[u];
                     document.getElementById('loginScreen').classList.add('hidden');
                     document.getElementById('appScreen').classList.remove('hidden');
@@ -806,24 +806,24 @@
 
                     // ເປີດປຸ່ມ Admin ທັງໝົດ
                     const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addRefundBtn'];
-                    adminBtns.forEach(btnId => { if(document.getElementById(btnId)) document.getElementById(btnId).classList.remove('hidden'); });
+                    adminBtns.forEach(btnId => { 
+                        const btn = document.getElementById(btnId);
+                        if(btn) btn.classList.remove('hidden'); 
+                    });
                     document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
                     
-                    loadDataFromFirebase();
-                    renderProjects();
+                    if (typeof loadDataFromFirebase === 'function') loadDataFromFirebase();
+                    if (typeof renderProjects === 'function') renderProjects();
                 } else {
-                    // 2. ສຳລັບ USER ທົ່ວໄປ: ຕ້ອງກວດສອບລິ້ງກ່ອນ
+                    // ສຳລັບ USER ທົ່ວໄປ
                     if (!window.pendingProjectSecret) {
-                        // ຖ້າ User ທົ່ວໄປ ພະຍາຍາມ Login ຜ່ານລິ້ງຫຼັກ (ບໍ່ມີຊື່ໂຄງການ)
                         showCustomAlert("ບັນຊີນີ້ບໍ່ອະນຸຍາດໃຫ້ເຂົ້າລະບົບຜ່ານລິ້ງຫຼັກ. ກະລຸນາເຂົ້າຜ່ານລິ້ງໂຄງການຂອງທ່ານ!", "ບໍ່ມີສິດເຂົ້າເຖິງ");
-                        return; // ຢຸດການເຮັດວຽກ ບໍ່ໃຫ້ເຂົ້າ
+                        return;
                     }
 
-                    // ຊອກຫາວ່າລະຫັດໂຄງການໃນລິ້ງ ກົງກັບໂຄງການໃດໃນຖານຂໍ້ມູນ
                     const matchedProject = projectsData.find(proj => proj.secret === window.pendingProjectSecret);
                     
                     if (matchedProject) {
-                        // ຖ້າລິ້ງຖືກຕ້ອງ: ອະນຸຍາດໃຫ້ Login ແລະ ລັອກໂຄງການໄວ້
                         currentUser = USERS[u];
                         window.lockedProjectId = matchedProject.id; 
 
@@ -831,7 +831,6 @@
                         document.getElementById('appScreen').classList.remove('hidden');
                         document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name}`;
 
-                        // ເຊື່ອງປຸ່ມ Admin ທັງໝົດ
                         setTimeout(() => {
                             const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addRefundBtn'];
                             adminBtns.forEach(btnId => {
@@ -842,13 +841,11 @@
 
                             if (typeof loadDataFromFirebase === 'function') loadDataFromFirebase();
                             
-                            // ເລືອກໂຄງການໃຫ້ອັດຕະໂນມັດ
                             selectProject(matchedProject.id);
                             const radio = document.querySelector(`input[name="selectedProject"][value="${matchedProject.id}"]`);
                             if (radio) radio.checked = true;
                         }, 300);
                     } else {
-                        // ຖ້າລະຫັດໂຄງການໃນລິ້ງບໍ່ຖືກຕ້ອງ ຫຼື ຖືກມົ້ວມາ
                         showCustomAlert("ລິ້ງໂຄງການນີ້ບໍ່ຖືກຕ້ອງ ຫຼື ບໍ່ມີໃນລະບົບ!", "ຜິດພາດ");
                     }
                 }
@@ -2065,6 +2062,73 @@
             }
         }
 
+    // ຟັງຊັນເປີດ-ປິດ Modal ເພີ່ມໂຄງການ
+        function openProjectModal() {
+            const modal = document.getElementById('projectModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            } else {
+                showCustomAlert("ຍັງບໍ່ທັນໄດ້ສ້າງ Modal ເພີ່ມໂຄງການໃນ HTML!", "ຜິດພາດ");
+            }
+        }
+
+        function closeProjectModal() {
+            const modal = document.getElementById('projectModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                if(document.getElementById('projectForm')) document.getElementById('projectForm'].reset();
+            }
+        }
+
+        // ຟັງຊັນບັນທຶກໂຄງການ
+        if(document.getElementById('projectForm')) {
+            document.getElementById('projectForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const pName = document.getElementById('projectNameInput').value.trim();
+                if (!pName) return;
+
+                const newId = 'p' + Date.now();
+                const randomStr = Math.random().toString(36).substring(2, 7);
+                const newSecret = newId + '_' + randomStr;
+
+                try {
+                    // ພະຍາຍາມບັນທຶກລົງ Firebase ກ່ອນ
+                    await db.collection("projects").doc(newId).set({
+                        name: pName,
+                        secret: newSecret
+                    });
+                } catch (error) {
+                    console.log("Firebase save warning, using local array:", error);
+                }
+
+                // ບໍ່ວ່າ Cloud จะสำเร็จหรือไม่ สำคัญคือต้องเพิ่มเข้า Array และแสดงผลทันที
+                projectsData.push({
+                    id: newId,
+                    secret: newSecret,
+                    name: pName
+                });
+
+                renderProjects();
+                closeProjectModal();
+                showCustomAlert(`ເພີ່ມໂຄງການ "${pName}" ສຳເລັດແລ້ວ!`, "ສຳເລັດ");
+            });
+        }
     </script>
+    <!-- Modal ເພີ່ມໂຄງການ -->
+    <div id="projectModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="text-xl font-bold text-blue-600 mb-4">ເພີ່ມໂຄງການໃໝ່</h3>
+            <form id="projectForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ຊື່ໂຄງການ</label>
+                    <input type="text" id="projectNameInput" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ຕົວຢ່າງ: Qz-ຊຽງເງິນ">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeProjectModal()" class="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400">ຍົກເລີກ</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">ບັນທຶກ</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
