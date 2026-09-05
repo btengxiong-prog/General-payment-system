@@ -603,42 +603,50 @@
         const db = firebase.firestore();
 
         let currentUser = null;
-        let projectsData = [
+        
+        // ລາຍຊື່ໂຄງການພື້ນຖານ (ຖ້າບໍ່ມີໃນ Cloud)
+        let baseProjects = [
             { id: 'p1', secret: 'p1_8xK9m', name: 'Qz-ຫ້ວຍຫານ' },
             { id: 'p2', secret: 'p2_vN5cR', name: 'Qz-ນ້ຳປຸຍ' },
             { id: 'p3', secret: 'p3_jY7hB', name: 'Qz-ໂພນແກ້ວ' }
         ];
-
+        
+        let projectsData = [];
         let selectedProjectId = null;
         let investorsData = [];
         let investmentsData = [];
         let expensesData = [];
 
         function loadDataFromFirebase() {
+            // ດຶງຂໍ້ມູນໂຄງການ ໂດຍລວມເອົາ baseProjects ກັບຂໍ້ມູນຈາກ Cloud ແບບບໍ່ຊ້ຳກັນ
             db.collection("projects").onSnapshot((snapshot) => {
+                let tempProjects = [...baseProjects]; // ເລີ່ມຈາກໂຄງການພື້ນຖານສະເໝີ
+
                 if (!snapshot.empty) {
-                    let cloudProjects = [];
                     snapshot.forEach((doc) => { 
                         let data = doc.data();
+                        
+                        // ຖ້າໂຄງການໃນ Cloud ບໍ່ມີ secret ໃຫ້ສ້າງອັດຕະໂນມັດ
                         if (!data.secret) {
-                            const count = projectsData.length + 1;
+                            const count = tempProjects.length + 1;
                             data.secret = 'p' + count + '_' + Math.random().toString(36).substring(2, 7);
                             db.collection("projects").doc(doc.id).update({ secret: data.secret });
                         }
-                        cloudProjects.push({ id: doc.id, ...data }); 
-                    });
-                    
-                    let defaultIds = projectsData.map(p => p.id);
-                    cloudProjects.forEach(cp => {
-                        if (!defaultIds.includes(cp.id)) {
-                            projectsData.push(cp);
+
+                        // ກວດສອບບໍ່ໃຫ້ຊ້ຳກັນ
+                        let existingIndex = tempProjects.findIndex(p => p.id === doc.id);
+                        if (existingIndex !== -1) {
+                            tempProjects[existingIndex] = { id: doc.id, ...data };
                         } else {
-                            let idx = projectsData.findIndex(p => p.id === cp.id);
-                            if(idx !== -1) projectsData[idx] = cp;
+                            tempProjects.push({ id: doc.id, ...data });
                         }
                     });
                 }
+                
+                projectsData = tempProjects; // ອັບເດດອາເຣຫຼັກ
                 renderProjects();
+                
+                // ກວດສອບລິ້ງຫຼັງຈາກໂຫຼດຂໍ້ມູນໂຄງການສຳເລັດແລ້ວ
                 checkPendingProjectLogin();
             });
 
@@ -827,21 +835,18 @@
                         return;
                     }
 
-                    // 1. ຊອກຫາໃນອາເຣທີ່ມີຢູ່ແລ້ວ
+                    // ຄົ້ນຫາໃນ Array ຫຼັກກ່ອນ
                     let matchedProject = projectsData.find(proj => proj.secret === window.pendingProjectSecret || proj.id === window.pendingProjectSecret);
                     
-                    // 2. ຖ້າບໍ່ມີ ໃຫ້ດຶງຈາກ Firebase ມາຢືນຢັນ (ແກ້ບັນຫາ User ທົ່ວໄປເຂົ້າໂຄງການໃໝ່ບໍ່ໄດ້)
+                    // ຖ້າບໍ່ພົບใน Local Array ให้ດຶງຈາກ Firebase ໂດຍກົງເພື່ອຢືນຢັນ (ກໍລະນີໂຫຼດໜ້າຈໍໃໝ່)
                     if (!matchedProject) {
                         try {
                             const snapshot = await db.collection("projects").where("secret", "==", window.pendingProjectSecret).get();
                             if (!snapshot.empty) {
                                 matchedProject = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
-                                if (!projectsData.find(x => x.id === matchedProject.id)) {
-                                    projectsData.push(matchedProject);
-                                }
                             }
                         } catch (err) {
-                            console.error("Error finding project:", err);
+                            console.error("Error finding project in DB:", err);
                         }
                     }
                     
@@ -934,7 +939,7 @@
             const name = document.getElementById('projNameInput').value.trim();
             if (!name) return;
 
-            // ສ້າງ Secret Key ໃຫ້ສັ້ນ ແລະ ຄ້າຍຄືໝູ່: ຕົວຢ່າງ p4_a1b2c
+            // ສ້າງ Secret Key ໃຫ້ສັ້ນ ແລະ ຄ້າຍຄືໝູ່
             const count = projectsData.length + 1;
             const randomSecret = 'p' + count + '_' + Math.random().toString(36).substring(2, 7);
             
@@ -948,9 +953,7 @@
                 closeProjectModal();
                 showCustomAlert("ເພີ່ມໂຄງການໃໝ່ສຳເລັດແລ້ວ!", "ສຳເລັດ");
                 
-                projectsData.push({ id: docRef.id, ...newProj });
-                renderProjects();
-                
+                // ລຶບຄຳສັ່ງ projectsData.push ອອກ ເພາະ onSnapshot ຈະເປັນຕົວຈັບຂໍ້ມູນ ແລະ ອັບເດດໃຫ້ເອງ
                 selectProject(docRef.id);
             } catch (error) {
                 showCustomAlert("ບໍ່ສາມາດເພີ່ມໂຄງການໄດ້: " + error.message, "ຜິດພາດ");
