@@ -620,9 +620,9 @@
                     let cloudProjects = [];
                     snapshot.forEach((doc) => { 
                         let data = doc.data();
-                        // ຖ້າໂຄງການໃນ Cloud ຍັງບໍ່ມີ secret ໃຫ້ສ້າງອັດຕະໂນມັດເພື່ອປ້ອງກັນລິ້ງຜິດປົກກະຕິ
                         if (!data.secret) {
-                            data.secret = 'p_' + Math.random().toString(36).substring(2, 9);
+                            const count = projectsData.length + 1;
+                            data.secret = 'p' + count + '_' + Math.random().toString(36).substring(2, 7);
                             db.collection("projects").doc(doc.id).update({ secret: data.secret });
                         }
                         cloudProjects.push({ id: doc.id, ...data }); 
@@ -639,8 +639,6 @@
                     });
                 }
                 renderProjects();
-                
-                // ກວດສອບລິ້ງຫຼັງຈາກໂຫຼດຂໍ້ມູນໂຄງການສຳເລັດແລ້ວ
                 checkPendingProjectLogin();
             });
 
@@ -804,7 +802,7 @@
             }
         }
 
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const u = document.getElementById('usernameInput').value.trim();
             const p = document.getElementById('passwordInput').value.trim();
@@ -823,15 +821,29 @@
                     document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
                     
                     loadDataFromFirebase();
-                    renderProjects();
                 } else {
                     if (!window.pendingProjectSecret) {
                         showCustomAlert("ບັນຊີນີ້ບໍ່ອະນຸຍາດໃຫ້ເຂົ້າລະບົບຜ່ານລິ້ງຫຼັກ. ກະລຸນາເຂົ້າຜ່ານລິ້ງໂຄງການຂອງທ່ານ!", "ບໍ່ມີສິດເຂົ້າເຖິງ");
                         return;
                     }
 
-                    // ຄົ້ນຫາທັງ secret ແລະ id ປ້ອງກັນກໍລະນີ User ໃຊ້ລິ້ງແບບເກົ່າ
-                    const matchedProject = projectsData.find(proj => proj.secret === window.pendingProjectSecret || proj.id === window.pendingProjectSecret);
+                    // 1. ຊອກຫາໃນອາເຣທີ່ມີຢູ່ແລ້ວ
+                    let matchedProject = projectsData.find(proj => proj.secret === window.pendingProjectSecret || proj.id === window.pendingProjectSecret);
+                    
+                    // 2. ຖ້າບໍ່ມີ ໃຫ້ດຶງຈາກ Firebase ມາຢືນຢັນ (ແກ້ບັນຫາ User ທົ່ວໄປເຂົ້າໂຄງການໃໝ່ບໍ່ໄດ້)
+                    if (!matchedProject) {
+                        try {
+                            const snapshot = await db.collection("projects").where("secret", "==", window.pendingProjectSecret).get();
+                            if (!snapshot.empty) {
+                                matchedProject = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+                                if (!projectsData.find(x => x.id === matchedProject.id)) {
+                                    projectsData.push(matchedProject);
+                                }
+                            }
+                        } catch (err) {
+                            console.error("Error finding project:", err);
+                        }
+                    }
                     
                     if (matchedProject) {
                         currentUser = USERS[u];
@@ -922,8 +934,10 @@
             const name = document.getElementById('projNameInput').value.trim();
             if (!name) return;
 
-            // ສ້າງ Secret Key ທີ່ສວຍງາມ ແລະ ໄດ້ມາດຕະຖານຄືກັບໂຄງການເລີ່ມຕົ້ນ
-            const randomSecret = 'p_' + Math.random().toString(36).substring(2, 9) + Math.floor(Math.random() * 1000);
+            // ສ້າງ Secret Key ໃຫ້ສັ້ນ ແລະ ຄ້າຍຄືໝູ່: ຕົວຢ່າງ p4_a1b2c
+            const count = projectsData.length + 1;
+            const randomSecret = 'p' + count + '_' + Math.random().toString(36).substring(2, 7);
+            
             const newProj = {
                 name: name,
                 secret: randomSecret
@@ -933,6 +947,10 @@
                 const docRef = await db.collection("projects").add(newProj);
                 closeProjectModal();
                 showCustomAlert("ເພີ່ມໂຄງການໃໝ່ສຳເລັດແລ້ວ!", "ສຳເລັດ");
+                
+                projectsData.push({ id: docRef.id, ...newProj });
+                renderProjects();
+                
                 selectProject(docRef.id);
             } catch (error) {
                 showCustomAlert("ບໍ່ສາມາດເພີ່ມໂຄງການໄດ້: " + error.message, "ຜິດພາດ");
