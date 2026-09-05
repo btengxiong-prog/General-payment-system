@@ -618,9 +618,16 @@
             db.collection("projects").onSnapshot((snapshot) => {
                 if (!snapshot.empty) {
                     let cloudProjects = [];
-                    snapshot.forEach((doc) => { cloudProjects.push({ id: doc.id, ...doc.data() }); });
+                    snapshot.forEach((doc) => { 
+                        let data = doc.data();
+                        // ຖ້າໂຄງການໃນ Cloud ຍັງບໍ່ມີ secret ໃຫ້ສ້າງອັດຕະໂນມັດເພື່ອປ້ອງກັນລິ້ງຜິດປົກກະຕິ
+                        if (!data.secret) {
+                            data.secret = 'p_' + Math.random().toString(36).substring(2, 9);
+                            db.collection("projects").doc(doc.id).update({ secret: data.secret });
+                        }
+                        cloudProjects.push({ id: doc.id, ...data }); 
+                    });
                     
-                    // ປະສານຂໍ້ມູນໂຄງການເລີ່ມຕົ້ນ (p1, p2, p3) ກັບ Cloud ໂດຍບໍ່ໃຫ້ຕົກຫຼົ່ນ
                     let defaultIds = projectsData.map(p => p.id);
                     cloudProjects.forEach(cp => {
                         if (!defaultIds.includes(cp.id)) {
@@ -632,6 +639,9 @@
                     });
                 }
                 renderProjects();
+                
+                // ກວດສອບລິ້ງຫຼັງຈາກໂຫຼດຂໍ້ມູນໂຄງການສຳເລັດແລ້ວ
+                checkPendingProjectLogin();
             });
 
             db.collection("investors").onSnapshot((snapshot) => {
@@ -820,7 +830,8 @@
                         return;
                     }
 
-                    const matchedProject = projectsData.find(proj => proj.secret === window.pendingProjectSecret);
+                    // ຄົ້ນຫາທັງ secret ແລະ id ປ້ອງກັນກໍລະນີ User ໃຊ້ລິ້ງແບບເກົ່າ
+                    const matchedProject = projectsData.find(proj => proj.secret === window.pendingProjectSecret || proj.id === window.pendingProjectSecret);
                     
                     if (matchedProject) {
                         currentUser = USERS[u];
@@ -881,9 +892,8 @@
                 li.className = "p-4 hover:bg-gray-50 flex justify-between items-center border-b last:border-b-0";
                 
                 let copyBtn = "";
-                // Admin ສາມາດເຫັນປຸ່ມກັອບປີ້ລິ້ງທຸກໂຄງການ
                 if (isAdmin) {
-                    const shareUrl = `${window.location.origin}${window.location.pathname}?p=${proj.secret}`;
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?p=${proj.secret || proj.id}`;
                     copyBtn = `<button onclick="navigator.clipboard.writeText('${shareUrl}'); showCustomAlert('ກັອບປີ້ລິ້ງສຳເລັດແລ້ວ!', 'ສຳເລັດ');" class="bg-green-600 text-white px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-green-700">🔗 ກັອບປີ້ລິ້ງ</button>`;
                 }
 
@@ -912,7 +922,8 @@
             const name = document.getElementById('projNameInput').value.trim();
             if (!name) return;
 
-            const randomSecret = 'p_' + Math.random().toString(36).substring(2, 9);
+            // ສ້າງ Secret Key ທີ່ສວຍງາມ ແລະ ໄດ້ມາດຕະຖານຄືກັບໂຄງການເລີ່ມຕົ້ນ
+            const randomSecret = 'p_' + Math.random().toString(36).substring(2, 9) + Math.floor(Math.random() * 1000);
             const newProj = {
                 name: name,
                 secret: randomSecret
@@ -1842,13 +1853,17 @@
             }
         });
 
-        window.addEventListener('DOMContentLoaded', () => {
+        function checkPendingProjectLogin() {
             const urlParams = new URLSearchParams(window.location.search);
             const forcedProjectSecret = urlParams.get('project') || urlParams.get('p'); 
 
             if (forcedProjectSecret) {
                 window.pendingProjectSecret = forcedProjectSecret;
             }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkPendingProjectLogin();
 
             const loginScreen = document.getElementById('loginScreen');
             const appScreen = document.getElementById('appScreen');
@@ -1858,11 +1873,14 @@
 
         setTimeout(() => {
             const urlParams = new URLSearchParams(window.location.search);
-            const forcedProject = urlParams.get('project');
-            if (forcedProject) {
-                selectProject(forcedProject);
-                const radio = document.querySelector(`input[name="selectedProject"][value="${forcedProject}"]`);
-                if (radio) radio.checked = true;
+            const forcedProject = urlParams.get('project') || urlParams.get('p');
+            if (forcedProject && projectsData.length > 0) {
+                const matched = projectsData.find(p => p.secret === forcedProject || p.id === forcedProject);
+                if (matched) {
+                    selectProject(matched.id);
+                    const radio = document.querySelector(`input[name="selectedProject"][value="${matched.id}"]`);
+                    if (radio) radio.checked = true;
+                }
             }
         }, 500);
 
