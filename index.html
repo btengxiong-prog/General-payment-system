@@ -185,9 +185,16 @@
                             <h2 class="text-2xl font-bold text-gray-800">ບັນທຶກຜົນຜະລິດໂຄງການ</h2>
                             <p id="currentActiveProjectOutput" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
                         </div>
-                        <div class="flex space-x-3">
+                        <div class="flex items-center space-x-3">
+                            <!-- ປຸ່ມດຣອບດາວເລືອກຈຳນວນຄັ້ງທີ່ຂາຍ -->
+                            <div class="flex items-center space-x-2 text-sm">
+                                <label class="font-medium text-gray-700">ຮອບຂາຍ:</label>
+                                <select id="outputSaleRoundFilter" onchange="renderOutputs()" class="border border-gray-300 rounded-lg p-2 bg-white focus:ring focus:ring-blue-300 font-semibold text-blue-600">
+                                    <option value="all">ລວມທັງໝົດ</option>
+                                </select>
+                            </div>
                             <button id="deleteOutputBtn" onclick="deleteSelectedOutputs()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
-                            <button id="addOutputBtn" onclick="openOutputModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມຜົນຜະລິດ</button>
+                            <button id="addOutputBtn" onclick="openOutputModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເเพີ່ມຜົນຜະລິດ</button>
                         </div>
                     </div>
                 </div>
@@ -1014,24 +1021,76 @@
             }
         });
 
+        function updateOutputSaleRoundDropdown(filteredOutputs) {
+            const selectEl = document.getElementById('outputSaleRoundFilter');
+            if (!selectEl) return;
+            
+            // ບັນທຶກຄ່າທີ່ເຄື່ອນໄຫວ/ເລືອກໄວ້ປັດຈຸບັນ
+            const currentSelected = selectEl.value;
+            
+            // ຊອກຫາຈຳນວນຄັ້ງທີ່ຂາຍສູງສຸດຈາກໝາຍເຫດที่มีคำว่า "ຂາຍຄັ້ງທີ່"
+            let maxRound = 0;
+            filteredOutputs.forEach(o => {
+                if (o.note && o.note.includes('ຂາຍຄັ້ງທີ່')) {
+                    let match = o.note.match(/ຂາຍຄັ້ງທີ່\s*(\d+)/);
+                    if (match && match[1]) {
+                        let r = parseInt(match[1]);
+                        if (r > maxRound) maxRound = r;
+                    }
+                }
+            });
+
+            // ສ້າງຕົວເລືອກຄືນໃໝ່
+            let optionsHtml = `<option value="all">ລວມທັງໝົດ</option>`;
+            for (let i = 1; i <= maxRound; i++) {
+                optionsHtml += `<option value="${i}">ຂາຍຄັ້ງທີ່ ${i}</option>`;
+            }
+            selectEl.innerHTML = optionsHtml;
+
+            // ຮັກສາຄ່າທີ່ເຄື່ອນໄຫວໄວ້ (ຖ້າຄ່າຍັງມີຢູ່)
+            if (currentSelected && [...selectEl.options].some(opt => opt.value === currentSelected)) {
+                selectEl.value = currentSelected;
+            } else {
+                selectEl.value = "all";
+            }
+        }
+
         function renderOutputs() {
             const tbody = document.getElementById('outputTableBody');
             if(!tbody) return;
             tbody.innerHTML = "";
             let filteredOutputs = selectedProjectId ? outputsData.filter(out => out.projectId === selectedProjectId) : [];
+            
+            // ອັບເດດລາຍການໃນດຣອບດາວຕາມຂໍ້ມູນໂຄງການ
+            updateOutputSaleRoundDropdown(filteredOutputs);
+
+            // ກັອງຂໍ້ມູນຕາມທີ່ເລືອກໃນດຣອບດາວ (ຮອບຂາຍ)
+            const selectedRoundFilter = document.getElementById('outputSaleRoundFilter').value;
+            if (selectedRoundFilter !== "all") {
+                filteredOutputs = filteredOutputs.filter(o => {
+                    if (!o.note) return false;
+                    let match = o.note.match(/ຂາຍຄັ້ງທີ່\s*(\d+)/);
+                    return match && match[1] === selectedRoundFilter;
+                });
+            }
+
             filteredOutputs.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
             const isAdmin = currentUser && currentUser.role === 'ADMIN';
             const colspan = isAdmin ? 8 : 7;
 
             if (filteredOutputs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">ຍັງບໍ່ມີຂໍ້ມູນຜົນຜະລິດໃນໂຄງການນີ້</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">ຍັງບໍ່ມີຂໍ້ມູນຜົນຜະລິດໃນເງື່ອນໄຂນີ້</td></tr>`;
                 return;
             }
 
+            let totalQtySum = 0;
             filteredOutputs.forEach((out, index) => {
+                let numericQty = Number(out.qty.toString().replace(/,/g, '')) || 0;
+                totalQtySum += numericQty;
+
                 const formattedDate = formatDateToDDMMYYYY(out.date);
-                const formattedQty = formatNumber(out.qty); // จัดฟอร์แมตเป็น #,##0 อัตโนมัติ
+                const formattedQty = formatNumber(out.qty); 
                 let receiptHtml = out.receipt ? `<img src="${out.receipt}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${out.receipt}')" title="ຫຼັກຖານ">` : `-`;
                 const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="output-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${out.id}"></td>` : '';
 
@@ -1049,6 +1108,16 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            // ເພີ່ມແຖວສະຫຼຸບລວມຈຳນວນທາງລຸ່ມຕາຕະລາງ
+            const summaryTr = document.createElement('tr');
+            summaryTr.className = "bg-gray-50 font-bold text-gray-800";
+            summaryTr.innerHTML = `
+                <td colspan="3" class="p-3 border text-right">ລວມຈຳນວນທັງໝົດ (ຕາມການກັອງ):</td>
+                <td class="p-3 border text-center text-blue-600 text-base">${formatNumber(totalQtySum)}</td>
+                <td colspan="${isAdmin ? 4 : 3}" class="p-3 border"></td>
+            `;
+            tbody.appendChild(summaryTr);
         }
 
         function toggleSelectAllOutput(masterCheckbox) {
