@@ -937,14 +937,18 @@
             let currentInputQty = Number(document.getElementById('outputQty').value.replace(/,/g, '')) || 0;
             let filtered = outputsData.filter(o => o.projectId === selectedProjectId);
             
-            // ກອງເອົາສະເພາະລາຍການທີ່ "ຍັງບໍ່ທັນມີ" ໝາຍເຫດຂາຍ (ຍັງບໍ່ຖືກຂາຍອອກ)
+            // เรียงลำดับจากเก่าไปใหม่ เพื่อให้มองเห็นลำดับเวลาที่ถูกต้อง
+            filtered.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+
+            // ค้นหารายการที่ยังไม่เคยขาย (ยังไม่มีคำว่า "ຂາຍຄັ້ງທີ່" ในหมายเหตุ)
+            // รวมถึงตัวที่กำลังกรอกอยู่ปัจจุบันด้วย
             let unSoldItems = filtered.filter(o => !o.note || !o.note.includes('ຂາຍຄັ້ງທີ່'));
             let totalUnsoldWeight = unSoldItems.reduce((sum, item) => sum + (Number(item.qty.toString().replace(/,/g, '')) || 0), 0);
             
-            // ລວມກັບຈຳນວນທີ່ກຳລັງປ້ອນໃນຟອມປັດຈຸບັນ
+            // ถ้ารายการปัจจุบันยังไม่ได้อยู่ในระบบ ให้บวกเข้าไปด้วย
             let grandTotalWeight = totalUnsoldWeight + currentInputQty;
 
-            // ຊອກຫາວ່າປັດຈຸບັນມີການຂາຍຄັ້ງທີ່ເທົ່າໃດແລ້ວ ເພື່ອບວກຕໍ່ເປັນຄັ້ງถັດໄປ
+            // หาครั้งที่ขายล่าสุด
             let maxSaleRound = 0;
             filtered.forEach(o => {
                 if (o.note && o.note.includes('ຂາຍຄັ້ງທີ່')) {
@@ -957,7 +961,7 @@
             });
             let nextRound = maxSaleRound + 1;
 
-            currentSuggestedNote = `ຂາຍຄັ້ງທີ່ ${nextRound} (${grandTotalWeight} ກຣາມ)`;
+            currentSuggestedNote = `ຂາຍຄັ້ງທີ່ ${nextRound} (${grandTotalWeight.toLocaleString('en-US')} ກຣາມ)`;
             document.getElementById('suggestNoteBtn').textContent = `✨ ໃຊ້ຄຳແນະນຳ: ${currentSuggestedNote}`;
         }
 
@@ -1021,7 +1025,7 @@
 
             filteredOutputs.forEach((out, index) => {
                 const formattedDate = formatDateToDDMMYYYY(out.date);
-                const formattedQty = formatNumber(out.qty);
+                const formattedQty = formatNumber(out.qty); // จัดฟอร์แมตเป็น #,##0 อัตโนมัติ
                 let receiptHtml = out.receipt ? `<img src="${out.receipt}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${out.receipt}')" title="ຫຼັກຖານ">` : `-`;
                 const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="output-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${out.id}"></td>` : '';
 
