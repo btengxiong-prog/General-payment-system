@@ -1163,52 +1163,107 @@
             });
         }
 
-        // --- ລາຍຮັບ (Incomes) ---
         function openIncomeModal() {
-            if (!selectedProjectId) { showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນເພີ່ມລາຍຮັບ!", "ແຈ້ງເຕືອນ"); return; }
+            if (!selectedProjectId) { 
+                showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນເພີ່ມລາຍຮັບ!", "ແຈ້ງເຕືອນ"); 
+                return; 
+            }
             document.getElementById('incomeForm').reset();
             
-            // ດຶງຂໍ້ມູນຜົນຜະລິດທັງໝົດຂອງໂຄງການນີ້ມານຳໃຊ້ເລີຍ
-            autofillAllOutputs();
+            // ໂຫຼດຕົວເລືອກຮອບຂາຍເຂົ້າໃນດຣອບດາວ
+            const selectEl = document.getElementById('incomeAutoSelectRound');
+            if (selectEl) {
+                let projOutputs = outputsData.filter(o => o.projectId === selectedProjectId);
+                let maxRound = 0;
+                projOutputs.forEach(o => {
+                    if (o.note && o.note.includes('ຂາຍຄັ້ງທີ່')) {
+                        let match = o.note.match(/ຂາຍຄັ້ງທີ່\s*(\d+)/);
+                        if (match && match[1]) {
+                            let r = parseInt(match[1]);
+                            if (r > maxRound) maxRound = r;
+                        }
+                    }
+                });
+
+                let optionsHtml = `<option value="">-- ເລືອກເພື່ອດຶງຂໍ້ມູນ --</option>`;
+                optionsHtml += `<option value="all">ລວມທັງໝົດ</option>`; // ເພີ່ມປຸ່ມເລືອກລວມທັງໝົດ
+                for (let i = 1; i <= maxRound; i++) {
+                    optionsHtml += `<option value="${i}">ຂາຍຄັ້ງທີ່ ${i}</option>`;
+                }
+                selectEl.innerHTML = optionsHtml;
+            }
 
             document.getElementById('incomeModal').classList.remove('hidden');
         }
 
-        function autofillAllOutputs() {
+        function autofillFromOutputs(roundVal) {
+            if (!roundVal) {
+                document.getElementById('incomeDate').value = '';
+                document.getElementById('incomeDesc').value = '';
+                document.getElementById('incomeQty').value = '0';
+                document.getElementById('incomeActualQty').value = '0';
+                document.getElementById('incomeBaht').value = '0';
+                document.getElementById('incomeNote').value = '';
+                calculateIncomeTotal();
+                return;
+            }
+
             let projOutputs = outputsData.filter(o => o.projectId === selectedProjectId);
             if (projOutputs.length === 0) return;
 
-            // 1. ດຶງວັນທີຈາກລາຍການທຳອິດ
-            if (projOutputs[0].date) {
-                document.getElementById('incomeDate').value = projOutputs[0].date;
+            let totalQty = 0;
+            let dateVal = '';
+            let descVal = '';
+            let noteVal = '';
+
+            if (roundVal === 'all') {
+                // ກໍລະນີ: ລວມທັງໝົດ
+                projOutputs.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+                dateVal = projOutputs[0].date || '';
+                descVal = 'ລາຍຮັບຂາຍຜົນຜະລິດລວມທັງໝົດ';
+                noteVal = 'ລວມທັງໝົດ';
+                
+                // ບວກເອົາຈຳນວນທັງໝົດຈາກຄໍລຳ "ຈຳນວນ" (qty) ທຸກແຖວລວມກັນ
+                projOutputs.forEach(o => {
+                    totalQty += Number(o.qty.toString().replace(/,/g, '')) || 0;
+                });
+            } else {
+                // ກໍລະນີ: ເລືອກ ຂາຍຄັ້ງທີ່ X (ເຊັ່ນ: ຂາຍຄັ້ງທີ່ 1, ຂາຍຄັ້ງທີ່ 2)
+                let targetOutputs = projOutputs.filter(o => o.note && o.note.includes('ຂາຍຄັ້ງທີ່ ' + roundVal));
+
+                if (targetOutputs.length === 0) return;
+
+                // ດຶງວັນທີ ແລະ ເນື້ອໃນ ຈາກແຖວທີ່ໝາຍເຫດນັ້ນຢູ່
+                dateVal = targetOutputs[0].date || '';
+                descVal = `ລາຍຮັບຂາຍຜົນຜະລິດ - ຂາຍຄັ້ງທີ່ ${roundVal}`;
+                noteVal = `ຂາຍຄັ້ງທີ່ ${roundVal}`;
+
+                // ຄົ້ນຫາຕົວເລກກຣາມຈາກຊ່ອງໝາຍເຫດ (ຕົວຢ່າງຊອກຫາ "1,500 ກຣາມ" ຫຼື "520 ກຣາມ")
+                let noteText = targetOutputs[0].note || '';
+                let weightMatch = noteText.match(/([\d,]+)\s*ກຣາມ/);
+                
+                if (weightMatch && weightMatch[1]) {
+                    // ຖ້າພົບຕົວເລກກຣາມໃນໝາຍເຫດ ໃຫ້ເອົາມາໃຊ້ເລີຍ
+                    totalQty = Number(weightMatch[1].replace(/,/g, ''));
+                } else {
+                    // ຖ້າບໍ່ພົບ ໃຫ້ເອົາຕົວເລກຈາກຄໍລຳຈຳນວນຂອງແຖວນັ້ນມາແທນ
+                    totalQty = Number(targetOutputs[0].qty.toString().replace(/,/g, '')) || 0;
+                }
             }
 
-            // 2. ດຶງເນື້ອໃນລວມ
-            document.getElementById('incomeDesc').value = `ລາຍຮັບຂາຍຜົນຜະລິດລວມທັງໝົດ`;
-
-            // 3. ດຶງ ແລະ ລວມນ້ຳໜັກ (ກຣາມ) ທັງໝົດຈາກໝາຍເຫດ ຫຼື ຈຳນວນ
-            let totalQty = 0;
-            projOutputs.forEach(o => {
-                if (o.note) {
-                    let matchWeight = o.note.match(/\(([\d,]+)\s*ກຣາມ\)/);
-                    if (matchWeight && matchWeight[1]) {
-                        totalQty += Number(matchWeight[1].replace(/,/g, '')) || 0;
-                    } else {
-                        totalQty += Number(o.qty.toString().replace(/,/g, '')) || 0;
-                    }
-                } else {
-                    totalQty += Number(o.qty.toString().replace(/,/g, '')) || 0;
-                }
-            });
-
+            // --- ຕື່ມຂໍ້ມູນລົງໃນຊ່ອງຕ່າງໆອັດຕະໂນມັດ ---
+            document.getElementById('incomeDate').value = dateVal;
+            document.getElementById('incomeDesc').value = descVal;
+            
             document.getElementById('incomeQty').value = totalQty > 0 ? totalQty.toLocaleString('en-US') : '0';
             document.getElementById('incomeActualQty').value = totalQty > 0 ? totalQty.toLocaleString('en-US') : '0';
 
-            // ຄິດໄລ່ຈຳນວນບາດ (ບາດຄຳ): 1 ບາດ = 15.244 ກຣາມ
+            // ຄິດໄລ່ຈຳນວນບາດຄຳ (1 ບາດ = 15.244 ກຣາມ)
             let bahtVal = totalQty > 0 ? (totalQty / 15.244).toFixed(2) : '0';
             document.getElementById('incomeBaht').value = bahtVal;
-
-            document.getElementById('incomeNote').value = `ລວມຜົນຜະລິດທັງໝົດ`;
+            
+            document.getElementById('incomeNote').value = noteVal;
+            
             calculateIncomeTotal();
         }
 
