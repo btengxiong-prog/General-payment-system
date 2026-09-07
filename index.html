@@ -1192,9 +1192,20 @@
         }
 
         function autofillFromOutputs(roundVal) {
-            if (!roundVal) return;
             let projOutputs = outputsData.filter(o => o.projectId === selectedProjectId);
             
+            if (!roundVal) {
+                document.getElementById('incomeDate').value = '';
+                document.getElementById('incomeDesc').value = '';
+                document.getElementById('incomeQty').value = '0';
+                document.getElementById('incomeActualQty').value = '0';
+                document.getElementById('incomeBaht').value = '0';
+                document.getElementById('incomeNote').value = '';
+                calculateIncomeTotal();
+                return;
+            }
+
+            // ກັອງເອົາສະເພາະຮອບຂາຍທີ່ເລືອກ
             let targetOutputs = projOutputs.filter(o => {
                 if (!o.note) return false;
                 let match = o.note.match(/ຂາຍຄັ້ງທີ່\s*(\d+)/);
@@ -1203,26 +1214,27 @@
 
             if (targetOutputs.length === 0) return;
 
-            // 1. ກ່ອງທີ່ 1: ວັນ/ເດືອນ/ປີ ແລະ ເນື້ອໃນ (ດຶງຈາກຜົນຜະລິດ)
+            // 1. ດຶງວັນທີຈາກລາຍການທຳອິດໃນຮອບນັ້ນ
             if (targetOutputs[0].date) {
                 document.getElementById('incomeDate').value = targetOutputs[0].date;
             }
+
+            // 2. ດຶງເນື້ອໃນ
             let descList = targetOutputs.map(o => o.desc).join(', ');
             document.getElementById('incomeDesc').value = `ລາຍຮັບຂາຍຜົນຜະລິດ (${descList}) - ຂາຍຄັ້ງທີ່ ${roundVal}`;
 
-            // 2. ກ່ອງທີ່ 2: ຈ/ນ (ກຣາມ) (ດຶງຈາກຕົວເລກໃນໝາຍເຫດ ຫຼື ລວມນ້ຳໜັກ)
-            let totalQty = targetOutputs.reduce((sum, o) => sum + (Number(o.qty.toString().replace(/,/g, '')) || 0), 0);
-            
-            // ພະຍາຍາມດຶງຕົວເລກກຣາມຈາກວົງເລັບໃນໝາຍເຫດຂອງຜົນຜະລິດ (ຖ້າມີ)
-            for (let o of targetOutputs) {
+            // 3. ດຶງຕົວເລກນ້ຳໜັກຈາກ "ໝາຍເຫດ" ຕາມທີ່ສະແດງໃນຮູບ 1
+            let totalQty = 0;
+            targetOutputs.forEach(o => {
                 if (o.note) {
                     let matchWeight = o.note.match(/\(([\d,]+)\s*ກຣາມ\)/);
                     if (matchWeight && matchWeight[1]) {
-                        totalQty = Number(matchWeight[1].replace(/,/g, '')) || totalQty;
-                        break;
+                        totalQty += Number(matchWeight[1].replace(/,/g, '')) || 0;
+                    } else {
+                        totalQty += Number(o.qty.toString().replace(/,/g, '')) || 0;
                     }
                 }
-            }
+            });
 
             document.getElementById('incomeQty').value = totalQty > 0 ? totalQty.toLocaleString('en-US') : '0';
             document.getElementById('incomeActualQty').value = totalQty > 0 ? totalQty.toLocaleString('en-US') : '0';
