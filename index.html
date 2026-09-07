@@ -514,6 +514,14 @@
                 <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
                     <h3 class="text-xl font-bold text-blue-600 mb-4">ເພີ່ມລາຍຮັບໃໝ່</h3>
                     <form id="incomeForm" class="space-y-4">
+                        <!-- ເລືອກດຶງຂໍ້ມູນຈາກຜົນຜະລິດ -->
+                        <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                            <label class="block text-blue-800 font-semibold mb-1 text-sm">✨ ดຶງຂໍ້ມູນຈາກຜົນຜະລິດ (ຕາມຮອບຂາຍ):</label>
+                            <select id="incomeAutoSelectRound" onchange="autofillFromOutputs(this.value)" class="w-full border rounded-lg p-2 bg-white focus:ring focus:ring-blue-300 text-sm">
+                                <option value="">-- เลือกຮອບຂາຍຜົນຜະລິດเพื่อดຶງຂໍ້ມູນ --</option>
+                            </select>
+                        </div>
+
                         <div>
                             <label class="block text-gray-700 font-medium mb-1">ວັນ/ເດືອນ/ປີ</label>
                             <input type="date" id="incomeDate" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
@@ -524,21 +532,21 @@
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-gray-700 font-medium mb-1">ຈ/ນ (ກຣາມ)</label>
-                                <input type="text" id="incomeQty" oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="0">
+                                <label class="block text-gray-700 font-medium mb-1">ຈ/ນ (ກຣາມ) [ດຶງອັດຕະໂນມັດ]</label>
+                                <input type="text" id="incomeQty" readonly class="w-full border rounded-lg p-2 bg-gray-100 text-gray-600 font-semibold" placeholder="0">
                             </div>
                             <div>
-                                <label class="block text-gray-700 font-medium mb-1">ຈ/ນ ຕົວຈິງ (ກຣາມ)</label>
+                                <label class="block text-gray-700 font-medium mb-1">ຈ/ນ ຕົວຈິງ (ກຣາມ) [ປ້ອນເອງ]</label>
                                 <input type="text" id="incomeActualQty" oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="0">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-gray-700 font-medium mb-1">ຈ/ນ ບາດ</label>
-                                <input type="text" id="incomeBaht" oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="0">
+                                <label class="block text-gray-700 font-medium mb-1">ຈ/ນ ບາດ (ບາດຄຳ)</label>
+                                <input type="text" id="incomeBaht" readonly class="w-full border rounded-lg p-2 bg-gray-100 text-gray-600 font-semibold" placeholder="0">
                             </div>
                             <div>
-                                <label class="block text-gray-700 font-medium mb-1">ລາຄາ / ບາດ</label>
+                                <label class="block text-gray-700 font-medium mb-1">ລາຄາ / ບາດ [ປ້ອນເອງ]</label>
                                 <input type="text" id="incomePricePerBaht" oninput="formatCurrencyInput(this); calculateIncomeTotal();" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="0">
                             </div>
                         </div>
@@ -1174,7 +1182,70 @@
         // --- ລາຍຮັບ (Incomes) ---
         function openIncomeModal() {
             if (!selectedProjectId) { showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນເພີ່ມລາຍຮັບ!", "ແຈ້ງເຕືອນ"); return; }
+            document.getElementById('incomeForm').reset();
+            
+            // เติມตัวเลือกในดรอปดาวน์ดึงข้อมูลจากผลผลิตตามโปรเจกต์ปัจจุบัน
+            const selectEl = document.getElementById('incomeAutoSelectRound');
+            let projOutputs = outputsData.filter(o => o.projectId === selectedProjectId);
+            
+            let maxRound = 0;
+            projOutputs.forEach(o => {
+                if (o.note && o.note.includes('ຂາຍຄັ້ງທີ່')) {
+                    let match = o.note.match(/ຂາຍຄັ້ງທີ່\s*(\d+)/);
+                    if (match && match[1]) {
+                        let r = parseInt(match[1]);
+                        if (r > maxRound) maxRound = r;
+                    }
+                }
+            });
+
+            let optionsHtml = `<option value="">-- ເລືອກຮອບຂາຍຜົນຜະລິດເພື່ອດຶງຂໍ້ມູນ --</option>`;
+            for (let i = 1; i <= maxRound; i++) {
+                optionsHtml += `<option value="${i}">ຂາຍຄັ້ງທີ່ ${i}</option>`;
+            }
+            selectEl.innerHTML = optionsHtml;
+
             document.getElementById('incomeModal').classList.remove('hidden');
+        }
+
+        function autofillFromOutputs(roundVal) {
+            if (!roundVal) return;
+            let projOutputs = outputsData.filter(o => o.projectId === selectedProjectId);
+            
+            // กรองเอาเฉพาะข้อมูลผลผลิตในรอบขายที่เลือก
+            let targetOutputs = projOutputs.filter(o => {
+                if (!o.note) return false;
+                let match = o.note.match(/ຂາຍຄັ້ງທີ່\s*(\d+)/);
+                return match && match[1] === roundVal;
+            });
+
+            if (targetOutputs.length === 0) return;
+
+            // 1. ดึงวันที่จากรายการแรกสุดในรอบนั้นมาใส่
+            if (targetOutputs[0].date) {
+                document.getElementById('incomeDate').value = targetOutputs[0].date;
+            }
+
+            // 2. ดึงเนื้อหา (ชื่อผลผลิตรวมกัน หรือ ระบุรอบขาย) มาใส่ช่องเนื้อหา
+            let descList = targetOutputs.map(o => o.desc).join(', ');
+            document.getElementById('incomeDesc').value = `າຍຮັບຂາຍຜົນຜະລິດ (${descList}) - ຂາຍຄັ້ງທີ່ ${roundVal}`;
+
+            // 3. รวมน้ำหนัก (กราม) จากช่อง qty ของผลผลิตในรอบนั้นมาใส่ก่องที่ 2
+            let totalQty = targetOutputs.reduce((sum, o) => sum + (Number(o.qty.toString().replace(/,/g, '')) || 0), 0);
+            document.getElementById('incomeQty').value = totalQty > 0 ? totalQty.toLocaleString('en-US') : '0';
+
+            // กำหนดค่าเริ่มต้นช่องจำนวนจริงให้เท่ากันก่อน (ผู้ใช้สามารถแก้ไขเองในช่องที่ 3 ได้)
+            document.getElementById('incomeActualQty').value = totalQty > 0 ? totalQty.toLocaleString('en-US') : '0';
+
+            // คำนวณจำนวนบาททองคำให้อัตโนมัติ (1 บาททองคำ = 15.244 กรัม โดยประมาณ หรือปรับตามสูตรมาตรฐาน)
+            // สมมติฐาน: แปลงจากกรัมเป็นบาท (1 บาททองคำ = 15.244 กรัม) หรือใช้ค่าน้ำหนักจริงหาร
+            let bahtVal = totalQty > 0 ? (totalQty / 15.244).toFixed(2) : '0';
+            document.getElementById('incomeBaht').value = bahtVal;
+
+            // ใส่หมายเหตุอัตโนมัติ
+            document.getElementById('incomeNote').value = `ຂາຍຄັ້ງທີ່ ${roundVal}`;
+            
+            calculateIncomeTotal();
         }
 
         function closeIncomeModal() {
@@ -1221,8 +1292,21 @@
             let baht = Number(document.getElementById('incomeBaht').value.replace(/,/g, '')) || 0;
             let pricePerBaht = Number(document.getElementById('incomePricePerBaht').value.replace(/,/g, '')) || 0;
             let total = baht * pricePerBaht;
-            document.getElementById('incomeAmount').value = total > 0 ? total.toLocaleString('en-US') : '';
+            document.getElementById('incomeAmount').value = total > 0 ? Math.round(total).toLocaleString('en-US') : '';
         }
+
+        // อัปเดตการคำนวณเมื่อมีการแก้ไขช่องจำนวนจริง (ถ้าต้องการให้คำนวณบาทใหม่จากน้ำหนักจริง)
+        document.addEventListener('DOMContentLoaded', () => {
+            const actualQtyInput = document.getElementById('incomeActualQty');
+            if (actualQtyInput) {
+                actualQtyInput.addEventListener('input', function() {
+                    let actualVal = Number(this.value.replace(/,/g, '')) || 0;
+                    let bahtVal = actualVal > 0 ? (actualVal / 15.244).toFixed(2) : '0';
+                    document.getElementById('incomeBaht').value = bahtVal;
+                    calculateIncomeTotal();
+                });
+            }
+        });
 
         // ເພີ່ມ eventListener ໃຫ້ຄິດໄລ່ເງິນອັດຕະໂນມັດເມື່ອພິມ ຈ/ນ ບາດ
         document.addEventListener('DOMContentLoaded', () => {
