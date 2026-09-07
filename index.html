@@ -937,13 +937,14 @@
             let currentInputQty = Number(document.getElementById('outputQty').value.replace(/,/g, '')) || 0;
             let filtered = outputsData.filter(o => o.projectId === selectedProjectId);
             
-            // ຄິດໄລ່ນ້ຳໜັກລາຍການເກົ່າທີ່ຍັງບໍ່ທັນຂາຍ
+            // ກອງເອົາສະເພາະລາຍການທີ່ "ຍັງບໍ່ທັນມີ" ໝາຍເຫດຂາຍ (ຍັງບໍ່ຖືກຂາຍອອກ)
             let unSoldItems = filtered.filter(o => !o.note || !o.note.includes('ຂາຍຄັ້ງທີ່'));
             let totalUnsoldWeight = unSoldItems.reduce((sum, item) => sum + (Number(item.qty.toString().replace(/,/g, '')) || 0), 0);
             
             // ລວມກັບຈຳນວນທີ່ກຳລັງປ້ອນໃນຟອມປັດຈຸບັນ
             let grandTotalWeight = totalUnsoldWeight + currentInputQty;
 
+            // ຊອກຫາວ່າປັດຈຸບັນມີການຂາຍຄັ້ງທີ່ເທົ່າໃດແລ້ວ ເພື່ອບວກຕໍ່ເປັນຄັ້ງถັດໄປ
             let maxSaleRound = 0;
             filtered.forEach(o => {
                 if (o.note && o.note.includes('ຂາຍຄັ້ງທີ່')) {
