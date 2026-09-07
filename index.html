@@ -177,7 +177,7 @@
                 </div>
             </div>
 
-            <!-- TAB ຜົນຜະລິດ -->
+            <!-- TAB ຜົນຜະລິດ (ເພີ່ມປຸ່ມລຶບ ແລະ Checkbox ຖັນຂວາສຸດ) -->
             <div id="tab-outputs" class="tab-content hidden">
                 <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
                     <div class="flex justify-between items-center">
@@ -210,7 +210,7 @@
                 </div>
             </div>
 
-            <!-- TAB ລາຍຮັບ -->
+            <!-- TAB ລາຍຮັບ (ເພີ່ມປຸ່ມລຶບ ແລະ Checkbox ຖັນຂວາສຸດ) -->
             <div id="tab-incomes" class="tab-content hidden">
                 <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
                     <div class="flex justify-between items-center">
@@ -220,7 +220,7 @@
                         </div>
                         <div class="flex space-x-3">
                             <button id="deleteIncomeBtn" onclick="deleteSelectedIncomes()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
-                            <button id="addIncomeBtn" onclick="openIncomeModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">+ ເພີ່ມລາຍຮັບ</button>
+                            <button id="addIncomeBtn" onclick="openIncomeModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍຮັບ</button>
                         </div>
                     </div>
                 </div>
@@ -450,7 +450,7 @@
                 </div>
             </div>
 
-            <!-- Modal ເພີ່ມຜົນຜະລິດ (ອັບເດດໝາຍເຫດເປັນ Dropdown/Input ປະສົມ) -->
+            <!-- Modal ເພີ່ມຜົນຜະລິດ -->
             <div id="outputModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
                 <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
                     <h3 class="text-xl font-bold text-blue-600 mb-4">ເພີ່ມຜົນຜະລິດໃໝ່</h3>
@@ -492,6 +492,7 @@
                 </div>
             </div>
 
+            <!-- Modal ເພີ່ມລາຍຮັບ -->
             <div id="incomeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
                 <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
                     <h3 class="text-xl font-bold text-blue-600 mb-4">ເພີ່ມລາຍຮັບໃໝ່</h3>
@@ -859,6 +860,18 @@
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('appScreen').classList.remove('hidden');
                 document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name} (${currentUser.role})`;
+                
+                // ສະແດງປຸ່ມ Admin ຕ່າງໆ
+                if (currentUser.role === 'ADMIN') {
+                    ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addOutputBtn', 'deleteOutputBtn', 'addIncomeBtn', 'deleteIncomeBtn', 'addRefundBtn'].forEach(id => {
+                        const btn = document.getElementById(id);
+                        if (btn) btn.classList.remove('hidden');
+                    });
+                    document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
+                } else {
+                    document.querySelectorAll('.admin-col-th').forEach(el => el.classList.add('hidden'));
+                }
+
                 loadDataFromFirebase();
             } else {
                 showCustomAlert("ຊື່ຜູ້ໃຊ້ ຫຼື ລະຫັດຜ່ານ ບໍ່ຖືກຕ້ອງ!", "ຜິດພາດ");
@@ -907,20 +920,18 @@
             const projName = proj ? proj.name : 'ຍັງບໍ່ໄດ້ເລືອກ';
             document.querySelectorAll('[id^="currentActiveProject"]').forEach(el => el.textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`);
             renderOutputs();
+            renderIncomes();
         }
 
-        // --- ຜົນຜະລິດ (Outputs) ພ້ອມຟັງຊັນຄິດໄລ່ຍອດລວມ ແລະ ແນະນຳຄັ້ງຂາຍໂອໂຕ ---
+        // --- ຜົນຜະລິດ (Outputs) ---
         function openOutputModal() {
             if (!selectedProjectId) { showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນເພີ່ມຜົນຜະລິດ!", "ແຈ້ງເຕືອນ"); return; }
             document.getElementById('outputForm').reset();
             
-            // ວິເຄາະຫາຊ່ວງທີ່ຍັງບໍ່ທັນຂາຍເພື່ອຄິດໄລ່ນ້ຳໜັກລວມ ແລະ ຄັ້ງຂາຍຖັດໄປ
             let filtered = outputsData.filter(o => o.projectId === selectedProjectId);
-            // ກອງເອົາສະເພາະລາຍການທີ່ຍັງບໍ່ທັນຖືກຈັດເຂົ້າໃນການຂາຍຄັ້ງໃດໜຶ່ງ (ສົມມຸດລາຍການທີ່ບໍ່ມີຄຳວ່າ "ຂາຍຄັ້ງທີ່" ໃນໝາຍເຫດ)
             let unSoldItems = filtered.filter(o => !o.note || !o.note.includes('ຂາຍຄັ້ງທີ່'));
             let totalUnsoldWeight = unSoldItems.reduce((sum, item) => sum + (Number(item.qty.toString().replace(/,/g, '')) || 0), 0);
 
-            // ຊອກຫາວ່າປັດຈຸບັນມີການຂາຍຄັ້ງທີ່ເທົ່າໃດແລ້ວ
             let maxSaleRound = 0;
             filtered.forEach(o => {
                 if (o.note && o.note.includes('ຂາຍຄັ້ງທີ່')) {
@@ -933,15 +944,11 @@
             });
             let nextRound = maxSaleRound + 1;
 
-            // ຕັ້ງຄ່າ Dropdown ໝາຍເຫດ
             let selectEl = document.getElementById('outputNoteSelect');
             selectEl.innerHTML = `<option value="">-- ບໍ່ມີໝາຍເຫດ / ທຳມະດາ --</option>`;
-            
-            // ສ້າງຕົວເລືອກຂາຍຄັ້ງຖັດໄປ ພ້ອມວົງເລັບຈຳນວນນ້ຳໜັກລວມ
             let suggestedText = `ຂາຍຄັ້ງທີ່ ${nextRound} (${totalUnsoldWeight} ກຣາມ)`;
             selectEl.innerHTML += `<option value="${suggestedText}">${suggestedText}</option>`;
             
-            // ເພີ່ມທາງເລືອກຄັ້ງກ່ອນໆໄວ້ เผื่อກໍລະນີແກ້ໄຂ
             for(let i=1; i<=maxSaleRound; i++) {
                 selectEl.innerHTML += `<option value="ຂາຍຄັ້ງທີ່ ${i}">ຂາຍຄັ້ງທີ່ ${i}</option>`;
             }
@@ -1001,8 +1008,11 @@
             let filteredOutputs = selectedProjectId ? outputsData.filter(out => out.projectId === selectedProjectId) : [];
             filteredOutputs.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+            const colspan = isAdmin ? 8 : 7;
+
             if (filteredOutputs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-6 text-center text-gray-500">ຍັງບໍ່ມີຂໍ້ມູນຜົນຜະລິດໃນໂຄງການນີ້</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">ຍັງບໍ່ມີຂໍ້ມູນຜົນຜະລິດໃນໂຄງການນີ້</td></tr>`;
                 return;
             }
 
@@ -1010,6 +1020,7 @@
                 const formattedDate = formatDateToDDMMYYYY(out.date);
                 const formattedQty = formatNumber(out.qty);
                 let receiptHtml = out.receipt ? `<img src="${out.receipt}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${out.receipt}')" title="ຫຼັກຖານ">` : `-`;
+                const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="output-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${out.id}"></td>` : '';
 
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50";
@@ -1021,7 +1032,7 @@
                     <td class="p-3 border">${out.unit}</td>
                     <td class="p-3 border text-center">${receiptHtml}</td>
                     <td class="p-3 border">${out.note}</td>
-                    <td class="p-3 border text-center"><input type="checkbox" class="output-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${out.id}"></td>
+                    ${checkboxHtml}
                 `;
                 tbody.appendChild(tr);
             });
@@ -1032,8 +1043,10 @@
         }
 
         async function deleteSelectedOutputs() {
+            if (!currentUser || currentUser.role !== 'ADMIN') { showCustomAlert("ທ່ານບໍ່ມີສິດລຶບຂໍ້ມູນ!"); return; }
             const checkboxes = document.querySelectorAll('.output-checkbox:checked');
             if (checkboxes.length === 0) { showCustomAlert("ກະລຸນາເລືອກລາຍການທີ່ຕ້ອງການລຶບກ່ອນ!"); return; }
+            
             showCustomConfirm(`ທ່ານຕ້ອງການລຶບຂໍ້ມູນທີ່ເລືອກ ${checkboxes.length} ລາຍການແທ້ບໍ?`, async () => {
                 try {
                     for (const cb of checkboxes) {
@@ -1046,11 +1059,124 @@
             });
         }
 
+        // --- ລາຍຮັບ (Incomes) ---
+        function openIncomeModal() {
+            if (!selectedProjectId) { showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນເພີ່ມລາຍຮັບ!", "ແຈ້ງເຕືອນ"); return; }
+            document.getElementById('incomeModal').classList.remove('hidden');
+        }
+
+        function closeIncomeModal() {
+            document.getElementById('incomeModal').classList.add('hidden');
+            document.getElementById('incomeForm').reset();
+        }
+
+        document.getElementById('incomeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('incomeReceipt');
+            showCustomAlert("ກຳລັງອັບໂຫຼດບິນ ແລະ ບັນທຶກລາຍຮັບ ກະລຸນາລໍຖ້າ...", "ກຳລັງດຳເນີນການ");
+
+            const methodVal = document.getElementById('incomeMethod').value;
+            const dateVal = document.getElementById('incomeDate').value;
+            const descVal = document.getElementById('incomeDesc').value;
+            const rawAmount = document.getElementById('incomeAmount').value.replace(/,/g, '');
+            const noteVal = document.getElementById('incomeNote').value || '-';
+
+            try {
+                let receiptUrl = '';
+                if (fileInput.files && fileInput.files[0]) {
+                    let optFile = await compressImage(fileInput.files[0], 1200, 0.7);
+                    receiptUrl = await uploadToCloudinary(optFile);
+                }
+
+                await db.collection("incomes").add({
+                    projectId: selectedProjectId,
+                    date: dateVal,
+                    desc: descVal,
+                    amount: rawAmount,
+                    method: methodVal,
+                    receipt: receiptUrl || '',
+                    note: noteVal
+                });
+
+                closeIncomeModal();
+                showCustomAlert("ເພີ່ມລາຍຮັບສຳເລັດ!");
+            } catch (error) {
+                showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
+            }
+        });
+
+        function renderIncomes() {
+            const tbody = document.getElementById('incomeTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = "";
+            let filteredIncomes = selectedProjectId ? incomesData.filter(inc => inc.projectId === selectedProjectId) : [];
+            filteredIncomes.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+            const colspan = isAdmin ? 7 : 6;
+
+            if (filteredIncomes.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">ຍັງບໍ່ມີຂໍ້ມູນລາຍຮັບໃນໂຄງການນີ້</td></tr>`;
+                return;
+            }
+
+            let totalAmount = 0;
+            filteredIncomes.forEach((inc, index) => {
+                totalAmount += Number(inc.amount || 0);
+                const formattedDate = formatDateToDDMMYYYY(inc.date);
+                const formattedAmount = formatNumber(inc.amount);
+                let receiptHtml = inc.receipt ? `<img src="${inc.receipt}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${inc.receipt}')" title="ຫຼັກຖານ">` : `-`;
+                const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="income-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${inc.id}"></td>` : '';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-3 border text-center">${index + 1}</td>
+                    <td class="p-3 border text-center">${formattedDate}</td>
+                    <td class="p-3 border">${inc.desc}</td>
+                    <td class="p-3 border text-right pr-4 text-gray-700 font-semibold">${formattedAmount}</td>
+                    <td class="p-3 border text-center">${receiptHtml}</td>
+                    <td class="p-3 border">${inc.note}</td>
+                    ${checkboxHtml}
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const totalTr = document.createElement('tr');
+            totalTr.className = "bg-gray-50 font-bold text-gray-800";
+            totalTr.innerHTML = `
+                <td colspan="3" class="p-3 border text-right">ລວມລາຍຮັບທັງໝົດ</td>
+                <td class="p-3 border text-right pr-4 text-green-600 text-base">${formatNumber(totalAmount)}</td>
+                <td colspan="${isAdmin ? 3 : 2}" class="p-3 border"></td>
+            `;
+            tbody.appendChild(totalTr);
+        }
+
+        function toggleSelectAllIncome(masterCheckbox) {
+            document.querySelectorAll('.income-checkbox').forEach(cb => cb.checked = masterCheckbox.checked);
+        }
+
+        async function deleteSelectedIncomes() {
+            if (!currentUser || currentUser.role !== 'ADMIN') { showCustomAlert("ທ່ານບໍ່ມີສິດລຶບຂໍ້ມູນ!"); return; }
+            const checkboxes = document.querySelectorAll('.income-checkbox:checked');
+            if (checkboxes.length === 0) { showCustomAlert("ກະລຸນາເລືອກລາຍການທີ່ຕ້ອງການລຶບກ່ອນ!"); return; }
+
+            showCustomConfirm(`ທ່ານຕ້ອງການລຶບຂໍ້ມູນທີ່ເລືອກ ${checkboxes.length} ລາຍການແທ້ບໍ?`, async () => {
+                try {
+                    for (const cb of checkboxes) {
+                        await db.collection("incomes").doc(cb.getAttribute('data-id')).delete();
+                    }
+                    showCustomAlert("ລຶບຂໍ້ມູນສຳເລັດ!");
+                } catch (error) {
+                    showCustomAlert("ລຶບບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
+                }
+            });
+        }
+
         // Placeholder functions for app consistency
         function renderInvestors() {}
         function renderInvestments() {}
         function renderExpenses() {}
-        function renderIncomes() {}
         function renderInvestSummary() {}
         function renderRefunds() {}
         function updateActivityAlertAndTable() {}
