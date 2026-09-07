@@ -937,23 +937,24 @@
             let currentInputQty = Number(document.getElementById('outputQty').value.replace(/,/g, '')) || 0;
             let filtered = outputsData.filter(o => o.projectId === selectedProjectId);
             
-            // เรียงลำดับจากใหม่ไปเก่า (ตามตารางแสดงผล) เพื่อเช็คจากบนลงล่าง
+            // เรียงลำดับจากใหม่ไปเก่า (ตามตารางแสดงผล)
             filtered.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
-            // ค้นหาเฉพาะรายการตั้งแต่แถวบนสุด ลงมาจนเจอแถวแรกที่มีคำว่า "ຂາຍຄັ້ງທີ່"
+            // ຕັດເອົາສະເພາະລາຍການຕັ້ງແຕ່ເທິງສຸດ ລົງມາຈົນກວ່າຈະພົບລາຍການທີ່ມີຄຳວ່າ "ຂາຍຄັ້ງທີ່"
+            // (ຖ້າພົບແຖວທີ່ມີຂາຍແລ້ວ ຈະບໍ່ເອົານັບລวม ແລະ ຢຸດທັນທີ ເພື່ອບໍ່ໃຫ້ໄປຕິດພັນກັບຮອບຂາຍເກົ່າ)
             let relevantItems = [];
             for (let i = 0; i < filtered.length; i++) {
-                relevantItems.push(filtered[i]);
                 if (filtered[i].note && filtered[i].note.includes('ຂາຍຄັ້ງທີ່')) {
-                    break; // เจอจุดสิ้นสุดของรอบการขายที่แล้ว หยุดทันที!
+                    break; // ພົບແຖວທີ່ຂາຍແລ້ວ ໃຫ້ຢຸດທັນທີ
                 }
+                relevantItems.push(filtered[i]);
             }
 
-            // รวมน้ำหนักเฉพาะกลุ่มรายการที่ค้างขายรอบนี้
+            // ລວມນ້ຳໜັກສະເພາະລາຍການທີ່ຍັງຄ້າງຂາຍໃນຮອບປັດຈຸບັນ
             let totalWeight = relevantItems.reduce((sum, item) => sum + (Number(item.qty.toString().replace(/,/g, '')) || 0), 0);
             let grandTotalWeight = totalWeight + currentInputQty;
 
-            // หาครั้งที่ขายถัดไป
+            // ຊອກຫາວ່າປັດຈຸບັນມີການຂາຍຄັ້ງທີ່ເທົ່າໃດແລ້ວ ເພື່ອບວກຕໍ່ເປັນຄັ້ງถັດໄປ
             let maxSaleRound = 0;
             filtered.forEach(o => {
                 if (o.note && o.note.includes('ຂາຍຄັ້ງທີ່')) {
