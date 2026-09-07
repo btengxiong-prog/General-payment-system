@@ -1168,27 +1168,48 @@
             if (!selectedProjectId) { showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນເພີ່ມລາຍຮັບ!", "ແຈ້ງເຕືອນ"); return; }
             document.getElementById('incomeForm').reset();
             
-            const selectEl = document.getElementById('incomeAutoSelectRound');
+            // ດຶງຂໍ້ມູນຜົນຜະລິດທັງໝົດຂອງໂຄງການນີ້ມານຳໃຊ້ເລີຍ
+            autofillAllOutputs();
+
+            document.getElementById('incomeModal').classList.remove('hidden');
+        }
+
+        function autofillAllOutputs() {
             let projOutputs = outputsData.filter(o => o.projectId === selectedProjectId);
-            
-            let maxRound = 0;
+            if (projOutputs.length === 0) return;
+
+            // 1. ດຶງວັນທີຈາກລາຍການທຳອິດ
+            if (projOutputs[0].date) {
+                document.getElementById('incomeDate').value = projOutputs[0].date;
+            }
+
+            // 2. ດຶງເນື້ອໃນລວມ
+            document.getElementById('incomeDesc').value = `ລາຍຮັບຂາຍຜົນຜະລິດລວມທັງໝົດ`;
+
+            // 3. ດຶງ ແລະ ລວມນ້ຳໜັກ (ກຣາມ) ທັງໝົດຈາກໝາຍເຫດ ຫຼື ຈຳນວນ
+            let totalQty = 0;
             projOutputs.forEach(o => {
-                if (o.note && o.note.includes('ຂາຍຄັ້ງທີ່')) {
-                    let match = o.note.match(/ຂາຍຄັ້ງທີ່\s*(\d+)/);
-                    if (match && match[1]) {
-                        let r = parseInt(match[1]);
-                        if (r > maxRound) maxRound = r;
+                if (o.note) {
+                    let matchWeight = o.note.match(/\(([\d,]+)\s*ກຣາມ\)/);
+                    if (matchWeight && matchWeight[1]) {
+                        totalQty += Number(matchWeight[1].replace(/,/g, '')) || 0;
+                    } else {
+                        totalQty += Number(o.qty.toString().replace(/,/g, '')) || 0;
                     }
+                } else {
+                    totalQty += Number(o.qty.toString().replace(/,/g, '')) || 0;
                 }
             });
 
-            let optionsHtml = `<option value="">-- ເລືອກຮອບຂາຍຜົນຜະລິດເພື່ອດຶງຂໍ້ມູນ --</option>`;
-            for (let i = 1; i <= maxRound; i++) {
-                optionsHtml += `<option value="${i}">ຂາຍຄັ້ງທີ່ ${i}</option>`;
-            }
-            selectEl.innerHTML = optionsHtml;
+            document.getElementById('incomeQty').value = totalQty > 0 ? totalQty.toLocaleString('en-US') : '0';
+            document.getElementById('incomeActualQty').value = totalQty > 0 ? totalQty.toLocaleString('en-US') : '0';
 
-            document.getElementById('incomeModal').classList.remove('hidden');
+            // ຄິດໄລ່ຈຳນວນບາດ (ບາດຄຳ): 1 ບາດ = 15.244 ກຣາມ
+            let bahtVal = totalQty > 0 ? (totalQty / 15.244).toFixed(2) : '0';
+            document.getElementById('incomeBaht').value = bahtVal;
+
+            document.getElementById('incomeNote').value = `ລວມຜົນຜະລິດທັງໝົດ`;
+            calculateIncomeTotal();
         }
 
         function autofillFromOutputs(roundVal) {
