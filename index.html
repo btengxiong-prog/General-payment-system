@@ -48,6 +48,8 @@
                 <button onclick="switchTab('investments')" class="hover:text-blue-600 focus:text-blue-600">ຈ/ນ ເງິນລົງທຶນ</button>
                 <button onclick="switchTab('invest_new')" class="hover:text-blue-600 focus:text-blue-600">ການລົງທຶນ</button>
                 <button onclick="switchTab('expenses')" class="hover:text-blue-600 focus:text-blue-600">ລາຍຈ່າຍ</button>
+                <!-- +++ ເພີ່ມເມນູ "ຜົນຜະລິດ" ລະຫວ່າງ ລາຍຈ່າຍ ແລະ ລາຍຮັບ +++ -->
+                <button onclick="switchTab('outputs')" class="hover:text-blue-600 focus:text-blue-600">ຜົນຜະລິດ</button>
                 <!-- +++ ເພີ່ມເມນູ "ລາຍຮັບ" +++ -->
                 <button onclick="switchTab('incomes')" class="hover:text-blue-600 focus:text-blue-600">ລາຍຮັບ</button>
                 <button onclick="switchTab('refunds')" class="hover:text-blue-600 focus:text-blue-600">ເງິນທວນຄືນ</button>
@@ -198,7 +200,44 @@
                 </div>
             </div>
 
-        <!-- +++ ພາກສ່ວນໃໝ່: TAB ລາຍຮັບ +++ -->
+        <!-- +++ TAB ໃໝ່: ຜົນຜະລິດ +++ -->
+            <div id="tab-outputs" class="tab-content hidden">
+                <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">ບັນທຶກຜົນຜະລິດໂຄງການ</h2>
+                            <p id="currentActiveProjectOutput" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button id="deleteOutputBtn" onclick="deleteSelectedOutputs()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
+                            <button id="addOutputBtn" onclick="openOutputModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມຜົນຜະລິດ</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow overflow-auto max-h-[60vh]">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 z-20 bg-gray-200 shadow-sm">
+                            <tr class="text-gray-700 text-sm">
+                                <th class="p-3 border text-center align-middle">ລ/ດ</th>
+                                <th class="p-3 border align-middle">ວັນ/ເດືອນ/ປີ</th>
+                                <th class="p-3 border align-middle">รายการ / ຜົນຜະລິດ</th>
+                                <th class="p-3 border align-middle text-center">ຈຳນວນ</th>
+                                <th class="p-3 border align-middle">ຫົວໜ່ວຍ</th>
+                                <th class="p-3 border align-middle text-center">ຫຼັກຖານ / ຮູບພາບ</th>
+                                <th class="p-3 border align-middle">ໝາຍເຫດ</th>
+                                <th class="p-3 border text-center align-middle admin-col-th">
+                                    <input type="checkbox" id="selectAllOutput" onclick="toggleSelectAllOutput(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500">
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="outputTableBody" class="text-sm text-gray-700">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        <!-- TAB ລາຍຮັບ -->
             <div id="tab-incomes" class="tab-content hidden">
                 <div class="sticky top-16 z-30 bg-gray-100 py-4 mb-4">
                     <div class="flex justify-between items-center">
@@ -455,7 +494,46 @@
         </div>
     </div>
 
-    <!-- +++ ພາກສ່ວນໃໝ່: Modal ເພີ່ມລາຍຮັບ +++ -->
+    <!-- +++ Modal ເພີ່ມຜົນຜະລິດ +++ -->
+    <div id="outputModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-bold text-blue-600 mb-4">ເພີ່ມຜົນຜະລິດໃໝ່</h3>
+            <form id="outputForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ວັນ/ເດືອນ/ປີ</label>
+                    <input type="date" id="outputDate" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">รายการ / ຜົນຜະລິດ</label>
+                    <input type="text" id="outputDesc" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ປ້ອນຊື່ຜົນຜະລິດ">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">ຈຳນວນ</label>
+                        <input type="text" id="outputQty" required oninput="formatCurrencyInput(this)" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ຕົວຢ່າງ: 100">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-1">ຫົວໜ່ວຍ</label>
+                        <input type="text" id="outputUnit" required class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ຕົວຢ່າງ: ກິໂລ, ເກັດ, ໂຕ">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ຫຼັກຖານ / ຮູບພາບ (ອັບໂຫຼດຮູບ)</label>
+                    <input type="file" id="outputReceipt" accept="image/*" class="w-full border rounded-lg p-2 text-sm bg-white focus:ring focus:ring-blue-300">
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-1">ໝາຍເຫດ</label>
+                    <input type="text" id="outputNote" class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300" placeholder="ໝາຍເຫດເພີ່ມເຕີມ">
+                </div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeOutputModal()" class="bg-gray-300 px-4 py-2 rounded-lg hover:bg-gray-400">ຍົກເລີກ</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">ບັນທຶກ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal ເພີ່ມລາຍຮັບ -->
     <div id="incomeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 class="text-xl font-bold text-blue-600 mb-4">ເພີ່ມລາຍຮັບໃໝ່</h3>
@@ -643,7 +721,8 @@
         let investorsData = [];
         let investmentsData = [];
         let expensesData = [];
-        let incomesData = []; // +++ ຕົວແປສຳລັບລາຍຮັບ +++
+        let outputsData = []; // +++ ຕົວແປສຳລັບຜົນຜະລິດ +++
+        let incomesData = []; 
 
         function loadDataFromFirebase() {
             db.collection("projects").onSnapshot((snapshot) => {
@@ -695,7 +774,13 @@
                 updateActivityAlertAndTable();
             });
 
-            // +++ ດຶງຂໍ້ມູນລາຍຮັບ +++
+            // +++ ດຶງຂໍ້ມູນຜົນຜະລິດ +++
+            db.collection("outputs").onSnapshot((snapshot) => {
+                outputsData = [];
+                snapshot.forEach((doc) => { outputsData.push({ id: doc.id, ...doc.data() }); });
+                renderOutputs();
+            });
+
             db.collection("incomes").onSnapshot((snapshot) => {
                 incomesData = [];
                 snapshot.forEach((doc) => { incomesData.push({ id: doc.id, ...doc.data() }); });
@@ -856,8 +941,8 @@
                     document.getElementById('appScreen').classList.remove('hidden');
                     document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name} (ADMIN)`;
 
-                    // +++ ເພີ່ມປຸ່ມລາຍຮັບໃນສິດ Admin +++
-                    const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addIncomeBtn', 'deleteIncomeBtn', 'addRefundBtn'];
+                    // +++ ເພີ່ມປຸ່ມຜົນຜະລິດ ແລະ ລາຍຮັບ ໃນສິດ Admin +++
+                    const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addOutputBtn', 'deleteOutputBtn', 'addIncomeBtn', 'deleteIncomeBtn', 'addRefundBtn'];
                     adminBtns.forEach(btnId => { if(document.getElementById(btnId)) document.getElementById(btnId).classList.remove('hidden'); });
                     document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
                     
@@ -895,7 +980,7 @@
                         document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name}`;
 
                         setTimeout(() => {
-                            const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addIncomeBtn', 'deleteIncomeBtn', 'addRefundBtn'];
+                            const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addOutputBtn', 'deleteOutputBtn', 'addIncomeBtn', 'deleteIncomeBtn', 'addRefundBtn'];
                             adminBtns.forEach(btnId => {
                                 const btn = document.getElementById(btnId);
                                 if (btn) btn.classList.add('hidden');
@@ -988,6 +1073,7 @@
                         document.getElementById('currentActiveProjectInv').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
                         document.getElementById('currentActiveProjectInvest').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
                         document.getElementById('currentActiveProjectExpense').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
+                        if(document.getElementById('currentActiveProjectOutput')) document.getElementById('currentActiveProjectOutput').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
                         if(document.getElementById('currentActiveProjectIncome')) document.getElementById('currentActiveProjectIncome').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
                         if(document.getElementById('currentActiveProjectInvestNew')) document.getElementById('currentActiveProjectInvestNew').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
                         if(document.getElementById('currentActiveProjectRefund')) document.getElementById('currentActiveProjectRefund').textContent = `ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ`;
@@ -996,7 +1082,8 @@
                         renderInvestors();
                         renderInvestments();
                         renderExpenses();
-                        renderIncomes(); // +++
+                        renderOutputs(); // +++
+                        renderIncomes(); 
                         renderInvestSummary(); 
                         renderRefunds();
                         updateActivityAlertAndTable();
@@ -1058,6 +1145,7 @@
             document.getElementById('currentActiveProjectInv').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
             document.getElementById('currentActiveProjectInvest').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
             document.getElementById('currentActiveProjectExpense').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
+            if(document.getElementById('currentActiveProjectOutput')) document.getElementById('currentActiveProjectOutput').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
             if(document.getElementById('currentActiveProjectIncome')) document.getElementById('currentActiveProjectIncome').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
             if(document.getElementById('currentActiveProjectInvestNew')) document.getElementById('currentActiveProjectInvestNew').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
             if(document.getElementById('currentActiveProjectRefund')) document.getElementById('currentActiveProjectRefund').textContent = `ກຳລັງສະແດງໂຄງການ: ${projName}`;
@@ -1066,7 +1154,8 @@
             renderInvestors();
             renderInvestments();
             renderExpenses();
-            renderIncomes(); // +++
+            renderOutputs(); // +++
+            renderIncomes(); 
             renderInvestSummary(); 
             renderRefunds();
             updateActivityAlertAndTable();
@@ -1465,7 +1554,125 @@
             });
         }
 
-        // +++ ຟັງຊັນໃໝ່ສຳລັບ: ລາຍຮັບ (Incomes) +++
+        // +++ ຟັງຊັນສຳລັບ: ຜົນຜະລິດ (Outputs) +++
+        function openOutputModal() {
+            if (!selectedProjectId) { showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນເພີ່ມຜົນຜະລິດ!", "ແຈ້ງເຕືອນ"); return; }
+            document.getElementById('outputModal').classList.remove('hidden');
+        }
+
+        function closeOutputModal() {
+            document.getElementById('outputModal').classList.add('hidden');
+            document.getElementById('outputForm').reset();
+        }
+
+        document.getElementById('outputForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('outputReceipt');
+            showCustomAlert("ກຳລັງອັບໂຫຼດຮູບ ແລະ ບັນທຶກຜົນຜະລິດ ກະລຸນາລໍຖ້າ...", "ກຳລັງດຳເນີນການ");
+
+            const dateVal = document.getElementById('outputDate').value;
+            const descVal = document.getElementById('outputDesc').value;
+            const rawQty = document.getElementById('outputQty').value.replace(/,/g, '');
+            const unitVal = document.getElementById('outputUnit').value;
+            const noteVal = document.getElementById('outputNote').value || '-';
+
+            try {
+                let receiptUrl = '';
+                if (fileInput.files && fileInput.files[0]) {
+                    const optFile = await compressImage(fileInput.files[0], 1200, 0.7);
+                    receiptUrl = await uploadToCloudinary(optFile);
+                    if (!receiptUrl) {
+                        showCustomAlert("ອັບໂຫຼດຮູບພາບບໍ່ສຳເລັດ ກະລຸນາກວດສອບອິນເຕີເນັດ ຫຼື ລອງເລືອກຮູບໃໝ່ອີກຄັ້ງ", "ແຈ້ງເຕືອນ");
+                        return;
+                    }
+                }
+
+                const newOutput = {
+                    projectId: selectedProjectId,
+                    date: dateVal,
+                    desc: descVal,
+                    qty: rawQty,
+                    unit: unitVal,
+                    receipt: receiptUrl || '',
+                    note: noteVal
+                };
+
+                await db.collection("outputs").add(newOutput);
+                
+                closeOutputModal();
+                showCustomAlert("ເພີ່ມຜົນຜະລິດສຳເລັດ!");
+            } catch (error) {
+                showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
+            }
+        });
+
+        function renderOutputs() {
+            const tbody = document.getElementById('outputTableBody');
+            if(!tbody) return;
+            tbody.innerHTML = "";
+            let filteredOutputs = selectedProjectId ? outputsData.filter(out => out.projectId === selectedProjectId) : [];
+            
+            filteredOutputs.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+            
+            const selectAllCb = document.getElementById('selectAllOutput');
+            if (selectAllCb) selectAllCb.checked = false;
+
+            const isAdmin = currentUser && currentUser.role === 'ADMIN';
+            const colspan = isAdmin ? 8 : 7;
+
+            if (filteredOutputs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">${selectedProjectId ? 'ຍັງບໍ່ມີຂໍ້ມູນຜົນຜະລິດໃນໂຄງການນີ້' : 'ກະລຸນາເລືອກໂຄງການດ້ານເທິງກ່ອນ'}</td></tr>`;
+                return;
+            }
+
+            filteredOutputs.forEach((out, index) => {
+                const formattedDate = formatDateToDDMMYYYY(out.date);
+                const formattedQty = formatNumber(out.qty);
+                let receiptHtml = out.receipt ? `<img src="${out.receipt}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${out.receipt}')" title="ຫຼັກຖານ">` : `-`;
+
+                const checkboxHtml = isAdmin ? `<td class="p-3 border text-center"><input type="checkbox" class="output-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${out.id}"></td>` : '';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50";
+                
+                tr.innerHTML = `
+                    <td class="p-3 border text-center">${index + 1}</td>
+                    <td class="p-3 border text-center">${formattedDate}</td>
+                    <td class="p-3 border">${out.desc}</td>
+                    <td class="p-3 border text-center font-semibold text-gray-700">${formattedQty}</td>
+                    <td class="p-3 border">${out.unit}</td>
+                    <td class="p-3 border text-center">${receiptHtml}</td>
+                    <td class="p-3 border">${out.note}</td>
+                    ${checkboxHtml}
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function toggleSelectAllOutput(masterCheckbox) {
+            document.querySelectorAll('.output-checkbox').forEach(cb => cb.checked = masterCheckbox.checked);
+        }
+
+        async function deleteSelectedOutputs() {
+            if (currentUser.role !== 'ADMIN') { showCustomAlert("ທ່ານບໍ່ມີສິດໃນການລຶບຂໍ້ມູນ!"); return; }
+            const checkboxes = document.querySelectorAll('.output-checkbox:checked');
+            if (checkboxes.length === 0) { showCustomAlert("ກະລຸນາເລືອກລາຍການທີ່ຕ້ອງການລຶບກ່ອນ!"); return; }
+
+            showCustomConfirm(`ທ່ານຕ້ອງການລຶບຂໍ້ມູນທີ່ເລືອກ ${checkboxes.length} ລາຍການແທ້ບໍ?`, async () => {
+                try {
+                    for (const cb of checkboxes) {
+                        await db.collection("outputs").doc(cb.getAttribute('data-id')).delete();
+                    }
+                    showCustomAlert("ລຶບຂໍ້ມູນສຳເລັດ!");
+                } catch (error) {
+                    showCustomAlert("ລຶບບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
+                }
+            });
+        }
+        // +++ ສິ້ນສຸດພາກສ່ວນຜົນຜະລິດ +++
+
+        // ຟັງຊັນສຳລັບ: ລາຍຮັບ (Incomes)
         function openIncomeModal() {
             if (!selectedProjectId) { showCustomAlert("ກະລຸນາເລືອກໂຄງການກ່ອນເພີ່ມລາຍຮັບ!", "ແຈ້ງເຕືອນ"); return; }
             document.getElementById('incomeModal').classList.remove('hidden');
@@ -1597,7 +1804,6 @@
                 }
             });
         }
-        // +++ ສິ້ນສຸດພາກສ່ວນໃໝ່ລາຍຮັບ +++
 
         function updateReportActiveProject() {
             const proj = projectsData.find(p => p.id === selectedProjectId);
@@ -1640,7 +1846,7 @@
             
             let filteredInvestments = investmentsData.filter(inv => inv.projectId === selectedProjectId);
             let filteredExpenses = expensesData.filter(exp => exp.projectId === selectedProjectId);
-            let filteredIncomes = incomesData.filter(inc => inc.projectId === selectedProjectId); // +++
+            let filteredIncomes = incomesData.filter(inc => inc.projectId === selectedProjectId);
             let periodLabel = "";
 
             if (type === 'monthly') {
@@ -1648,23 +1854,22 @@
                 periodLabel = `ປະຈຳເດືອນ ${m}/${selectedYear}`;
                 filteredInvestments = filteredInvestments.filter(i => i.date && i.date.startsWith(`${selectedYear}-${m}`));
                 filteredExpenses = filteredExpenses.filter(e => e.date && e.date.startsWith(`${selectedYear}-${m}`));
-                filteredIncomes = filteredIncomes.filter(inc => inc.date && inc.date.startsWith(`${selectedYear}-${m}`)); // +++
+                filteredIncomes = filteredIncomes.filter(inc => inc.date && inc.date.startsWith(`${selectedYear}-${m}`));
             } else if (type === 'quarter') {
                 const q = document.getElementById('reportQuarterInput').value;
                 let months = q === '1' ? ['01','02','03'] : q === '2' ? ['04','05','06'] : q === '3' ? ['07','08','09'] : ['10','11','12'];
                 periodLabel = `ປະຈຳໄຕມາດ ${q} (${selectedYear})`;
                 filteredInvestments = filteredInvestments.filter(i => i.date && i.date.startsWith(selectedYear) && months.includes(i.date.split('-')[1]));
                 filteredExpenses = filteredExpenses.filter(e => e.date && e.date.startsWith(selectedYear) && months.includes(e.date.split('-')[1]));
-                filteredIncomes = filteredIncomes.filter(inc => inc.date && inc.date.startsWith(selectedYear) && months.includes(inc.date.split('-')[1])); // +++
+                filteredIncomes = filteredIncomes.filter(inc => inc.date && inc.date.startsWith(selectedYear) && months.includes(inc.date.split('-')[1]));
             } else if (type === 'period') {
                 const monthsCount = parseInt(document.getElementById('reportPeriodInput').value);
                 periodLabel = `ປະຈຳ ${monthsCount} ເດືອນ (${selectedYear})`;
                 filteredInvestments = filteredInvestments.filter(i => i.date && i.date.startsWith(selectedYear) && parseInt(i.date.split('-')[1]) <= monthsCount);
                 filteredExpenses = filteredExpenses.filter(e => e.date && e.date.startsWith(selectedYear) && parseInt(e.date.split('-')[1]) <= monthsCount);
-                filteredIncomes = filteredIncomes.filter(inc => inc.date && inc.date.startsWith(selectedYear) && parseInt(inc.date.split('-')[1]) <= monthsCount); // +++
+                filteredIncomes = filteredIncomes.filter(inc => inc.date && inc.date.startsWith(selectedYear) && parseInt(inc.date.split('-')[1]) <= monthsCount);
             }
 
-            // +++ ເພີ່ມເງິນລາຍຮັບທົ່ວໄປ ເຂົ້າໄປລວມກັບ ເງິນລົງທຶນ +++
             let receiveCash = filteredInvestments.filter(i => i.method === 'ສົດ').reduce((sum, i) => sum + Number(i.amount || 0), 0) + 
                               filteredIncomes.filter(i => i.method === 'ສົດ').reduce((sum, i) => sum + Number(i.amount || 0), 0);
                               
@@ -1912,7 +2117,7 @@
                         await db.collection("expenses").doc(editingRefundId).update({
                             date: dateVal, desc: descVal, amount: expenseVal, note: noteVal
                         });
-                    } else if (editingRefundSource === 'incomes') { // +++
+                    } else if (editingRefundSource === 'incomes') {
                         await db.collection("incomes").doc(editingRefundId).update({
                             date: dateVal, desc: descVal, amount: incomeVal, note: noteVal
                         });
@@ -1960,7 +2165,7 @@
             } else if (currentSource === 'expenses') {
                 const exp = expensesData.find(e => e.id === currentId);
                 if(exp) item = { date: exp.date, desc: exp.desc, income: 0, expense: Number(exp.amount||0) + Number(exp.fee||0), note: exp.note };
-            } else if (currentSource === 'incomes') { // +++
+            } else if (currentSource === 'incomes') {
                 const inc = incomesData.find(i => i.id === currentId);
                 if(inc) item = { date: inc.date, desc: inc.desc, income: inc.amount, expense: 0, note: inc.note };
             } else {
@@ -1995,7 +2200,7 @@
                         investmentsData = investmentsData.filter(i => i.id !== currentId);
                     } else if (currentSource === 'expenses') {
                         expensesData = expensesData.filter(e => e.id !== currentId);
-                    } else if (currentSource === 'incomes') { // +++
+                    } else if (currentSource === 'incomes') {
                         incomesData = incomesData.filter(i => i.id !== currentId);
                     } else {
                         manualRefundsData = manualRefundsData.filter(m => m.id !== currentId);
@@ -2028,7 +2233,6 @@
                 combinedData.push({ source: 'investments', id: i.id, date: i.date, desc: `ຮັບເງິນຈາກ ${i.investorName}`, income: Number(i.amount || 0), expense: 0, note: i.note || '' });
             });
 
-            // +++ ເພີ່ມເງິນລາຍຮັບ (ເງິນສົດ) ເຂົ້າໃນການທວນຄືນເງິນ +++
             incomesData.filter(i => i.projectId === selectedProjectId && i.method === 'ສົດ').forEach(i => {
                 combinedData.push({ source: 'incomes', id: i.id, date: i.date, desc: `ຮັບເງິນ: ${i.desc}`, income: Number(i.amount || 0), expense: 0, note: i.note || '' });
             });
@@ -2193,7 +2397,6 @@
                 });
             }
 
-            // +++ ເພີ່ມລາຍຮັບເຂົ້າໃນການແຈ້ງເຕືອນ +++
             if (typeof incomesData !== 'undefined') {
                 incomesData.filter(inc => inc.projectId === selectedProjectId).forEach(inc => {
                     const timestamp = new Date(inc.date).getTime();
