@@ -225,7 +225,14 @@
                             <h2 class="text-2xl font-bold text-gray-800">ບັນທຶກລາຍຮັບໂຄງການ</h2>
                             <p id="currentActiveProjectIncome" class="text-sm text-blue-600 font-semibold mt-1">ກຳລັງສະແດງໂຄງການ: ຍັງບໍ່ໄດ້ເລືອກ</p>
                         </div>
-                        <div class="flex space-x-3">
+                        <div class="flex items-center space-x-3">
+                            <!-- ປຸ່ມດຣອບດາວເລືອກຈຳນວນຄັ້ງທີ່ຂາຍສຳລັບລາຍຮັບ -->
+                            <div class="flex items-center space-x-2 text-sm">
+                                <label class="font-medium text-gray-700">ຮອບຂາຍ:</label>
+                                <select id="incomeSaleRoundFilter" onchange="renderIncomes()" class="border border-gray-300 rounded-lg p-2 bg-white focus:ring focus:ring-blue-300 font-semibold text-blue-600">
+                                    <option value="all">ລວມທັງໝົດ</option>
+                                </select>
+                            </div>
                             <button id="deleteIncomeBtn" onclick="deleteSelectedIncomes()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
                             <button id="addIncomeBtn" onclick="openIncomeModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍຮັບ</button>
                         </div>
@@ -1187,18 +1194,62 @@
             }
         });
 
+        function updateIncomeSaleRoundDropdown(filteredIncomes) {
+            const selectEl = document.getElementById('incomeSaleRoundFilter');
+            if (!selectEl) return;
+            
+            const currentSelected = selectEl.value;
+            
+            let maxRound = 0;
+            filteredIncomes.forEach(inc => {
+                if (inc.note && inc.note.includes('ຂາຍຄັ້ງທີ່')) {
+                    let match = inc.note.match(/ຂາຍຄັ້ງທີ່\s*(\d+)/);
+                    if (match && match[1]) {
+                        let r = parseInt(match[1]);
+                        if (r > maxRound) maxRound = r;
+                    }
+                }
+            });
+
+            let optionsHtml = `<option value="all">ລວມທັງໝົດ</option>`;
+            for (let i = 1; i <= maxRound; i++) {
+                optionsHtml += `<option value="${i}">ຂາຍຄັ້ງທີ່ ${i}</option>`;
+            }
+            selectEl.innerHTML = optionsHtml;
+
+            if (currentSelected && [...selectEl.options].some(opt => opt.value === currentSelected)) {
+                selectEl.value = currentSelected;
+            } else {
+                selectEl.value = "all";
+            }
+        }
+
         function renderIncomes() {
             const tbody = document.getElementById('incomeTableBody');
             if(!tbody) return;
             tbody.innerHTML = "";
             let filteredIncomes = selectedProjectId ? incomesData.filter(inc => inc.projectId === selectedProjectId) : [];
+            
+            // ອັບເດດລາຍການໃນດຣອບດາວຮອບຂາຍສຳລັບລາຍຮັບ
+            updateIncomeSaleRoundDropdown(filteredIncomes);
+
+            // ກັອງຂໍ້ມູນຕາມຮອບຂາຍທີ່ເລືອກໃນດຣອບດາວ
+            const selectedRoundFilter = document.getElementById('incomeSaleRoundFilter').value;
+            if (selectedRoundFilter !== "all") {
+                filteredIncomes = filteredIncomes.filter(inc => {
+                    if (!inc.note) return false;
+                    let match = inc.note.match(/ຂາຍຄັ້ງທີ່\s*(\d+)/);
+                    return match && match[1] === selectedRoundFilter;
+                });
+            }
+
             filteredIncomes.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
             const isAdmin = currentUser && currentUser.role === 'ADMIN';
             const colspan = isAdmin ? 7 : 6;
 
             if (filteredIncomes.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">ຍັງບໍ່ມີຂໍ້ມູນລາຍຮັບໃນໂຄງການນີ້</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="${colspan}" class="p-6 text-center text-gray-500">ຍັງບໍ່ມີຂໍ້ມູນລາຍຮັບໃນເງື່ອນໄຂນີ້</td></tr>`;
                 return;
             }
 
@@ -1227,7 +1278,7 @@
             const totalTr = document.createElement('tr');
             totalTr.className = "bg-gray-50 font-bold text-gray-800";
             totalTr.innerHTML = `
-                <td colspan="3" class="p-3 border text-right">ລວມລາຍຮັບທັງໝົດ</td>
+                <td colspan="3" class="p-3 border text-right">ລວມລາຍຮັບທັງໝົດ (ຕາມການກັອງ)</td>
                 <td class="p-3 border text-right pr-4 text-green-600 text-base">${formatNumber(totalAmount)}</td>
                 <td colspan="${isAdmin ? 3 : 2}" class="p-3 border"></td>
             `;
