@@ -248,7 +248,7 @@ XY29962200
                                 </select>
                             </div>
                             <button id="deleteIncomeBtn" onclick="deleteSelectedIncomes()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
-                            <button id="addIncomeBtn" onclick="openIncomeModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍຮັບ</button>
+                            <button id="addIncomeBtn" onclick="openIncomeModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍຮັບ (ຟອມ)</button>
                         </div>
                     </div>
                 </div>
@@ -256,17 +256,17 @@ XY29962200
                     <table class="w-full text-left border-collapse">
                         <thead class="sticky top-0 z-20 bg-gray-200 shadow-sm">
                             <tr class="text-gray-700 text-sm">
-                                <th class="p-3 border text-center align-middle">ລ/ດ</th>
-                                <th class="p-3 border align-middle">ວັນ/ເດືອນ/ປີ</th>
+                                <th class="p-3 border text-center align-middle w-12">ລ/ດ</th>
+                                <th class="p-3 border align-middle w-28">ວັນ/ເດືອນ/ປີ</th>
                                 <th class="p-3 border align-middle">ເນື້ອໃນ (ລາຍຮັບ)</th>
-                                <th class="p-3 border align-middle text-center">ຈ/ນ (ກຣາມ)</th>
-                                <th class="p-3 border align-middle text-center">ຈ/ນ ຕົວຈິງ (ກຣາມ)</th>
-                                <th class="p-3 border align-middle text-center">ຈ/ນ ບາດ</th>
-                                <th class="p-3 border align-middle text-right">ລາຄາ/ບາດ</th>
-                                <th class="p-3 border align-middle text-right">ຈ/ນ ເງິນລວມ (ຮັບ)</th>
-                                <th class="p-3 border align-middle text-center">ຫຼັກຖານ</th>
+                                <th class="p-3 border align-middle text-center w-28">ຈ/ນ (ກຣາມ)</th>
+                                <th class="p-3 border align-middle text-center w-32">ຈ/ນ ຕົວຈິງ (ກຣາມ)</th>
+                                <th class="p-3 border align-middle text-center w-28">ຈ/ນ ບາດ</th>
+                                <th class="p-3 border align-middle text-right w-32">ລາຄາ/ບາດ</th>
+                                <th class="p-3 border align-middle text-right w-36">ຈ/ນ ເງິນລວມ (ຮັບ)</th>
+                                <th class="p-3 border align-middle text-center w-20">ຫຼັກຖານ</th>
                                 <th class="p-3 border align-middle">ໝາຍເຫດ</th>
-                                <th class="p-3 border text-center align-middle admin-col-th"><input type="checkbox" id="selectAllIncome" onclick="toggleSelectAllIncome(this)" class="w-4 h-4 text-blue-600 focus:ring-blue-500"></th>
+                                <th class="p-3 border text-center align-middle admin-col-th w-20">ຈັດການ</th>
                             </tr>
                         </thead>
                         <tbody id="incomeTableBody" class="text-sm text-gray-700"></tbody>
@@ -783,6 +783,7 @@ XY29962200
                 outputsData = [];
                 snapshot.forEach((doc) => { outputsData.push({ id: doc.id, ...doc.data() }); });
                 renderOutputs();
+                if(selectedProjectId) renderIncomes(); // ໃຫ້ອັບເດດຕາຕະລາງລາຍຮັບນຳ ເວລາມີຜົນຜະລິດໃໝ່
             });
 
             db.collection("incomes").onSnapshot((snapshot) => {
@@ -1176,7 +1177,7 @@ XY29962200
             });
         }
 
-        // --- ລາຍຮັບ (Incomes) ດຶງອັດຕະໂນມັດຈາກຜົນຜະລິດ ---
+        // --- ລາຍຮັບ (Incomes) ---
 
         function openIncomeModal() {
             if (!selectedProjectId) { 
@@ -1222,8 +1223,6 @@ XY29962200
             }
 
             let projOutputs = outputsData.filter(o => o.projectId === selectedProjectId);
-            
-            // ຄົ້ນຫາແຖວທີ່ມີຄຳວ່າ ຂາຍຄັ້ງທີ່ ຕາມຮອບທີ່ເລືອກ
             let targetRow = projOutputs.find(o => o.note && (o.note.includes(`ຂາຍຄັ້ງທີ່ ${roundVal}`) || o.note.includes(`ຂາຍຄັ້ງທີ່${roundVal}`)));
             
             if (!targetRow) return;
@@ -1234,7 +1233,6 @@ XY29962200
             let totalQty = 0;
             let noteText = targetRow.note || '';
             
-            // ດຶງຕົວເລກຈາກກ່ອງໝາຍເຫດ (ເຊັ່ນ: 1,500 ກຣາມ)
             let weightMatch = noteText.match(/([\d,]+)\s*ກຣາມ/);
             if (weightMatch && weightMatch[1]) {
                 totalQty = Number(weightMatch[1].replace(/,/g, ''));
@@ -1325,6 +1323,59 @@ XY29962200
             }
         });
 
+        // ຟັງຊັນສຳລັບການພິມ ແລະ ຄິດໄລ່ແບບສົດໆ ໃນຕາຕະລາງລາຍຮັບ
+        function inlineCalc(round) {
+            let actualStr = document.getElementById(`inline-actual-${round}`).value.replace(/,/g, '');
+            let priceStr = document.getElementById(`inline-price-${round}`).value.replace(/,/g, '');
+            
+            let actual = Number(actualStr) || 0;
+            let price = Number(priceStr) || 0;
+            
+            let baht = actual > 0 ? (actual / 15.244).toFixed(2) : 0;
+            let amount = Math.round(baht * price);
+            
+            document.getElementById(`inline-baht-${round}`).innerText = baht > 0 ? formatNumber(baht) : '0';
+            document.getElementById(`inline-amount-${round}`).innerText = amount > 0 ? formatNumber(amount) : '0';
+        }
+
+        // ຟັງຊັນສຳລັບບັນທຶກລາຍຮັບຈາກຕາຕະລາງໂດຍກົງ (Inline Save)
+        async function saveInlineIncome(round, date, desc, qty, note) {
+            let actualStr = document.getElementById(`inline-actual-${round}`).value.replace(/,/g, '');
+            let priceStr = document.getElementById(`inline-price-${round}`).value.replace(/,/g, '');
+            
+            let actual = Number(actualStr) || 0;
+            let price = Number(priceStr) || 0;
+            
+            if (actual <= 0 || price <= 0) {
+                showCustomAlert("ກະລຸນາປ້ອນ 'ຈ/ນ ຕົວຈິງ' ແລະ 'ລາຄາ/ບາດ' ໃຫ້ຄົບຖ້ວນກ່ອນບັນທຶກ", "ແຈ້ງເຕືອນ");
+                return;
+            }
+            
+            let baht = (actual / 15.244).toFixed(2);
+            let amount = Math.round(baht * price);
+            
+            showCustomAlert("ກຳລັງບັນທຶກ...", "ກຳລັງດຳເນີນການ");
+            
+            try {
+                await db.collection("incomes").add({
+                    projectId: selectedProjectId,
+                    date: date,
+                    desc: desc,
+                    qty: qty.toString(),
+                    actualQty: actual.toString(),
+                    baht: baht.toString(),
+                    pricePerBaht: price.toString(),
+                    amount: amount.toString(),
+                    method: 'ໂອນ',
+                    receipt: '',
+                    note: note
+                });
+                showCustomAlert("ບັນທຶກລາຍຮັບສຳເລັດ!");
+            } catch (error) {
+                showCustomAlert("ບັນທຶກບໍ່ສຳເລັດ: " + error.message, "ຜິດພາດ");
+            }
+        }
+
         function renderIncomes() {
             const tbody = document.getElementById('incomeTableBody');
             if(!tbody) return;
@@ -1356,7 +1407,7 @@ XY29962200
                             saleRoundsMap[r] = {
                                 round: r,
                                 date: o.date || '',
-                                desc: o.desc || 'ລາຍຮັບຂາຍຜົນຜະລິດ',
+                                desc: o.desc || 'ຜົນຜະລິດ (ດຳ)', // ປັບໃຫ້ຄືຮູບ
                                 qty: qty
                             };
                         }
@@ -1455,41 +1506,67 @@ XY29962200
                 totalBaht += row.baht;
 
                 const formattedDate = formatDateToDDMMYYYY(row.date);
-                const formattedAmount = formatNumber(row.amount);
                 const formattedQty = formatNumber(row.qty);
-                const formattedActualQty = formatNumber(row.actualQty);
-                const formattedBaht = formatNumber(row.baht);
-                const formattedPrice = formatNumber(row.pricePerBaht);
 
-                let receiptHtml = row.receipt ? `<img src="${row.receipt}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${row.receipt}')" title="ຫຼັກຖານ">` : `-`;
-                
-                let checkboxHtml = '';
-                if (isAdmin) {
-                    if (row.incomeId) {
-                        checkboxHtml = `<td class="p-3 border text-center"><input type="checkbox" class="income-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${row.incomeId}"></td>`;
+                let actualQtyHtml, priceHtml, bahtHtml, amountHtml, actionHtml;
+
+                // ຖ້າເປັນຂໍ້ມູນທີ່ດຶງມາອັດຕະໂນມັດ ແລະ ຍັງບໍ່ທັນບັນທຶກ (ແລະເປັນ ADMIN) -> ໃຫ້ປ້ອນຂໍ້ມູນໄດ້
+                if (!row.isManual && isAdmin) {
+                    actualQtyHtml = `<input type="text" id="inline-actual-${row.round}" class="w-full min-w-[80px] border border-blue-300 rounded p-1 text-center text-blue-700 font-bold focus:ring-2 focus:ring-blue-400 bg-white" placeholder="ປ້ອນກຣາມ" oninput="formatCurrencyInput(this); inlineCalc('${row.round}')">`;
+                    
+                    priceHtml = `<input type="text" id="inline-price-${row.round}" class="w-full min-w-[90px] border border-blue-300 rounded p-1 text-right text-blue-700 font-bold focus:ring-2 focus:ring-blue-400 bg-white" placeholder="ປ້ອນລາຄາ" oninput="formatCurrencyInput(this); inlineCalc('${row.round}')">`;
+                    
+                    bahtHtml = `<span id="inline-baht-${row.round}" class="text-gray-500 font-medium">-</span>`;
+                    amountHtml = `<span id="inline-amount-${row.round}" class="text-green-600 font-bold">-</span>`;
+                    
+                    const safeDate = (row.date || '').replace(/'/g, "\\'");
+                    const safeDesc = (row.desc || '').replace(/'/g, "\\'");
+                    const safeQty = (row.qty || 0).toString();
+                    const safeNote = (row.note || '').replace(/'/g, "\\'");
+
+                    actionHtml = `<td class="p-2 border text-center"><button onclick="saveInlineIncome('${row.round}', '${safeDate}', '${safeDesc}', '${safeQty}', '${safeNote}')" class="bg-blue-600 text-white px-3 py-1 rounded text-xs font-semibold hover:bg-blue-700 shadow-sm transition">ບັນທຶກ</button></td>`;
+                } 
+                // ກໍລະນີທີ່ບັນທຶກແລ້ວ ຫຼື ເປັນ User ທຳມະດາ ໃຫ້ສະແດງເປັນຂໍ້ຄວາມປົກກະຕິ
+                else {
+                    const formattedActualQty = formatNumber(row.actualQty);
+                    const formattedBaht = formatNumber(row.baht);
+                    const formattedPrice = formatNumber(row.pricePerBaht);
+                    const formattedAmount = formatNumber(row.amount);
+
+                    actualQtyHtml = `<span class="${row.actualQty == 0 ? 'text-gray-400' : 'text-blue-600 font-semibold'}">${row.actualQty == 0 ? '-' : formattedActualQty}</span>`;
+                    priceHtml = `<span class="${row.pricePerBaht == 0 ? 'text-gray-400' : 'text-gray-800'}">${row.pricePerBaht == 0 ? '-' : formattedPrice}</span>`;
+                    bahtHtml = `<span class="${row.baht == 0 ? 'text-gray-400' : 'text-gray-800'}">${row.baht == 0 ? '-' : formattedBaht}</span>`;
+                    amountHtml = `<span class="${row.amount == 0 ? 'text-gray-400' : 'text-green-600 font-bold'}">${row.amount == 0 ? '-' : formattedAmount}</span>`;
+                    
+                    if (isAdmin) {
+                        if (row.incomeId) {
+                            actionHtml = `<td class="p-3 border text-center"><input type="checkbox" class="income-checkbox w-4 h-4 text-blue-600 focus:ring-blue-500" data-id="${row.incomeId}"></td>`;
+                        } else {
+                            actionHtml = `<td class="p-3 border text-center text-xs text-gray-400">ຍັງບໍ່ບັນທຶກ</td>`;
+                        }
                     } else {
-                        // ຖ້າເປັນພຽງຂໍ້ມູນອັດຕະໂນມັດ ແຕ່ຍັງບໍ່ທັນກົດເພີ່ມ ຈະບໍ່ມີ ID ໃຫ້ລຶບ
-                        checkboxHtml = `<td class="p-3 border text-center text-xs text-gray-400">ຍັງບໍ່ບັນທຶກ</td>`;
+                        actionHtml = ``;
                     }
                 }
 
+                let receiptHtml = row.receipt ? `<img src="${row.receipt}" class="w-8 h-8 object-cover rounded mx-auto cursor-pointer hover:opacity-80 shadow border" onclick="openImageViewer('${row.receipt}')" title="ຫຼັກຖານ">` : `-`;
+
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50 text-gray-800";
-                // ເນັ້ນສີແຖວທີ່ດຶງມາອັດຕະໂນມັດ ແຕ່ຍັງບໍ່ທັນໄປກົດເພີ່ມລາຄາໃນຟອມ
-                if (!row.isManual) tr.classList.add("bg-yellow-50");
+                if (!row.isManual) tr.classList.add("bg-yellow-50"); // ເນັ້ນສີໃຫ້ແຖວທີ່ຍັງບໍ່ທັນບັນທຶກ
 
                 tr.innerHTML = `
                     <td class="p-3 border text-center">${index + 1}</td>
                     <td class="p-3 border text-center">${formattedDate}</td>
                     <td class="p-3 border">${row.desc}</td>
                     <td class="p-3 border text-center font-bold text-gray-700">${formattedQty}</td>
-                    <td class="p-3 border text-center text-blue-600 font-semibold">${formattedActualQty == 0 ? '-' : formattedActualQty}</td>
-                    <td class="p-3 border text-center">${formattedBaht == 0 ? '-' : formattedBaht}</td>
-                    <td class="p-3 border text-right">${formattedPrice == 0 ? '-' : formattedPrice}</td>
-                    <td class="p-3 border text-right pr-4 text-green-600 font-bold">${formattedAmount == 0 ? '-' : formattedAmount}</td>
+                    <td class="p-2 border text-center">${actualQtyHtml}</td>
+                    <td class="p-3 border text-center">${bahtHtml}</td>
+                    <td class="p-2 border text-right">${priceHtml}</td>
+                    <td class="p-3 border text-right pr-4">${amountHtml}</td>
                     <td class="p-3 border text-center">${receiptHtml}</td>
                     <td class="p-3 border">${row.note}</td>
-                    ${checkboxHtml}
+                    ${actionHtml}
                 `;
                 tbody.appendChild(tr);
             });
@@ -1499,10 +1576,10 @@ XY29962200
             totalTr.innerHTML = `
                 <td colspan="3" class="p-3 border text-right">ລວມທັງໝົດ (ຕາມການກັອງ)</td>
                 <td class="p-3 border text-center">${formatNumber(totalQty)}</td>
-                <td class="p-3 border text-center">${formatNumber(totalActualQty)}</td>
-                <td class="p-3 border text-center">${formatNumber(totalBaht)}</td>
+                <td class="p-3 border text-center">${totalActualQty > 0 ? formatNumber(totalActualQty) : '0'}</td>
+                <td class="p-3 border text-center">${totalBaht > 0 ? formatNumber(totalBaht) : '0'}</td>
                 <td class="p-3 border"></td>
-                <td class="p-3 border text-right pr-4 text-green-700 text-lg">${formatNumber(totalAmount)}</td>
+                <td class="p-3 border text-right pr-4 text-green-700 text-lg">${totalAmount > 0 ? formatNumber(totalAmount) : '0'}</td>
                 <td colspan="${isAdmin ? 3 : 2}" class="p-3 border"></td>
             `;
             tbody.appendChild(totalTr);
