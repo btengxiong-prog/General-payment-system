@@ -247,8 +247,8 @@ XY29962200
                                     <option value="all">ລວມທັງໝົດ</option>
                                 </select>
                             </div>
+                            <!-- ຍັງເຫຼືອແຕ່ປຸ່ມລຶບຂໍ້ມູນສຳລັບ ADMIN -->
                             <button id="deleteIncomeBtn" onclick="deleteSelectedIncomes()" class="hidden bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700">ລຶບຂໍ້ມູນ</button>
-                            <button id="addIncomeBtn" onclick="openIncomeModal()" class="hidden bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">+ ເພີ່ມລາຍຮັບ (ຟອມ)</button>
                         </div>
                     </div>
                 </div>
@@ -861,16 +861,34 @@ XY29962200
         }
 
         function formatNumber(numStr) {
-            if (!numStr) return '0';
-            const cleanNum = numStr.toString().replace(/[^0-9]/g, '');
-            if (!cleanNum) return '0';
-            return Number(cleanNum).toLocaleString('en-US');
+            if (numStr === null || numStr === undefined || numStr === '') return '0';
+            const num = Number(numStr.toString().replace(/,/g, ''));
+            if (isNaN(num)) return '0';
+            // ຖ້າມີເລກເສດ ໃຫ້ສະແດງທົດສະນິຍົມ 2 ຕຳແໜ່ງ, ຖ້າບໍ່ມີໃຫ້ສະແດງປົກກະຕິ
+            return num % 1 !== 0 ? num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : num.toLocaleString('en-US');
         }
 
         function formatCurrencyInput(input) {
-            let val = input.value.replace(/[^0-9]/g, '');
-            if (val) { input.value = Number(val).toLocaleString('en-US'); }
-            else { input.value = ''; }
+            // ອະນຸຍາດໃຫ້ພິມຕົວເລກ ແລະ ເຄື່ອງໝາຍຈຸດ (.) ໄດ້
+            let val = input.value.replace(/[^0-9.]/g, ''); 
+            
+            // ປ້ອງກັນການພິມຈຸດຫຼາຍກວ່າ 1 ຕົວ
+            let dotCount = (val.match(/\./g) || []).length;
+            if (dotCount > 1) {
+                val = val.substring(0, val.lastIndexOf('.'));
+            }
+
+            if (val) {
+                let parts = val.split('.');
+                parts[0] = Number(parts[0]).toLocaleString('en-US'); // ໃສ່ຈຸດຫຼັກພັນໃຫ້ກຸ່ມໜ້າ
+                if (parts.length > 1) {
+                    input.value = parts[0] + '.' + parts[1];
+                } else {
+                    input.value = parts[0];
+                }
+            } else {
+                input.value = '';
+            }
         }
 
         function showCustomAlert(message, title = "ແຈ້ງເຕືອນ") {
