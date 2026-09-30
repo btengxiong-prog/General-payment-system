@@ -1014,21 +1014,13 @@
             if (USERS[u] && USERS[u].pass === p) {
                 const userRole = USERS[u].role;
 
-                // 🔴 ຈຸດທີ່ແກ້ໄຂ: ເພີ່ມ ID ຂອງປຸ່ມ ຜົນຜະລິດ ແລະ ລາຍຮັບ ເຂົ້າໃນ Array ນີ້
-                const adminBtns = [
-                    'addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 
-                    'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 
-                    'deleteExpenseBtn', 'addRefundBtn',
-                    'addOutputBtn', 'deleteOutputBtn', 'deleteIncomeBtn' 
-                ];
-
                 if (userRole === 'ADMIN') {
                     currentUser = USERS[u];
                     document.getElementById('loginScreen').classList.add('hidden');
                     document.getElementById('appScreen').classList.remove('hidden');
                     document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name} (ADMIN)`;
 
-                    // ສະແດງປຸ່ມສຳລັບ Admin
+                    const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addRefundBtn'];
                     adminBtns.forEach(btnId => { if(document.getElementById(btnId)) document.getElementById(btnId).classList.remove('hidden'); });
                     document.querySelectorAll('.admin-col-th').forEach(el => el.classList.remove('hidden'));
                     
@@ -1066,7 +1058,7 @@
                         document.getElementById('userInfo').innerText = `ຜູ້ໃຊ້: ${currentUser.name}`;
 
                         setTimeout(() => {
-                            // ເຊື່ອງປຸ່ມສຳລັບ User ທົ່ວໄປ
+                            const adminBtns = ['addProjectBtn', 'addInvestorBtn', 'deleteInvestorBtn', 'addInvestmentBtn', 'deleteInvestmentBtn', 'addExpenseBtn', 'deleteExpenseBtn', 'addRefundBtn'];
                             adminBtns.forEach(btnId => {
                                 const btn = document.getElementById(btnId);
                                 if (btn) btn.classList.add('hidden');
