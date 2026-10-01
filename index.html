@@ -43,20 +43,20 @@
     <nav class="bg-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center overflow-x-auto">
             <div class="flex space-x-6 font-semibold text-gray-700 whitespace-nowrap">
-                <button onclick="switchTab('equipments')" class="hover:text-blue-600 focus:text-blue-600">ອຸປະກອນ</button>
-                <button onclick="switchTab('projects')" class="hover:text-blue-600 focus:text-blue-600">ໂຄງການທັງໝົດ</button>
-                <button onclick="switchTab('investors')" class="hover:text-blue-600 focus:text-blue-600">ນັກລົງທຶນ</button>
-                <button onclick="switchTab('investments')" class="hover:text-blue-600 focus:text-blue-600">ຈ/ນ ເງິນລົງທຶນ</button>
-                <button onclick="switchTab('invest_new')" class="hover:text-blue-600 focus:text-blue-600">ການລົງທຶນ</button>
-                <button onclick="switchTab('expenses')" class="hover:text-blue-600 focus:text-blue-600">ລາຍຈ່າຍ</button>
-                <button onclick="switchTab('outputs')" class="hover:text-blue-600 focus:text-blue-600">ຜົນຜະລິດ</button>
-                <button onclick="switchTab('incomes')" class="hover:text-blue-600 focus:text-blue-600">ລາຍຮັບ</button>
-                <button onclick="switchTab('dividends')" class="hover:text-blue-600 focus:text-blue-600 text-blue-800 font-bold border-b-2 border-blue-600">ເງິນປັນຜົນ</button>
-                <button onclick="switchTab('refunds')" class="hover:text-blue-600 focus:text-blue-600">ເງິນທວນຄືນ</button>
-                <button onclick="switchTab('reports')" class="hover:text-blue-600 focus:text-blue-600">ລາຍງານ</button>
+                <button id="nav-equipments" onclick="switchTab('equipments')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ອຸປະກອນ</button>
+                <button id="nav-projects" onclick="switchTab('projects')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1 text-blue-800 font-bold border-b-2 border-blue-600">ໂຄງການທັງໝົດ</button>
+                <button id="nav-investors" onclick="switchTab('investors')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ນັກລົງທຶນ</button>
+                <button id="nav-investments" onclick="switchTab('investments')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ຈ/ນ ເງິນລົງທຶນ</button>
+                <button id="nav-invest_new" onclick="switchTab('invest_new')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ການລົງທຶນ</button>
+                <button id="nav-expenses" onclick="switchTab('expenses')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ລາຍຈ່າຍ</button>
+                <button id="nav-outputs" onclick="switchTab('outputs')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ຜົນຜະລິດ</button>
+                <button id="nav-incomes" onclick="switchTab('incomes')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ລາຍຮັບ</button>
+                <button id="nav-dividends" onclick="switchTab('dividends')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ເງິນປັນຜົນ</button>
+                <button id="nav-refunds" onclick="switchTab('refunds')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ເງິນທວນຄືນ</button>
+                <button id="nav-reports" onclick="switchTab('reports')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ລາຍງານ</button>
                 
                 <!-- ປຸ່ມແຈ້ງເຕືອນການເຄື່ອນໄຫວ -->
-                <button id="notiTabBtn" onclick="switchTab('notification')" class="hover:text-blue-600 focus:text-blue-600 flex items-center transition duration-300">
+                <button id="notiTabBtn" onclick="switchTab('notification')" class="hover:text-blue-600 focus:text-blue-600 flex items-center transition duration-300 py-1">
                     ການເຄື່ອນໄຫວ <span id="notiDot" class="hidden ml-1">🔴</span>
                 </button>
                 
@@ -1192,6 +1192,18 @@
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            
+            // ລຶບເອັກເຟັກສີຟ້າອອກຈາກທຸກປຸ່ມກ່ອນ
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-blue-800', 'font-bold', 'border-b-2', 'border-blue-600');
+            });
+            
+            // ເພີ່ມເອັກເຟັກສີຟ້າ (active) ໃຫ້ສະເພາະປຸ່ມທີ່ກຳລັງຖຶກກົດ
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            if (activeBtn) {
+                activeBtn.classList.add('text-blue-800', 'font-bold', 'border-b-2', 'border-blue-600');
+            }
+            
             if (tabName === 'reports') handleReportTypeChange();
         }
 
