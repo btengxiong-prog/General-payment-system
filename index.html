@@ -41,17 +41,42 @@
     <div id="appScreen" class="hidden">
     <!-- Navigation Menu (ລັອກໃຫ້ຕິດຂອບເທິງສະເໝີ) -->
     <nav class="bg-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center overflow-x-auto">
-            <div class="flex space-x-6 font-semibold text-gray-700 whitespace-nowrap">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center flex-wrap gap-y-2">
+            <div class="flex space-x-6 font-semibold text-gray-700 whitespace-nowrap items-center">
                 <button id="nav-equipments" onclick="switchTab('equipments')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ອຸປະກອນ</button>
                 <button id="nav-projects" onclick="switchTab('projects')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1 text-blue-800 font-bold border-b-2 border-blue-600">ໂຄງການທັງໝົດ</button>
-                <button id="nav-investors" onclick="switchTab('investors')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ນັກລົງທຶນ</button>
-                <button id="nav-investments" onclick="switchTab('investments')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ຈ/ນ ເງິນລົງທຶນ</button>
-                <button id="nav-invest_new" onclick="switchTab('invest_new')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ການລົງທຶນ</button>
-                <button id="nav-expenses" onclick="switchTab('expenses')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ລາຍຈ່າຍ</button>
-                <button id="nav-outputs" onclick="switchTab('outputs')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ຜົນຜະລິດ</button>
-                <button id="nav-incomes" onclick="switchTab('incomes')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ລາຍຮັບ</button>
-                <button id="nav-dividends" onclick="switchTab('dividends')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ເງິນປັນຜົນ</button>
+
+                <!-- Dropdown 1: ການລົງທຶນ & ລາຍຈ່າຍ -->
+                <div class="relative group cursor-pointer">
+                    <button class="hover:text-blue-600 focus:text-blue-600 py-1 inline-flex items-center outline-none transition">
+                        ການລົງທຶນ & ລາຍຈ່າຍ
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="absolute left-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div class="w-48 bg-white border border-gray-200 rounded-lg shadow-lg flex flex-col py-2 overflow-hidden">
+                            <button id="nav-investors" onclick="switchTab('investors')" class="nav-btn text-left px-4 py-2 hover:bg-blue-50 focus:text-blue-600">ນັກລົງທຶນ</button>
+                            <button id="nav-investments" onclick="switchTab('investments')" class="nav-btn text-left px-4 py-2 hover:bg-blue-50 focus:text-blue-600">ຈ/ນ ເງິນລົງທຶນ</button>
+                            <button id="nav-invest_new" onclick="switchTab('invest_new')" class="nav-btn text-left px-4 py-2 hover:bg-blue-50 focus:text-blue-600">ການລົງທຶນ</button>
+                            <button id="nav-expenses" onclick="switchTab('expenses')" class="nav-btn text-left px-4 py-2 hover:bg-blue-50 focus:text-blue-600">ລາຍຈ່າຍ</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dropdown 2: ຜົນຜະລິດ & ລາຍຮັບ -->
+                <div class="relative group cursor-pointer">
+                    <button class="hover:text-blue-600 focus:text-blue-600 py-1 inline-flex items-center outline-none transition">
+                        ຜົນຜະລິດ & ລາຍຮັບ
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="absolute left-0 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div class="w-48 bg-white border border-gray-200 rounded-lg shadow-lg flex flex-col py-2 overflow-hidden">
+                            <button id="nav-outputs" onclick="switchTab('outputs')" class="nav-btn text-left px-4 py-2 hover:bg-blue-50 focus:text-blue-600">ຜົນຜະລິດ</button>
+                            <button id="nav-incomes" onclick="switchTab('incomes')" class="nav-btn text-left px-4 py-2 hover:bg-blue-50 focus:text-blue-600">ລາຍຮັບ</button>
+                            <button id="nav-dividends" onclick="switchTab('dividends')" class="nav-btn text-left px-4 py-2 hover:bg-blue-50 focus:text-blue-600">ເງິນປັນຜົນ</button>
+                        </div>
+                    </div>
+                </div>
+
                 <button id="nav-refunds" onclick="switchTab('refunds')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ເງິນທວນຄືນ</button>
                 <button id="nav-reports" onclick="switchTab('reports')" class="nav-btn hover:text-blue-600 focus:text-blue-600 py-1">ລາຍງານ</button>
                 
