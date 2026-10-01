@@ -1453,6 +1453,10 @@
             tbody.innerHTML = "";
             let filteredOutputs = selectedProjectId ? outputsData.filter(out => out.projectId === selectedProjectId) : [];
             
+            // ສັ່ງໃຫ້ເອົາຕິກອອກຈາກ Checkbox ເລືອກທັງໝົດທຸກຄັ້ງທີ່ໂຫຼດຕາຕະລາງໃໝ່
+            const selectAllCb = document.getElementById('selectAllOutput');
+            if (selectAllCb) selectAllCb.checked = false;
+            
             const selectEl = document.getElementById('outputSaleRoundFilter');
             if (selectEl) {
                 let currentSelected = selectEl.value;
@@ -3039,6 +3043,10 @@ function renderEquipments() {
     tbody.innerHTML = "";
     let filtered = selectedProjectId ? equipmentsData.filter(eq => eq.projectId === selectedProjectId) : [];
     
+    // ສັ່ງໃຫ້ເອົາຕິກອອກຈາກ Checkbox ເລືອກທັງໝົດທຸກຄັ້ງທີ່ໂຫຼດຕາຕະລາງໃໝ່
+    const selectAllCb = document.getElementById('selectAllEquipment');
+    if (selectAllCb) selectAllCb.checked = false;
+
     filtered.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 
     const isAdmin = currentUser && currentUser.role === 'ADMIN';
